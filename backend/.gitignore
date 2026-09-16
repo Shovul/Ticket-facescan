@@ -1,0 +1,29 @@
+venv/
+env/
+
+.env
+.env.local
+.env.*.local
+
+# Cache
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Logs
+*.log
+logs/
+*.sqlite3
+*.db
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
