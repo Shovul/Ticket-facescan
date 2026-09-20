@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass Organizer — Danh sách tham dự (UC13)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&display=swap&subset=vietnamese" rel="stylesheet">
+<style>
+  :root {
+    --color-navy: #023852;
+    --color-navy-dark: #012435;
+    --color-teal: #079FA0;
+    --color-teal-hover: #058586;
+    --color-mint: #9FD8C5;
+    --color-yellow: #FAC005;
+    --color-orange: #F58B01;
+    --color-red: #DC2E2F;
+
+    --bg-page: #f2f7f5;
+    --card-border: #cfe5dc;
+    --text-primary: #023852;
+    --text-muted: #537583;
+    --hairline: #e3efea;
+    --white: #ffffff;
+    --danger: #dc2626;
+    --danger-bg: #fff5f5;
+    --success: #15803d;
+    --success-bg: #e6f7f3;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .app-layout { display: flex; flex: 1; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .app-sidebar {
+    width: 270px;
+    background: var(--color-navy);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid #034b6e;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .sidebar-top { display: flex; flex-direction: column; }
+  .sidebar-brand-header { padding: 24px 20px 20px 20px; border-bottom: 1px solid rgba(159, 216, 197, 0.15); }
+  .brand-logo { font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; display: inline-flex; align-items: center; text-decoration: none; }
+  .brand-logo span.role-tag { font-size: 10.5px; font-weight: 800; color: #fff; background: var(--color-teal); padding: 2px 7px; border-radius: 5px; margin-left: 6px; }
+  .brand-logo .accent-dot { width: 7px; height: 7px; background-color: var(--color-orange); border-radius: 50%; margin-left: 5px; box-shadow: 0 0 7px var(--color-orange); }
+
+  .sidebar-org-profile { padding: 16px 20px; display: flex; align-items: center; gap: 12px; background: rgba(255, 255, 255, 0.04); border-bottom: 1px solid rgba(159, 216, 197, 0.12); }
+  .sidebar-org-logo { width: 38px; height: 38px; border-radius: 8px; background: #fff; padding: 3px; object-fit: contain; border: 1.5px solid var(--color-yellow); flex-shrink: 0; }
+  .sidebar-org-meta { overflow: hidden; }
+  .sidebar-org-name { font-size: 13px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sidebar-org-role { font-size: 11px; color: var(--color-mint); margin-top: 2px; }
+
+  .sidebar-nav-section { padding: 18px 12px; }
+  .sidebar-section-title { font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: rgba(159, 216, 197, 0.6); letter-spacing: 1px; padding: 0 12px; margin-bottom: 8px; }
+  .sidebar-nav-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .sidebar-nav-item a { display: flex; align-items: center; gap: 11px; padding: 10px 14px; color: #bad8e5; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 8px; transition: all 0.15s ease; }
+  .sidebar-nav-item a:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+  .sidebar-nav-item a.active { color: #ffffff; background: var(--color-teal); font-weight: 700; }
+  .badge-live-tag { font-size: 10px; background: var(--color-yellow); color: var(--color-navy); font-weight: 800; padding: 2px 6px; border-radius: 10px; margin-left: auto; }
+
+  .sidebar-bottom { padding: 12px; border-top: 1px solid rgba(159, 216, 197, 0.15); display: flex; flex-direction: column; gap: 4px; }
+  .sidebar-bottom-link { display: flex; align-items: center; gap: 11px; padding: 10px 14px; color: #bad8e5; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 8px; }
+  .sidebar-bottom-link:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+
+  /* MAIN VIEWPORT */
+  .app-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .main-top-header {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--card-border);
+    padding: 16px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .header-page-title { font-size: 18px; font-weight: 800; color: var(--color-navy); }
+
+  .main-content-scroll {
+    padding: 24px 36px 60px 36px;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* FILTER BAR */
+  .filter-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 2px 10px rgba(2, 56, 82, 0.02);
+  }
+  .filter-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .filter-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-navy);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .filter-select {
+    height: 38px;
+    padding: 0 12px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 7px;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .filter-select:focus {
+    border-color: var(--color-teal);
+  }
+
+  /* Sửa lỗi icon tìm kiếm bị lệch */
+  .search-box-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 280px;
+  }
+  .search-box-inner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+  .search-box-inner .search-input {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px 0 36px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 7px;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .search-box-inner .search-input:focus {
+    border-color: var(--color-teal);
+  }
+  .search-box-inner .search-icon {
+    position: absolute;
+    left: 11px;
+    pointer-events: none;
+    color: var(--text-muted);
+  }
+
+  /* DATA TABLE WRAPPER */
+  .table-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(2, 56, 82, 0.03);
+    display: flex;
+    flex-direction: column;
+  }
+  .table-header-meta {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--hairline);
+    background: #fafcfb;
+  }
+  .table-result-count {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--color-navy);
+  }
+
+  .btn-export-excel {
+    padding: 7px 15px;
+    background: var(--success);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s ease;
+  }
+  .btn-export-excel:hover { background: #136f34; }
+
+  .attendee-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+  }
+  .attendee-table th {
+    background: var(--bg-page);
+    color: var(--color-navy);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
+    border-bottom: 1.5px solid var(--card-border);
+    white-space: nowrap;
+  }
+  .attendee-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--hairline);
+    vertical-align: middle;
+  }
+  .attendee-table tr:last-child td { border-bottom: none; }
+  .attendee-table tr:hover td { background: #f8fbfa; }
+
+  /* BADGES & TAGS */
+  .ticket-code-tag {
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-navy);
+    background: #f1f5f9;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid #cbd5e1;
+    display: inline-block;
+  }
+  .user-meta-name {
+    font-weight: 700;
+    color: var(--color-navy);
+  }
+
+  .tier-tag {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+  .tier-tag.standard { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+  .tier-tag.vip { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+
+  /* STATUS BADGES */
+  .status-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 800;
+    padding: 3px 9px;
+    border-radius: 20px;
+    width: fit-content;
+    white-space: nowrap;
+  }
+  .status-badge-pill.checked {
+    background: var(--success-bg);
+    color: var(--success);
+    border: 1px solid #bcf0e2;
+  }
+  .status-badge-pill.pending {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+  }
+  .status-badge-pill.cancelled {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+  }
+
+  .status-pulse-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.25);
+  }
+  .status-pulse-dot.pending {
+    background: var(--color-orange);
+    box-shadow: 0 0 0 2px rgba(245, 139, 1, 0.25);
+  }
+
+  /* CHECKIN LOG CELL */
+  .checkin-log-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .checkin-log-time {
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-navy);
+  }
+  .checkin-log-kiosk {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: #f1f5f9;
+    padding: 1px 6px;
+    border-radius: 4px;
+    width: fit-content;
+    border: 1px solid #e2e8f0;
+  }
+  .checkin-log-empty {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* ACTION ICON BUTTONS */
+  .row-actions-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  .btn-icon-action {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 6px;
+    background: #fff;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .btn-icon-action:hover {
+    border-color: var(--color-teal);
+    color: var(--color-teal);
+    background: #f8fbfa;
+  }
+  .btn-icon-action.primary {
+    background: var(--color-navy);
+    color: #fff;
+    border-color: var(--color-navy);
+  }
+  .btn-icon-action.primary:hover {
+    background: var(--color-teal);
+    border-color: var(--color-teal);
+  }
+
+  /* PAGINATION TOOLBAR */
+  .pagination-bar {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fafcfb;
+    border-top: 1px solid var(--hairline);
+    font-size: 13px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .pagination-info {
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-page-nav {
+    padding: 6px 12px;
+    background: #fff;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+  }
+  .btn-page-nav:hover:not(:disabled) {
+    border-color: var(--color-teal);
+    color: var(--color-teal);
+  }
+  .btn-page-nav:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+  .page-jump-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-navy);
+    font-weight: 600;
+  }
+  .page-jump-input {
+    width: 48px;
+    height: 32px;
+    text-align: center;
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-navy);
+    outline: none;
+  }
+  .page-jump-input:focus {
+    border-color: var(--color-teal);
+  }
+
+  /* MODALS */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 56, 82, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .modal-backdrop.show { opacity: 1; visibility: visible; }
+  .modal-box {
+    background: #fff;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 12px;
+    padding: 24px 26px;
+    box-shadow: 0 20px 40px -10px rgba(2, 56, 82, 0.28);
+  }
+  .modal-title { font-size: 18px; font-weight: 800; color: var(--color-navy); margin-bottom: 6px; }
+  .modal-body { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 18px; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
+  .btn-modal-cancel { padding: 9px 16px; background: #fff; border: 1.5px solid var(--card-border); border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-modal-confirm { padding: 9px 18px; background: var(--color-teal); color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+  /* FACE PHOTO MODAL TINH GỌN (BỎ TRÍCH XUẤT VECTOR) */
+  .face-preview-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0 16px 0;
+  }
+  .face-preview-img {
+    width: 200px;
+    height: 200px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 8px 24px rgba(2, 56, 82, 0.16);
+    margin-bottom: 14px;
+  }
+  .modal-user-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--color-navy);
+    margin-bottom: 4px;
+  }
+
+  /* TOAST */
+  .toast-notification {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--color-navy);
+    color: #fff;
+    border-left: 4px solid var(--color-teal);
+    padding: 14px 20px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(2, 56, 82, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    z-index: 4000;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast-notification.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+  @media (max-width: 860px) {
+    .app-layout { flex-direction: column; }
+    .app-sidebar { width: 100%; height: auto; position: static; }
+    .main-top-header { padding: 14px 20px; }
+    .main-content-scroll { padding: 16px; }
+    .pagination-bar { flex-direction: column; align-items: stretch; text-align: center; }
+    .pagination-controls { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- 1. SIDEBAR -->
+  <aside class="app-sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-brand-header">
+        <a href="#" class="brand-logo">
+          EventPass<span class="role-tag">ORGANIZER</span><span class="accent-dot"></span>
+        </a>
+      </div>
+
+      <div class="sidebar-org-profile">
+        <img src="https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png" class="sidebar-org-logo" alt="Logo">
+        <div class="sidebar-org-meta">
+          <div class="sidebar-org-name">Đoàn Trường ĐH Sài Gòn</div>
+          <div class="sidebar-org-role">Ban Tổ Chức</div>
+        </div>
+      </div>
+
+      <div class="sidebar-nav-section">
+        <div class="sidebar-section-title">Quản Trị Sự Kiện</div>
+        <ul class="sidebar-nav-list">
+          <li class="sidebar-nav-item">
+            <a href="#" title="UC10">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+              <span>Tổng quan số liệu</span>
+            </a>
+          </li>
+          <li class="sidebar-nav-item">
+            <a href="#" title="UC11, UC12">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>Sự kiện của tôi</span>
+            </a>
+          </li>
+          <li class="sidebar-nav-item">
+            <a href="javascript:void(0)" class="active" title="UC13: Quản lý người tham dự & Xuất Excel">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>Danh sách tham dự</span>
+            </a>
+          </li>
+          <li class="sidebar-nav-item">
+            <a href="#" title="Kiosk điểm danh Face-API">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span>Kiosk điểm danh</span>
+              <span class="badge-live-tag">Webcam</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <a href="#" class="sidebar-bottom-link">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Hồ sơ & Đổi mật khẩu</span>
+      </a>
+      <a href="#" class="sidebar-bottom-link" style="color:#fca5a5;">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        <span>Đăng xuất</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- 2. MAIN CONTENT -->
+  <main class="app-main">
+    <header class="main-top-header">
+      <div class="header-left">
+        <h1 class="header-page-title">Quản Lý Người Tham Dự & Báo Cáo Đối Soát</h1>
+      </div>
+    </header>
+
+    <div class="main-content-scroll">
+
+      <!-- BỘ LỌC & TÌM KIẾM (ĐÃ CHỈNH CĂN GIỮA ICON SEARCH) -->
+      <div class="filter-card">
+        <div class="filter-row">
+          
+          <!-- 1. Chọn sự kiện -->
+          <div class="filter-group" style="min-width: 280px;">
+            <label class="filter-label">Chọn sự kiện tra cứu</label>
+            <select class="filter-select" id="filterEventSelect" onchange="handleFilterChange()">
+              <option value="all">Tất cả các sự kiện</option>
+              <option value="EVT-2026-SGU01" selected>Ngày Hội Công Nghệ SGU TechDay 2026</option>
+              <option value="EVT-2026-SGU02">Hội thảo Khoa học AI & DeepFace Vision</option>
+            </select>
+          </div>
+
+          <!-- 2. Tìm kiếm từ khóa tức thời (Icon căn chính giữa input) -->
+          <div class="filter-group search-box-wrap">
+            <label class="filter-label">Tìm kiếm người tham dự</label>
+            <div class="search-box-inner">
+              <svg class="icon search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <input type="text" class="search-input" id="filterKeywordInput" placeholder="Tìm theo Họ tên, Email, Số điện thoại hoặc Mã vé..." oninput="handleFilterChange()">
+            </div>
+          </div>
+
+          <!-- 3. Lọc theo Hạng vé -->
+          <div class="filter-group" style="width: 170px;">
+            <label class="filter-label">Hạng vé</label>
+            <select class="filter-select" id="filterTierSelect" onchange="handleFilterChange()">
+              <option value="all">Tất cả hạng vé</option>
+              <option value="VIP Pass">Vé VIP / Đại biểu</option>
+              <option value="Standard Pass">Vé Tiêu chuẩn</option>
+            </select>
+          </div>
+
+          <!-- 4. Lọc Trạng thái Check-in -->
+          <div class="filter-group" style="width: 180px;">
+            <label class="filter-label">Trạng thái điểm danh</label>
+            <select class="filter-select" id="filterCheckinSelect" onchange="handleFilterChange()">
+              <option value="all">Tất cả trạng thái</option>
+              <option value="checked">Đã điểm danh</option>
+              <option value="pending">Chưa vào cửa</option>
+              <option value="cancelled">Vé đã hủy</option>
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- BẢNG DỮ LIỆU & THANH PHÂN TRANG -->
+      <div class="table-card">
+        <div class="table-header-meta">
+          <div class="table-result-count" id="tableResultCount">Hiển thị 0 người tham dự</div>
+          <button type="button" class="btn-export-excel" onclick="exportToCSV()">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Xuất danh sách Excel</span>
+          </button>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="attendee-table">
+            <thead>
+              <tr>
+                <th style="width: 15%;">Mã vé</th>
+                <th style="width: 18%;">Người tham dự</th>
+                <th style="width: 22%;">Liên hệ (Email / SĐT)</th>
+                <th style="width: 12%;">Hạng vé</th>
+                <th style="width: 14%;">Trạng thái</th>
+                <th style="width: 17%;">Check-in</th>
+                <th style="text-align:right; width: 12%;">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="attendeeTableBody">
+              <!-- Render động 6 người 1 trang -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- THANH PHÂN TRANG (PAGINATION) 6 NGƯỜI / TRANG -->
+        <div class="pagination-bar" id="paginationBar">
+          <div class="pagination-info" id="paginationRangeInfo">Hiển thị 0 - 0 trong tổng số 0 người</div>
+          
+          <div class="pagination-controls">
+            <button type="button" class="btn-page-nav" id="btnPrevPage" onclick="goToPage(currentPage - 1)">
+              <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+              <span>Trước</span>
+            </button>
+
+            <div class="page-jump-box">
+              <span>Trang</span>
+              <input type="number" class="page-jump-input" id="pageJumpInput" min="1" value="1" onchange="handlePageInput(this.value)">
+              <span>/ <strong id="totalPagesLabel">1</strong></span>
+            </div>
+
+            <button type="button" class="btn-page-nav" id="btnNextPage" onclick="goToPage(currentPage + 1)">
+              <span>Sau</span>
+              <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: XEM ẢNH KHUÔN MẶT MẪU (ĐÃ TINH GỌN, BỎ TRÍCH XUẤT VECTOR) -->
+<div class="modal-backdrop" id="faceModal">
+  <div class="modal-box" style="text-align: center;">
+    <h3 class="modal-title">Ảnh Chân Dung Đăng Ký</h3>
+    <p class="modal-body" style="margin-bottom: 12px;">Ảnh khuôn mặt dùng để đối soát tự động khi bước qua cổng Kiosk.</p>
+
+    <div class="face-preview-box">
+      <img id="modalFaceImg" src="" alt="Face Portrait" class="face-preview-img">
+      <div class="modal-user-name" id="modalFaceName">-</div>
+      <div>
+        <span class="ticket-code-tag" id="modalFaceTicket">-</span>
+      </div>
+    </div>
+
+    <div class="modal-footer" style="justify-content: center;">
+      <button type="button" class="btn-modal-cancel" style="width: 100%;" onclick="closeModal('faceModal')">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CHECK-IN THỦ CÔNG -->
+<div class="modal-backdrop" id="manualCheckinModal">
+  <div class="modal-box">
+    <h3 class="modal-title">Xác Nhận Điểm Danh Thủ Công (Bằng Tay)</h3>
+    <p class="modal-body" id="manualCheckinDesc">
+      Bạn đang thực hiện check-in thủ công cho khách tham dự này. Thao tác này sẽ ghi nhận vào nhật ký hệ thống.
+    </p>
+    <div class="modal-footer">
+      <button type="button" class="btn-modal-cancel" onclick="closeModal('manualCheckinModal')">Hủy bỏ</button>
+      <button type="button" class="btn-modal-confirm" onclick="executeManualCheckin()">Xác nhận Điểm danh</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div id="toastNotification" class="toast-notification">
+  <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-mint); width:18px; height:18px;"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMessage">Thao tác thành công!</span>
+</div>
+
+<script>
+  // Dữ liệu mẫu (14 người để kiểm tra phân trang mượt mà)
+  const mockAttendees = [
+    {
+      id: 1,
+      ticketCode: "PASS-789-VIP-SGU",
+      eventId: "EVT-2026-SGU01",
+      name: "Hà Thái Sơn",
+      email: "son.ha.sgu@gmail.com",
+      phone: "0908123456",
+      tier: "VIP Pass",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400",
+      status: "checked",
+      checkinTime: "08:05:12",
+      checkinGate: "Cổng chính (Kiosk 1)"
+    },
+    {
+      id: 2,
+      ticketCode: "PASS-102-STD-SGU",
+      eventId: "EVT-2026-SGU01",
+      name: "Trần Thị Mai Anh",
+      email: "maianh.tran@sgu.edu.vn",
+      phone: "0912987654",
+      tier: "Standard Pass",
+      avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=400",
+      status: "checked",
+      checkinTime: "08:14:45",
+      checkinGate: "Cổng phụ (Kiosk 2)"
+    },
+    {
+      id: 3,
+      ticketCode: "PASS-305-STD-SGU",
+      eventId: "EVT-2026-SGU01",
+      name: "Nguyễn Quốc Bảo",
+      email: "bao.nguyen99@outlook.com",
+      phone: "0933556677",
+      tier: "Standard Pass",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
+      status: "pending",
+      checkinTime: null,
+      checkinGate: null
+    },
+    {
+      id: 4,
+      ticketCode: "PASS-412-VIP-SGU",
+      eventId: "EVT-2026-SGU01",
+      name: "Lê Hoàng Long",
+      email: "long.le.hoang@techcorp.vn",
+      phone: "0988443322",
+      tier: "VIP Pass",
+      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400",
+      status: "pending",
+      checkinTime: null,
+      checkinGate: null
+    },
+    {
+      id: 5,
+      ticketCode: "PASS-550-STD-SGU",
+      eventId: "EVT-2026-SGU01",
+      name: "Phạm Thúy Vy",
+      email: "thuyvy.pham@gmail.com",
+      phone: "0909667788",
+      tier: "Standard Pass",
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=400",
+      status: "cancelled",
+      checkinTime: null,
+      checkinGate: null
+    },
+    {
+      id: 6,
+      ticketCode: "PASS-771-VIP-SGU",
+      eventId: "EVT-2026-SGU01",
+      name: "Đặng Quang Minh",
+      email: "minh.dang@sgu.edu.vn",
+      phone: "0944112233",
+      tier: "VIP Pass",
+      avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&q=80&w=400",
+      status: "checked",
+      checkinTime: "08:30:02",
+      checkinGate: "Cổng chính (Kiosk 1)"
+    },
+    {
+      id: 7,
+      ticketCode: "PASS-812-STD-SGU",
+      eventId: "EVT-2026-SGU01",
+      name: "Vũ Phương Linh",
+      email: "linh.vu@sgu.edu.vn",
+      phone: "0966882211",
+      tier: "Standard Pass",
+      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400",
+      status: "checked",
+      checkinTime: "08:33:19",
+      checkinGate: "Cổng chính (Kiosk 1)"
+    },
+    {
+      id: 8,
+      ticketCode: "PASS-904-STD-SGU",
+      eventId: "EVT-2026-SGU01",
+      name: "Đỗ Thành Đạt",
+      email: "dat.do@gmail.com",
+      phone: "0977224466",
+      tier: "Standard Pass",
+      avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=400",
+      status: "pending",
+      checkinTime: null,
+      checkinGate: null
+    },
+    {
+      id: 9,
+      ticketCode: "PASS-925-VIP-SGU",
+      eventId: "EVT-2026-SGU01",
+      name: "Hoàng Gia Hưng",
+      email: "hung.hoang@company.com",
+      phone: "0911773344",
+      tier: "VIP Pass",
+      avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400",
+      status: "checked",
+      checkinTime: "08:42:50",
+      checkinGate: "Cổng phụ (Kiosk 2)"
+    },
+    {
+      id: 10,
+      ticketCode: "PASS-988-STD-SGU",
+      eventId: "EVT-2026-SGU01",
+      name: "Bùi Tuyết Nhi",
+      email: "nhi.bui@sgu.edu.vn",
+      phone: "0934119922",
+      tier: "Standard Pass",
+      avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=400",
+      status: "pending",
+      checkinTime: null,
+      checkinGate: null
+    },
+    {
+      id: 11,
+      ticketCode: "PASS-992-STD-SGU",
+      eventId: "EVT-2026-SGU01",
+      name: "Lâm Nhật Huy",
+      email: "huy.lam@yahoo.com",
+      phone: "0982334455",
+      tier: "Standard Pass",
+      avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=400",
+      status: "checked",
+      checkinTime: "08:50:11",
+      checkinGate: "Cổng chính (Kiosk 1)"
+    },
+    {
+      id: 12,
+      ticketCode: "PASS-995-VIP-SGU",
+      eventId: "EVT-2026-SGU01",
+      name: "Ngô Mỹ Duyên",
+      email: "duyen.ngo@tech.vn",
+      phone: "0902998877",
+      tier: "VIP Pass",
+      avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=400",
+      status: "pending",
+      checkinTime: null,
+      checkinGate: null
+    },
+    {
+      id: 13,
+      ticketCode: "PASS-997-STD-SGU",
+      eventId: "EVT-2026-SGU01",
+      name: "Võ Tuấn Kiệt",
+      email: "kiet.vo@gmail.com",
+      phone: "0945223311",
+      tier: "Standard Pass",
+      avatar: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&q=80&w=400",
+      status: "checked",
+      checkinTime: "09:02:18",
+      checkinGate: "Cổng chính (Kiosk 1)"
+    },
+    {
+      id: 14,
+      ticketCode: "PASS-999-STD-SGU",
+      eventId: "EVT-2026-SGU01",
+      name: "Đinh Thu Trang",
+      email: "trang.dinh@outlook.com",
+      phone: "0937882299",
+      tier: "Standard Pass",
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400",
+      status: "pending",
+      checkinTime: null,
+      checkinGate: null
+    }
+  ];
+
+  let filteredAttendees = [...mockAttendees];
+  let currentPage = 1;
+  const PAGE_SIZE = 6; // 6 người 1 trang
+  let targetAttendeeId = null;
+
+  const toastNotification = document.getElementById('toastNotification');
+  const toastMessage = document.getElementById('toastMessage');
+  let toastTimeout = null;
+
+  function showToast(msg) {
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastMessage.textContent = msg;
+    toastNotification.classList.add('show');
+    toastTimeout = setTimeout(() => {
+      toastNotification.classList.remove('show');
+    }, 3200);
+  }
+
+  function openModal(id) { document.getElementById(id).classList.add('show'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+  // Render bảng và xử lý phân trang
+  function renderTable() {
+    const tbody = document.getElementById('attendeeTableBody');
+    tbody.innerHTML = '';
+
+    const totalItems = filteredAttendees.length;
+    document.getElementById('tableResultCount').textContent = `Hiển thị ${totalItems} người tham dự`;
+
+    const totalPages = Math.ceil(totalItems / PAGE_SIZE) || 1;
+
+    // Đảm bảo trang hợp lệ
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    document.getElementById('totalPagesLabel').textContent = totalPages;
+    document.getElementById('pageJumpInput').value = currentPage;
+    document.getElementById('pageJumpInput').max = totalPages;
+
+    document.getElementById('btnPrevPage').disabled = (currentPage === 1);
+    document.getElementById('btnNextPage').disabled = (currentPage === totalPages || totalItems === 0);
+
+    if (totalItems === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center; padding: 40px; color:var(--text-muted);">
+            Không tìm thấy người tham dự nào khớp với bộ lọc tìm kiếm.
+          </td>
+        </tr>
+      `;
+      document.getElementById('paginationRangeInfo').textContent = 'Hiển thị 0 - 0 trong tổng số 0 người';
+      return;
+    }
+
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    const endIndex = Math.min(startIndex + PAGE_SIZE, totalItems);
+    document.getElementById('paginationRangeInfo').textContent = `Hiển thị ${startIndex + 1} - ${endIndex} trong tổng số ${totalItems} người`;
+
+    const pageData = filteredAttendees.slice(startIndex, endIndex);
+
+    pageData.forEach(item => {
+      const tr = document.createElement('tr');
+      const tierClass = item.tier.includes('VIP') ? 'vip' : 'standard';
+
+      // 1. Cột Trạng thái
+      let statusHtml = '';
+      if (item.status === 'checked') {
+        statusHtml = `
+          <span class="status-badge-pill checked">
+            <span class="status-pulse-dot"></span>
+            <span>Đã vào cổng</span>
+          </span>
+        `;
+      } else if (item.status === 'pending') {
+        statusHtml = `
+          <span class="status-badge-pill pending">
+            <span class="status-pulse-dot pending"></span>
+            <span>Chưa vào cổng</span>
+          </span>
+        `;
+      } else {
+        statusHtml = `
+          <span class="status-badge-pill cancelled">
+            <svg class="icon" viewBox="0 0 24 24" style="width:12px;height:12px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <span>Vé đã hủy</span>
+          </span>
+        `;
+      }
+
+      // 2. Cột Check-in (Bỏ chữ 'Hôm nay', chỉ hiện thời gian và địa điểm Kiosk)
+      let checkinLogHtml = '';
+      if (item.status === 'checked' && item.checkinTime) {
+        checkinLogHtml = `
+          <div class="checkin-log-cell">
+            <span class="checkin-log-time">${item.checkinTime}</span>
+            <span class="checkin-log-kiosk">${item.checkinGate}</span>
+          </div>
+        `;
+      } else {
+        checkinLogHtml = `<span class="checkin-log-empty">—</span>`;
+      }
+
+      // 3. Cột Thao tác: Dạng Icon tinh gọn kèm Tooltip
+      tr.innerHTML = `
+        <td><span class="ticket-code-tag">${item.ticketCode}</span></td>
+        <td>
+          <div class="user-meta-name">${item.name}</div>
+        </td>
+        <td>
+          <div style="font-size:12.5px; color:var(--color-navy); font-weight:600;">${item.email}</div>
+          <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">${item.phone}</div>
+        </td>
+        <td><span class="tier-tag ${tierClass}">${item.tier}</span></td>
+        <td>${statusHtml}</td>
+        <td>${checkinLogHtml}</td>
+        <td style="text-align:right;">
+          <div class="row-actions-group">
+            <button type="button" class="btn-icon-action" onclick="viewFaceModal(${item.id})" title="Xem ảnh khuôn mặt">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/></svg>
+            </button>
+            <button type="button" class="btn-icon-action" onclick="resendTicketPass('${item.email}', '${item.ticketCode}')" title="Gửi lại vé điện tử">
+              <svg class="icon" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+            ${item.status === 'pending' ? `
+              <button type="button" class="btn-icon-action primary" onclick="openManualCheckinModal(${item.id})" title="Điểm danh thủ công (Check-in)">
+                <svg class="icon" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              </button>
+            ` : ''}
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Điều hướng phân trang
+  function goToPage(page) {
+    const totalPages = Math.ceil(filteredAttendees.length / PAGE_SIZE) || 1;
+    if (page >= 1 && page <= totalPages) {
+      currentPage = page;
+      renderTable();
+    }
+  }
+
+  function handlePageInput(val) {
+    const pageNum = parseInt(val, 10);
+    const totalPages = Math.ceil(filteredAttendees.length / PAGE_SIZE) || 1;
+    if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= totalPages) {
+      currentPage = pageNum;
+    } else {
+      currentPage = 1;
+    }
+    renderTable();
+  }
+
+  // Bộ lọc dữ liệu đa chiều
+  function applyFilters() {
+    const eventVal = document.getElementById('filterEventSelect').value;
+    const keyword = document.getElementById('filterKeywordInput').value.trim().toLowerCase();
+    const tierVal = document.getElementById('filterTierSelect').value;
+    const checkinVal = document.getElementById('filterCheckinSelect').value;
+
+    filteredAttendees = mockAttendees.filter(item => {
+      const matchEvent = (eventVal === 'all' || item.eventId === eventVal);
+      const matchKeyword = (
+        item.name.toLowerCase().includes(keyword) ||
+        item.email.toLowerCase().includes(keyword) ||
+        item.phone.includes(keyword) ||
+        item.ticketCode.toLowerCase().includes(keyword)
+      );
+      const matchTier = (tierVal === 'all' || item.tier === tierVal);
+      const matchCheckin = (checkinVal === 'all' || item.status === checkinVal);
+
+      return matchEvent && matchKeyword && matchTier && matchCheckin;
+    });
+
+    renderTable();
+  }
+
+  function handleFilterChange() {
+    currentPage = 1;
+    applyFilters();
+  }
+
+  // 1. Xem ảnh khuôn mặt (Đã bỏ tình trạng trích xuất vector)
+  function viewFaceModal(id) {
+    const item = mockAttendees.find(x => x.id === id);
+    if (!item) return;
+
+    targetAttendeeId = id;
+    document.getElementById('modalFaceName').textContent = item.name;
+    document.getElementById('modalFaceTicket').textContent = item.ticketCode;
+    document.getElementById('modalFaceImg').src = item.avatar;
+
+    openModal('faceModal');
+  }
+
+  // 2. Gửi lại vé điện tử
+  function resendTicketPass(email, ticketCode) {
+    showToast(`Đang gửi lại Digital Pass [${ticketCode}] đến email ${email}...`);
+    setTimeout(() => {
+      showToast(`Đã gửi vé thành công tới ${email}!`);
+    }, 1000);
+  }
+
+  // 3. Check-in thủ công
+  function openManualCheckinModal(id) {
+    const item = mockAttendees.find(x => x.id === id);
+    if (!item) return;
+    targetAttendeeId = id;
+    document.getElementById('manualCheckinDesc').innerHTML = `
+      Xác nhận điểm danh thủ công cho người tham dự <strong>${item.name}</strong> (Mã vé: <code>${item.ticketCode}</code>)?
+      <br><small style="color:var(--text-muted); margin-top:4px; display:inline-block;">Hệ thống sẽ cập nhật trạng thái đã vào cổng ngay lập tức.</small>
+    `;
+    openModal('manualCheckinModal');
+  }
+
+  function executeManualCheckin() {
+    const item = mockAttendees.find(x => x.id === targetAttendeeId);
+    if (item) {
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+      item.status = 'checked';
+      item.checkinTime = timeStr;
+      item.checkinGate = "Thủ công (BTC)";
+      closeModal('manualCheckinModal');
+      applyFilters();
+      showToast(`Đã điểm danh thủ công thành công cho ${item.name}!`);
+    }
+  }
+
+  // 4. Xuất file Excel/CSV
+  function exportToCSV() {
+    const headers = ["Mã vé", "Họ và tên", "Email", "Số điện thoại", "Hạng vé", "Trạng thái", "Thời gian Check-in", "Cổng Kiosk"];
+    
+    const rows = filteredAttendees.map(item => [
+      `"${item.ticketCode}"`,
+      `"${item.name}"`,
+      `"${item.email}"`,
+      `"${item.phone}"`,
+      `"${item.tier}"`,
+      `"${item.status === 'checked' ? 'Đã điểm danh' : item.status === 'pending' ? 'Chưa vào cổng' : 'Bị hủy'}"`,
+      `"${item.checkinTime || '-'}"`,
+      `"${item.checkinGate || '-'}"`
+    ]);
+
+    let csvContent = "\uFEFF";
+    csvContent += headers.join(",") + "\r\n";
+    rows.forEach(rowArray => {
+      csvContent += rowArray.join(",") + "\r\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Danh_sach_tham_du_SGU_TechDay_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showToast("Đã xuất danh sách điểm danh ra file Excel/CSV thành công!");
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    applyFilters();
+  });
+</script>
+</body>
+</html>

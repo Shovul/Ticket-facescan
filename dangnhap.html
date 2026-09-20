@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass — Đăng nhập hệ thống</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&display=swap&subset=vietnamese" rel="stylesheet">
+<style>
+  :root {
+    --color-navy: #023852;
+    --color-teal: #079FA0;
+    --color-mint: #9FD8C5;
+    --color-yellow: #FAC005;
+    --color-orange: #F58B01;
+    --color-red: #DC2E2F;
+
+    --bg-page: #f2f7f5;
+    --card-border: #cfe5dc;
+    --text-primary: #023852;
+    --text-muted: #537583;
+    --hairline: #e3efea;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Toolbar giả lập kiểm thử kịch bản BA UC02 */
+  .sim-bar {
+    background: var(--color-navy);
+    color: #e2e8f0;
+    padding: 10px 24px;
+    font-size: 13px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 2px solid var(--color-teal);
+    z-index: 100;
+  }
+  .sim-title { font-weight: 700; color: var(--color-yellow); }
+  .sim-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sim-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 5px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .sim-btn:hover {
+    background: var(--color-teal);
+    color: #fff;
+    border-color: var(--color-yellow);
+  }
+
+  /* Top bar */
+  .top-bar {
+    background: #012233;
+    color: #e2eff5;
+    padding: 8px 48px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .top-bar strong { color: var(--color-yellow); font-weight: 600; }
+
+  /* Header */
+  .header {
+    background: #fff;
+    border-bottom: 1.5px solid var(--card-border);
+    padding: 16px 48px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .brand-name {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--color-navy);
+    letter-spacing: -0.5px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  .brand-name span.pass-tag {
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--color-teal);
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+  }
+  .brand-name .accent-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-orange);
+    border-radius: 50%;
+    margin-left: 6px;
+    box-shadow: 0 0 8px var(--color-orange);
+  }
+
+  /* Main wrapper */
+  .main-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 36px 20px;
+  }
+  .login-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 20px 45px -15px rgba(2, 56, 82, 0.16);
+    display: flex;
+    width: 980px;
+    max-width: 100%;
+    min-height: 580px;
+    overflow: hidden;
+  }
+
+  /* Cột trái */
+  .visual-column {
+    flex: 0 0 42%;
+    position: relative;
+    background: linear-gradient(155deg, var(--color-navy) 0%, #044b6e 100%);
+    color: #fff;
+    padding: 44px 38px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .badge-kicker {
+    display: inline-block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--color-navy);
+    background: var(--color-yellow);
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .hero-title {
+    font-size: 23px;
+    font-weight: 800;
+    line-height: 1.35;
+    color: #ffffff;
+  }
+  .hero-desc {
+    font-size: 13.5px;
+    color: #bad8e5;
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+
+  .perks-list { list-style: none; margin-top: 24px; }
+  .perks-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #e8f4f8;
+    padding: 12px 0;
+    border-top: 1px solid rgba(159, 216, 197, 0.2);
+  }
+  .perks-item:last-child { border-bottom: 1px solid rgba(159, 216, 197, 0.2); }
+  .perks-icon {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    color: var(--color-yellow);
+    margin-top: 2px;
+  }
+
+  .account-hints {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px dashed rgba(159, 216, 197, 0.4);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 20px;
+    font-size: 12px;
+    color: #d1e7f0;
+    line-height: 1.6;
+  }
+  .account-hints strong { color: var(--color-yellow); display: block; margin-bottom: 4px; }
+  .account-hints code {
+    background: rgba(2, 56, 82, 0.6);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 11.5px;
+  }
+
+  /* Cột phải */
+  .form-column {
+    flex: 1;
+    padding: 44px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .form-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--color-navy);
+    letter-spacing: -0.5px;
+  }
+  .form-subtitle {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    margin-bottom: 22px;
+  }
+
+  /* Banner cảnh báo lỗi */
+  .banner-alert {
+    display: none;
+    padding: 11px 14px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+  .banner-alert.show { display: block; }
+  .banner-alert.error {
+    background: #fde8e8;
+    color: var(--color-red);
+    border: 1px solid #f8b4b4;
+  }
+
+  /* Nút Google */
+  .btn-google {
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 11.5px 16px;
+    border: 1.5px solid var(--hairline);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--color-navy);
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .btn-google:hover {
+    background: var(--bg-page);
+    border-color: var(--color-teal);
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 18px 0;
+    color: var(--text-muted);
+    font-size: 11.5px;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .divider span { padding: 0 10px; }
+
+  /* Input fields */
+  .form-group { margin-bottom: 16px; position: relative; }
+  .form-label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--color-navy);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .form-label .req { color: var(--color-red); margin-left: 2px; }
+
+  .form-input {
+    width: 100%;
+    padding: 11px 13px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--color-navy);
+    background: #fbfdfc;
+    border: 1.5px solid var(--card-border);
+    border-radius: 7px;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  .form-input:focus {
+    border-color: var(--color-teal);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(7, 159, 160, 0.15);
+  }
+  .form-input.is-invalid {
+    border-color: var(--color-red);
+    background: #fff8f8;
+  }
+  .form-input::placeholder { color: #8faab5; font-size: 13px; }
+
+  .error-message {
+    display: none;
+    color: var(--color-red);
+    font-size: 11px;
+    margin-top: 4px;
+    font-weight: 600;
+  }
+  .form-group.has-error .error-message { display: block; }
+
+  .form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12.5px;
+    margin-top: 4px;
+    margin-bottom: 22px;
+  }
+  .remember-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+  }
+  .remember-box input[type="checkbox"] {
+    accent-color: var(--color-teal);
+    width: 15px;
+    height: 15px;
+  }
+  .forgot-link {
+    color: var(--color-teal);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .forgot-link:hover { text-decoration: underline; }
+
+  /* Nút bấm Submit */
+  .btn-submit {
+    width: 100%;
+    padding: 13px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
+  .btn-submit:hover { background: #058586; }
+  .btn-submit:active { transform: scale(0.99); }
+
+  .form-footer {
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  .form-link {
+    color: var(--color-teal);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .form-link:hover { text-decoration: underline; color: var(--color-navy); }
+
+  /* Toast notification */
+  .toast-notification {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--color-navy);
+    color: #fff;
+    border-left: 4px solid var(--color-teal);
+    padding: 14px 20px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(2, 56, 82, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .toast-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-teal);
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 860px) {
+    .login-card { flex-direction: column; width: 100%; min-height: 0; }
+    .visual-column { padding: 32px 24px; }
+    .form-column { padding: 32px 24px; }
+    .top-bar, .header { padding-left: 20px; padding-right: 20px; }
+    .toast-notification { left: 16px; right: 16px; bottom: 16px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SIMULATION TOOLBAR -->
+  <div class="sim-bar">
+    <div><span class="sim-title">EventPass Sandbox:</span> Thử nghiệm Đăng nhập hệ thống (UC02)</div>
+    <div class="sim-actions">
+      <button type="button" class="sim-btn" onclick="simFillCustomer()">Fill Khách Hàng</button>
+      <button type="button" class="sim-btn" onclick="simFillOrganizer()">Fill Ban Tổ Chức</button>
+      <button type="button" class="sim-btn" onclick="simTriggerEmpty()">Lỗi để trống (E1)</button>
+      <button type="button" class="sim-btn" onclick="simTriggerWrongPass()">Lỗi sai pass (E2)</button>
+      <button type="button" class="sim-btn" onclick="simTriggerLocked()">Tài khoản bị khóa (E3)</button>
+      <button type="button" class="sim-btn" onclick="simGoogleAuth()">Google Auth (A1)</button>
+      <button type="button" class="sim-btn" onclick="resetFormState()">Làm mới</button>
+    </div>
+  </div>
+
+  <div class="top-bar">
+    <span>Cổng phát hành vé điện tử và Điểm danh nhận diện khuôn mặt</span>
+    <span>Hệ thống sự kiện thông minh</span>
+  </div>
+
+  <header class="header">
+    <a href="#" class="brand-name">
+      EventPass<span class="pass-tag">TICKET</span><span class="accent-dot"></span>
+    </a>
+  </header>
+
+  <main class="main-wrapper">
+    <div class="login-card">
+
+      <!-- CỘT TRÁI: THÔNG TIN HỆ THỐNG -->
+      <div class="visual-column">
+        <div>
+          <span class="badge-kicker">Cổng đăng nhập tập trung</span>
+          <h1 class="hero-title">Chào mừng bạn trở lại với EventPass</h1>
+          <p class="hero-desc">Đăng nhập để tra cứu vé cá nhân, cập nhật dữ liệu sinh trắc học hoặc truy cập trung tâm quản trị và điều phối sự kiện.</p>
+        </div>
+
+        <div>
+          <ul class="perks-list">
+            <li class="perks-item">
+              <svg class="perks-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span>Quản lý vé điện tử chính chủ với mã QR động tức thời</span>
+            </li>
+            <li class="perks-item">
+              <svg class="perks-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span>Đồng bộ dữ liệu nhận diện khuôn mặt siêu tốc dưới 1 giây</span>
+            </li>
+            <li class="perks-item">
+              <svg class="perks-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              <span>Hỗ trợ lưu trữ vé trên Apple Wallet và Google Wallet</span>
+            </li>
+          </ul>
+
+          <div class="account-hints">
+            <strong>Tài khoản thử nghiệm (Mật khẩu: <code>123456</code>)</strong>
+            Khách hàng: <code>sonha</code> hoặc <code>thaison@example.com</code><br>
+            Ban tổ chức: <code>organizer_sgu</code> hoặc <code>admin</code><br>
+            Bị khóa: <code>locked_user</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- CỘT PHẢI: FORM ĐĂNG NHẬP CHUNG -->
+      <div class="form-column">
+        <h2 class="form-title">Đăng nhập</h2>
+        <p class="form-subtitle">Nhập tài khoản để truy cập hệ thống</p>
+
+        <!-- BANNER BÁO LỖI HỆ THỐNG -->
+        <div id="bannerAlert" class="banner-alert"></div>
+
+        <!-- GOOGLE LOGIN -->
+        <button type="button" class="btn-google" id="btnGoogleAuth">
+          <svg width="18" height="18" viewBox="0 0 18 18">
+            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+            <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.173 0 7.548 0 9s.347 2.827.957 4.039l3.007-2.332z"/>
+            <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+          </svg>
+          Đăng nhập nhanh bằng Google
+        </button>
+
+        <div class="divider">
+          <span>hoặc dùng tài khoản hệ thống</span>
+        </div>
+
+        <form id="loginForm" novalidate>
+          <div class="form-group" id="fg-identifier">
+            <label class="form-label" for="loginIdentifier">Email hoặc Tên đăng nhập <span class="req">*</span></label>
+            <input type="text" id="loginIdentifier" class="form-input" placeholder="name@domain.com hoặc username">
+            <div class="error-message" id="err-loginIdentifier">Vui lòng nhập email hoặc tên đăng nhập</div>
+          </div>
+
+          <div class="form-group" id="fg-password">
+            <label class="form-label" for="loginPassword">Mật khẩu <span class="req">*</span></label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="Nhập mật khẩu của bạn">
+            <div class="error-message" id="err-loginPassword">Mật khẩu không được để trống</div>
+          </div>
+
+          <div class="form-options">
+            <label class="remember-box">
+              <input type="checkbox" id="rememberMe"> Ghi nhớ đăng nhập
+            </label>
+            <a href="javascript:void(0)" class="forgot-link" id="linkForgotPassword">Quên mật khẩu?</a>
+          </div>
+
+          <button type="submit" class="btn-submit" id="btnLogin">Đăng nhập</button>
+        </form>
+
+        <p class="form-footer">
+          Chưa có tài khoản? <a href="javascript:void(0)" class="form-link" id="linkRegister">Đăng ký ngay</a>
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- TOAST NOTIFICATION GÓC DƯỚI BÊN TRÁI -->
+  <div id="toastSuccess" class="toast-notification">
+    <span class="toast-icon">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span id="toastMessage">Đăng nhập thành công!</span>
+  </div>
+
+  <script>
+    // Dữ liệu tài khoản dùng chung
+    const userDatabase = [
+      {
+        username: "sonha",
+        email: "thaison@example.com",
+        password: "123456",
+        role: "customer",
+        status: "Active",
+        name: "Hà Thái Sơn"
+      },
+      {
+        username: "organizer_sgu",
+        email: "doan@sgu.edu.vn",
+        password: "123456",
+        role: "organizer",
+        status: "Active",
+        name: "Đoàn Trường Đại học Sài Gòn"
+      },
+      {
+        username: "admin",
+        email: "admin@eventpass.vn",
+        password: "123456",
+        role: "admin",
+        status: "Active",
+        name: "Ban Quản Trị Hệ Thống"
+      },
+      {
+        username: "locked_user",
+        email: "locked@example.com",
+        password: "123456",
+        role: "customer",
+        status: "Locked",
+        name: "Người dùng bị khóa"
+      }
+    ];
+
+    const form = document.getElementById('loginForm');
+    const bannerAlert = document.getElementById('bannerAlert');
+    const btnLogin = document.getElementById('btnLogin');
+    const toastSuccess = document.getElementById('toastSuccess');
+    const toastMessage = document.getElementById('toastMessage');
+    let toastTimeout = null;
+
+    function showBannerError(message) {
+      bannerAlert.className = 'banner-alert show error';
+      bannerAlert.textContent = message;
+    }
+
+    function clearBanner() {
+      bannerAlert.className = 'banner-alert';
+      bannerAlert.textContent = '';
+    }
+
+    function showToast(msg) {
+      toastMessage.textContent = msg;
+      toastSuccess.classList.add('show');
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toastSuccess.classList.remove('show');
+      }, 4000);
+    }
+
+    function clearErrors() {
+      clearBanner();
+      document.querySelectorAll('.form-group').forEach(fg => fg.classList.remove('has-error'));
+      document.querySelectorAll('.form-input').forEach(inp => inp.classList.remove('is-invalid'));
+    }
+
+    function setError(fieldId, message) {
+      const fg = document.getElementById('fg-' + fieldId);
+      const input = document.getElementById(fieldId === 'identifier' ? 'loginIdentifier' : 'loginPassword');
+      const err = document.getElementById('err-' + (fieldId === 'identifier' ? 'loginIdentifier' : 'loginPassword'));
+      if (fg && err && input) {
+        fg.classList.add('has-error');
+        input.classList.add('is-invalid');
+        err.textContent = message;
+      }
+    }
+
+    // Xử lý nộp form đăng nhập
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      clearErrors();
+
+      const identifier = document.getElementById('loginIdentifier').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+
+      let hasEmpty = false;
+
+      // E1: Kiểm tra bỏ trống
+      if (!identifier) {
+        setError('identifier', 'Vui lòng nhập Email hoặc Tên đăng nhập.');
+        hasEmpty = true;
+      }
+      if (!password) {
+        setError('password', 'Vui lòng nhập Mật khẩu.');
+        hasEmpty = true;
+      }
+      if (hasEmpty) return;
+
+      // E2: Kiểm tra tài khoản & mật khẩu
+      const user = userDatabase.find(u => 
+        (u.username.toLowerCase() === identifier.toLowerCase() || u.email.toLowerCase() === identifier.toLowerCase())
+      );
+
+      if (!user || user.password !== password) {
+        showBannerError('Tên đăng nhập hoặc mật khẩu không chính xác.');
+        return;
+      }
+
+      // E3: Kiểm tra trạng thái tài khoản
+      if (user.status !== 'Active') {
+        showBannerError('Tài khoản của bạn hiện đang bị tạm khóa. Vui lòng liên hệ hỗ trợ sự kiện.');
+        return;
+      }
+
+      // Đăng nhập thành công -> Điều hướng tự động dựa trên vai trò
+      btnLogin.disabled = true;
+      btnLogin.innerText = 'Đang chuyển hướng...';
+      showToast(`Xin chào ${user.name}! Đang đăng nhập...`);
+
+      setTimeout(() => {
+        btnLogin.disabled = false;
+        btnLogin.innerText = 'Đăng nhập';
+        
+        if (user.role === 'customer') {
+          alert(`Đăng nhập thành công! [Khách hàng] Điều hướng về Cổng thông tin vé của ${user.name}.`);
+        } else if (user.role === 'organizer') {
+          alert(`Đăng nhập thành công! [Ban tổ chức] Điều hướng về Bảng điều khiển quản lý sự kiện của ${user.name}.`);
+        } else {
+          alert(`Đăng nhập thành công! [Quản trị viên] Điều hướng về Trung tâm kiểm soát toàn hệ thống.`);
+        }
+      }, 1200);
+    });
+
+    // Luồng A1: Google Auth
+    document.getElementById('btnGoogleAuth').addEventListener('click', function() {
+      clearErrors();
+      showToast("Đang xác thực tài khoản Google...");
+      setTimeout(() => {
+        alert("Đăng nhập Google hoàn tất! Hệ thống tự động nhận diện vai trò và điều hướng.");
+      }, 1000);
+    });
+
+    // Chuyển sang đăng ký
+    document.getElementById('linkRegister').addEventListener('click', function() {
+      alert("Chuyển hướng sang màn hình Đăng ký tài khoản (UC01).");
+    });
+    document.getElementById('linkForgotPassword').addEventListener('click', function() {
+      alert("Chuyển sang luồng Khôi phục mật khẩu qua Email.");
+    });
+
+    /* ============================================================
+       CÁC HÀM GIẢ LẬP TEST CASE THEO SPEC BA (UC02)
+       ============================================================ */
+    function resetFormState() {
+      clearErrors();
+      form.reset();
+      toastSuccess.classList.remove('show');
+    }
+
+    function simFillCustomer() {
+      clearErrors();
+      document.getElementById('loginIdentifier').value = "thaison@example.com";
+      document.getElementById('loginPassword').value = "123456";
+    }
+
+    function simFillOrganizer() {
+      clearErrors();
+      document.getElementById('loginIdentifier').value = "organizer_sgu";
+      document.getElementById('loginPassword').value = "123456";
+    }
+
+    function simTriggerEmpty() {
+      clearErrors();
+      document.getElementById('loginIdentifier').value = "";
+      document.getElementById('loginPassword').value = "";
+      document.getElementById('btnLogin').click();
+    }
+
+    function simTriggerWrongPass() {
+      clearErrors();
+      document.getElementById('loginIdentifier').value = "thaison@example.com";
+      document.getElementById('loginPassword').value = "SaiMatKhau999";
+      document.getElementById('btnLogin').click();
+    }
+
+    function simTriggerLocked() {
+      clearErrors();
+      document.getElementById('loginIdentifier').value = "locked_user";
+      document.getElementById('loginPassword').value = "123456";
+      document.getElementById('btnLogin').click();
+    }
+
+    function simGoogleAuth() {
+      document.getElementById('btnGoogleAuth').click();
+    }
+  </script>
+</body>
+</html>

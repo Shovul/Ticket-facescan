@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass Kiosk — Điểm danh Face ID Siêu tốc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-navy: #023852;
+    --color-navy-dark: #011420;
+    --color-teal: #079FA0;
+    --color-mint: #9FD8C5;
+    --color-yellow: #FAC005;
+    --color-orange: #F58B01;
+    --color-red: #DC2E2F;
+    --color-green: #10B981;
+    --border-color: #0b4564;
+    --text-light: #f8fafc;
+    --text-muted: #94a3b8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(circle at 30% 20%, #034b6e 0%, var(--color-navy-dark) 85%);
+    color: var(--text-light);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .icon {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* 1. TOP HEADER BAR */
+  .kiosk-header {
+    padding: 14px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(1, 20, 32, 0.85);
+    border-bottom: 1px solid var(--border-color);
+    z-index: 100;
+  }
+  .kiosk-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .kiosk-logo-img {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    background: #fff;
+    padding: 3px;
+  }
+  .kiosk-event-meta h1 {
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.2px;
+  }
+  .kiosk-event-meta p {
+    font-size: 12px;
+    color: var(--color-mint);
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .kiosk-station-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .live-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+  }
+  .live-indicator.ready {
+    background: #064e3b;
+    border: 1px solid #059669;
+    color: #6ee7b7;
+  }
+  .live-indicator.not-ready {
+    background: #7f1d1d;
+    border: 1px solid var(--color-red);
+    color: #fca5a5;
+  }
+
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .live-indicator.ready .live-dot { background: var(--color-green); }
+  .live-indicator.not-ready .live-dot { background: var(--color-red); }
+
+  .station-name-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    background: #032a3f;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    color: #e2e8f0;
+  }
+
+  .btn-kiosk-action {
+    background: #032a3f;
+    border: 1px solid var(--border-color);
+    color: #cbd5e1;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .btn-kiosk-action:hover {
+    background: var(--color-teal);
+    color: #fff;
+  }
+
+  /* 2. SPLIT-SCREEN MAIN VIEWPORT */
+  .kiosk-split-main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    padding: 24px 44px;
+    align-items: center;
+    max-width: 1500px;
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* CỘT TRÁI: CAMERA VIEWPORT */
+  .camera-side-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .viewport-container {
+    position: relative;
+    width: 380px;
+    height: 380px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .camera-frame-box {
+    position: relative;
+    width: 340px;
+    height: 340px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #022030;
+    border: 3px solid var(--color-teal);
+  }
+  .camera-frame-box.success { border-color: var(--color-green); }
+  .camera-frame-box.error { border-color: var(--color-red); }
+  .camera-frame-box.disabled { border-color: #475569; }
+
+  #webcamVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+  }
+
+  .camera-offline-overlay {
+    position: absolute;
+    inset: 0;
+    background: #021a29;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #fca5a5;
+    z-index: 9;
+    text-align: center;
+    padding: 20px;
+  }
+  .camera-offline-overlay.show { display: flex; }
+
+  .radar-scanner-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: #38bdf8;
+    animation: scanAnimation 2s infinite ease-in-out;
+    pointer-events: none;
+    z-index: 5;
+  }
+  @keyframes scanAnimation {
+    0% { top: 4%; opacity: 0; }
+    15% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { top: 96%; opacity: 0; }
+  }
+
+  .scanner-corner {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border-color: var(--color-mint);
+    border-style: solid;
+    pointer-events: none;
+    z-index: 8;
+  }
+  .corner-tl { top: 10px; left: 10px; border-width: 3px 0 0 3px; border-top-left-radius: 8px; }
+  .corner-tr { top: 10px; right: 10px; border-width: 3px 3px 0 0; border-top-right-radius: 8px; }
+  .corner-bl { bottom: 10px; left: 10px; border-width: 0 0 3px 3px; border-bottom-left-radius: 8px; }
+  .corner-br { bottom: 10px; right: 10px; border-width: 0 3px 3px 0; border-bottom-right-radius: 8px; }
+
+  .kiosk-instruction-box {
+    margin-top: 16px;
+    text-align: center;
+    max-width: 420px;
+  }
+  .instruction-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .instruction-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* CỘT PHẢI: HIỂN THỊ KẾT QUẢ CHÀO MỪNG */
+  .result-side-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .standby-state-card {
+    background: #022538;
+    border: 1px dashed var(--border-color);
+    border-radius: 14px;
+    padding: 44px 30px;
+    text-align: center;
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .standby-radar-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #04364f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-mint);
+    border: 1px solid var(--color-teal);
+  }
+
+  .welcome-side-card {
+    background: #022b3e;
+    border: 2px solid var(--color-green);
+    border-radius: 14px;
+    padding: 26px 30px;
+    width: 100%;
+    max-width: 440px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .welcome-side-card.show { display: flex; }
+  .welcome-side-card.error { border-color: var(--color-red); }
+
+  .welcome-avatar-wrap {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin-bottom: 12px;
+  }
+  .welcome-avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-green);
+  }
+  .welcome-badge-icon {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--color-green);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--color-navy);
+  }
+
+  .welcome-status-title {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-green);
+    margin-bottom: 4px;
+  }
+  .welcome-guest-name {
+    font-size: 24px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+
+  .welcome-meta-pill-group {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .meta-pill {
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: #053b54;
+    color: #f1f5f9;
+    border: 1px solid var(--border-color);
+  }
+  .meta-pill.tier-vip {
+    color: var(--color-yellow);
+    border-color: #854d0e;
+  }
+  .meta-pill.tier-std {
+    color: var(--color-mint);
+    border-color: #0d9488;
+  }
+
+  .welcome-guide-msg {
+    font-size: 13px;
+    color: #e2e8f0;
+    background: #031d2b;
+    padding: 10px 14px;
+    border-radius: 6px;
+    width: 100%;
+    border-left: 3px solid var(--color-green);
+  }
+
+  .welcome-timer-bar {
+    width: 100%;
+    height: 3px;
+    background: #0b4564;
+    border-radius: 2px;
+    margin-top: 16px;
+    overflow: hidden;
+  }
+  .welcome-timer-fill {
+    height: 100%;
+    width: 100%;
+    background: var(--color-green);
+    animation: shrinkTimer 2.5s linear forwards;
+  }
+  @keyframes shrinkTimer {
+    from { width: 100%; }
+    to { width: 0%; }
+  }
+
+  /* 3. FOOTER STATUS BAR */
+  .kiosk-footer {
+    padding: 12px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #011624;
+    border-top: 1px solid var(--border-color);
+    font-size: 12px;
+    z-index: 100;
+  }
+  .footer-tech-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--text-muted);
+  }
+  .footer-tech-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .footer-clock {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* 4. DEMO BAR PHỤC VỤ BẢO VỆ ĐỒ ÁN */
+  .sim-demo-bar {
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #022538;
+    border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 1000;
+  }
+  .sim-demo-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-yellow);
+    text-transform: uppercase;
+    margin-right: 2px;
+  }
+  .sim-btn-kiosk {
+    background: #043852;
+    color: #fff;
+    border: 1px solid var(--border-color);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .sim-btn-kiosk:hover {
+    background: var(--color-teal);
+  }
+
+  /* 5. GIAO DIỆN TINH GIẢN CSS: KHỞI ĐỘNG LÀN VÉ & THOÁT KIOSK */
+  .kiosk-lock-screen {
+    position: fixed;
+    inset: 0;
+    background: #01131e;
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .auth-card-simple {
+    background: #022233;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 30px 24px;
+    width: 100%;
+    max-width: 360px;
+    text-align: center;
+  }
+
+  .auth-card-simple.exit {
+    border-color: #5c1818;
+  }
+
+  .auth-icon-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    background: #04364f;
+    border: 1px solid var(--color-teal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px auto;
+    color: var(--color-mint);
+  }
+  .auth-icon-badge.exit {
+    background: #451313;
+    border-color: var(--color-red);
+    color: #fca5a5;
+  }
+
+  .auth-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .auth-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  .auth-form-wrap {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .auth-input-field {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    background: #011522;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    outline: none;
+    text-align: center;
+  }
+  .auth-input-field:focus {
+    border-color: var(--color-teal);
+  }
+  .auth-input-field.error {
+    border-color: var(--color-red) !important;
+  }
+
+  .btn-auth-action {
+    height: 42px;
+    width: 100%;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn-auth-action:hover {
+    background: #058586;
+  }
+  .btn-auth-action.danger {
+    background: var(--color-red);
+  }
+  .btn-auth-action.danger:hover {
+    background: #b91c1c;
+  }
+
+  .btn-auth-cancel {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    margin-top: 6px;
+    text-decoration: underline;
+  }
+  .btn-auth-cancel:hover { color: #fff; }
+
+  /* MODAL THOÁT TRẠM */
+  .exit-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(1, 19, 30, 0.9);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    padding: 20px;
+  }
+  .exit-modal-backdrop.show { opacity: 1; visibility: visible; }
+</style>
+</head>
+<body>
+
+  <!-- 1. MÀN HÌNH KHÓA BAN ĐẦU: KHỞI ĐỘNG LÀN VÉ -->
+  <div class="kiosk-lock-screen" id="lockScreen">
+    <div class="auth-card-simple">
+      <div class="auth-icon-badge">
+        <svg class="icon" style="width:24px; height:24px;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h2 class="auth-title">Khởi Động Làn Soát Vé</h2>
+      <p class="auth-desc">Nhập mã xác thực để bật camera và bắt đầu điểm danh.</p>
+
+      <form onsubmit="handleUnlockKiosk(event)" class="auth-form-wrap">
+        <input type="password" id="lockCodeInput" class="auth-input-field" placeholder="Mã mở trạm..." autofocus required>
+        <button type="submit" class="btn-auth-action">
+          <span>Kích Hoạt Làn Kiểm Soát</span>
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </form>
+      <div style="font-size:11.5px; color:var(--text-muted); margin-top:12px;">Mã mẫu: <code>2026</code> hoặc <code>SGU2026</code></div>
+    </div>
+  </div>
+
+  <!-- 2. HEADER KIOSK -->
+  <header class="kiosk-header">
+    <div class="kiosk-brand">
+      <img src="https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png" class="kiosk-logo-img" alt="Logo SGU">
+      <div class="kiosk-event-meta">
+        <h1>Ngày Hội Công Nghệ SGU TechDay 2026</h1>
+        <p>
+          <svg class="icon" style="width:13px;height:13px;" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span>Hội trường A — Làn vào cổng tự động Face ID</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="kiosk-station-badge">
+      <div class="live-indicator ready" id="cameraStatusIndicator" onclick="toggleCameraState()" title="Bấm để bật/tắt camera">
+        <span class="live-dot"></span>
+        <span id="cameraStatusText">CAMERA SẴN SÀNG</span>
+      </div>
+
+      <div class="station-name-tag">TRẠM 1 — CỔNG CHÍNH</div>
+      <button type="button" class="btn-kiosk-action" onclick="toggleFullScreen()" title="Toàn màn hình">
+        <svg class="icon" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+      </button>
+      <button type="button" class="btn-kiosk-action" onclick="openExitModal()" title="Thoát Kiosk (Yêu cầu mã)">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- 3. MAIN CENTER: CHIA ĐÔI MÀN HÌNH (SPLIT-SCREEN) -->
+  <main class="kiosk-split-main">
+    
+    <!-- CỘT TRÁI: KHUNG QUÉT CAMERA LIÊN TỤC -->
+    <div class="camera-side-panel">
+      <div class="viewport-container">
+        <div class="scanner-corner corner-tl"></div>
+        <div class="scanner-corner corner-tr"></div>
+        <div class="scanner-corner corner-bl"></div>
+        <div class="scanner-corner corner-br"></div>
+
+        <div class="camera-frame-box" id="cameraBox">
+          <video id="webcamVideo" autoplay playsinline muted></video>
+          <div class="radar-scanner-line" id="radarLine"></div>
+
+          <!-- Màn che khi Camera Chưa sẵn sàng -->
+          <div class="camera-offline-overlay" id="cameraOfflineOverlay">
+            <svg class="icon" style="width:36px;height:36px;color:var(--color-red);" viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"/><path d="M21 21H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3m3-3h6l2 3h4a2 2 0 0 1 2 2v9.34m-7.72-2.06a4 4 0 1 1-5.56-5.56"/></svg>
+            <div>
+              <strong style="font-size:14px; color:#fff; display:block;">CAMERA CHƯA SẴN SÀNG</strong>
+              <span style="font-size:12px; color:var(--text-muted); margin-top:4px; display:block;">Thiết bị đang tạm dừng hoặc mất kết nối</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kiosk-instruction-box">
+        <div class="instruction-title" id="instructionTitle">Vui lòng nhìn thẳng vào camera</div>
+        <div class="instruction-subtitle" id="instructionSubtitle">
+          Camera tự động quét khuôn mặt và mở cổng trong vòng dưới 1 giây.
+        </div>
+      </div>
+    </div>
+
+    <!-- CỘT PHẢI: HIỂN THỊ THẺ KẾT QUẢ CHÀO MỪNG MỘT BÊN -->
+    <div class="result-side-panel">
+      
+      <!-- 1. Trạng thái chờ quét (Standby) -->
+      <div class="standby-state-card" id="standbyCard">
+        <div class="standby-radar-icon">
+          <svg class="icon" style="width:28px; height:28px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 6a6 6 0 0 1 6 6"/><path d="M12 10a2 2 0 0 1 2 2"/></svg>
+        </div>
+        <div>
+          <h3 style="font-size: 16px; font-weight: 700; color: #fff;">Đang chờ người tham dự</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Bước tới vạch quét và nhìn thẳng vào ống kính để điểm danh</p>
+        </div>
+      </div>
+
+      <!-- 2. Thẻ Chào Mừng Khi Quét Thành Công (Hiển thị 1 bên tách biệt) -->
+      <div class="welcome-side-card" id="welcomeCard">
+        <div class="welcome-avatar-wrap">
+          <img id="guestAvatar" src="" alt="Guest" class="welcome-avatar-img">
+          <div class="welcome-badge-icon" id="welcomeBadgeIcon">
+            <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+
+        <div class="welcome-status-title" id="welcomeStatusTitle">CHECK-IN THÀNH CÔNG (< 0.6s)</div>
+        <h2 class="welcome-guest-name" id="guestName">Hà Thái Sơn</h2>
+
+        <div class="welcome-meta-pill-group">
+          <span class="meta-pill tier-vip" id="guestTier">VIP PASS</span>
+          <span class="meta-pill" id="guestTicket">PASS-789-VIP-SGU</span>
+          <span class="meta-pill" id="guestSeat">Khu vực: Hàng A - Ghế 08</span>
+        </div>
+
+        <div class="welcome-guide-msg" id="welcomeGuideMsg">
+          Mời bạn bước qua cổng và di chuyển vào sảnh chính hội trường.
+        </div>
+
+        <div class="welcome-timer-bar">
+          <div class="welcome-timer-fill" id="timerFill"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- 4. FOOTER STATUS BAR -->
+  <footer class="kiosk-footer">
+    <div class="footer-tech-meta">
+      <div class="footer-tech-tag">
+        <svg class="icon" style="color:var(--color-teal);" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+        <span>Engine: <strong>DeepFace / face-api.js (Client GPU)</strong></span>
+      </div>
+      <div class="footer-tech-tag">
+        <svg class="icon" style="color:var(--color-green);" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Socket.io Realtime: <strong>Đã kết nối</strong></span>
+      </div>
+      <div class="footer-tech-tag">
+        <span>Độ trễ: <strong>~240ms</strong></span>
+      </div>
+    </div>
+
+    <div class="footer-clock" id="liveClock">08:30:15</div>
+  </footer>
+
+  <!-- 5. TOOLBAR MÔ PHỎNG PHỤC VỤ TEST ĐỒ ÁN -->
+  <div class="sim-demo-bar">
+    <span class="sim-demo-label">Demo Test:</span>
+    <button type="button" class="sim-btn-kiosk" onclick="simRecognizeSuccess('vip')">Khách VIP vào</button>
+    <button type="button" class="sim-btn-kiosk" onclick="simRecognizeSuccess('std')">Khách Tiêu chuẩn</button>
+    <button type="button" class="sim-btn-kiosk" onclick="simRecognizeAlreadyChecked()">Quét lại (Đã dùng)</button>
+    <button type="button" class="sim-btn-kiosk" onclick="simRecognizeUnknown()">Chưa đăng ký</button>
+    <button type="button" class="sim-btn-kiosk" style="border-color:var(--color-orange); color:var(--color-yellow);" onclick="toggleCameraState()">Bật/Tắt Camera</button>
+  </div>
+
+  <!-- 6. MODAL BẢO MẬT THOÁT KIOSK: XÁC THỰC THOÁT TRẠM -->
+  <div class="exit-modal-backdrop" id="exitModal">
+    <div class="auth-card-simple exit">
+      <div class="auth-icon-badge exit">
+        <svg class="icon" style="width:24px; height:24px;" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </div>
+      <h3 class="auth-title">Xác Thực Thoát Kiosk</h3>
+      <p class="auth-desc">Nhập mã xác thực để đóng phiên làm việc an toàn.</p>
+
+      <form onsubmit="handleExitKiosk(event)" class="auth-form-wrap">
+        <input type="password" id="exitCodeInput" class="auth-input-field" placeholder="Mã xác nhận..." required>
+        <button type="submit" class="btn-auth-action danger">
+          <span>Xác Nhận Đóng Kiosk</span>
+        </button>
+      </form>
+      <button type="button" class="btn-auth-cancel" onclick="closeExitModal()">Hủy, quay lại tiếp tục quét</button>
+    </div>
+  </div>
+
+  <script>
+    // 1. Đồng hồ thời gian thực
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('liveClock').textContent = `${h}:${m}:${s}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 2. Quản lý trạng thái Webcam
+    let webcamStream = null;
+    let isCameraReady = false;
+
+    function setCameraStatus(ready) {
+      isCameraReady = ready;
+      const indicator = document.getElementById('cameraStatusIndicator');
+      const text = document.getElementById('cameraStatusText');
+      const overlay = document.getElementById('cameraOfflineOverlay');
+      const box = document.getElementById('cameraBox');
+
+      if (ready) {
+        indicator.className = "live-indicator ready";
+        text.textContent = "CAMERA SẴN SÀNG";
+        overlay.classList.remove('show');
+        box.classList.remove('disabled');
+      } else {
+        indicator.className = "live-indicator not-ready";
+        text.textContent = "CAMERA CHƯA SẴN SÀNG";
+        overlay.classList.add('show');
+        box.classList.add('disabled');
+      }
+    }
+
+    function toggleCameraState() {
+      if (isCameraReady) {
+        stopWebcam();
+      } else {
+        startWebcam();
+      }
+    }
+
+    async function startWebcam() {
+      const video = document.getElementById('webcamVideo');
+      try {
+        webcamStream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 720, height: 720, facingMode: "user" },
+          audio: false
+        });
+        video.srcObject = webcamStream;
+        setCameraStatus(true);
+      } catch (err) {
+        setCameraStatus(false);
+      }
+    }
+
+    function stopWebcam() {
+      if (webcamStream) {
+        webcamStream.getTracks().forEach(track => track.stop());
+        webcamStream = null;
+      }
+      setCameraStatus(false);
+    }
+
+    // 3. Bộ phát âm thanh Beep qua Web Audio API
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(type = 'success') {
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'success') {
+          osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.15);
+        } else {
+          osc.frequency.setValueAtTime(280, audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.25);
+        }
+      } catch (e) { }
+    }
+
+    // 4. Xử lý mở khóa & thoát Kiosk
+    function handleUnlockKiosk(e) {
+      e.preventDefault();
+      const input = document.getElementById('lockCodeInput');
+      const code = input.value.trim();
+      
+      if (code === '2026' || code === '1234' || code.toUpperCase() === 'SGU2026' || code.startsWith('stk_')) {
+        document.getElementById('lockScreen').style.display = 'none';
+        playBeep('success');
+        startWebcam();
+      } else {
+        input.classList.add('error');
+        alert('Mã không đúng! (Mã mẫu: 2026)');
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    function openExitModal() {
+      const input = document.getElementById('exitCodeInput');
+      input.value = '';
+      input.classList.remove('error');
+      document.getElementById('exitModal').classList.add('show');
+      setTimeout(() => input.focus(), 150);
+    }
+
+    function closeExitModal() {
+      document.getElementById('exitModal').classList.remove('show');
+    }
+
+    function handleExitKiosk(e) {
+      e.preventDefault();
+      const input = document.getElementById('exitCodeInput');
+      const code = input.value.trim();
+
+      if (code === '2026' || code === '1234' || code.toUpperCase() === 'SGU2026' || code.startsWith('stk_')) {
+        stopWebcam();
+        window.history.back();
+      } else {
+        input.classList.add('error');
+        alert('Mã không đúng!');
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    // 5. Logic hiển thị Thẻ chào mừng một bên (Split Screen)
+    let resetTimer = null;
+    const welcomeCard = document.getElementById('welcomeCard');
+    const standbyCard = document.getElementById('standbyCard');
+    const cameraBox = document.getElementById('cameraBox');
+
+    function showWelcomeCard(data, isSuccess = true) {
+      if (!isCameraReady && isSuccess) {
+        alert("Camera hiện đang ở trạng thái CHƯA SẴN SÀNG! Vui lòng bật lại camera để đối soát.");
+        return;
+      }
+
+      if (resetTimer) clearTimeout(resetTimer);
+
+      document.getElementById('guestAvatar').src = data.avatar;
+      document.getElementById('guestName').textContent = data.name;
+      document.getElementById('guestTicket').textContent = data.ticket;
+      document.getElementById('guestSeat').textContent = data.seat;
+      document.getElementById('guestTier').textContent = data.tier;
+      document.getElementById('guestTier').className = `meta-pill ${data.tierClass}`;
+
+      const statusTitle = document.getElementById('welcomeStatusTitle');
+      const badgeIcon = document.getElementById('welcomeBadgeIcon');
+      const msgEl = document.getElementById('welcomeGuideMsg');
+
+      standbyCard.style.display = 'none';
+
+      if (isSuccess) {
+        welcomeCard.className = "welcome-side-card show";
+        cameraBox.className = "camera-frame-box success";
+        statusTitle.textContent = "CHECK-IN THÀNH CÔNG (< 0.6s)";
+        statusTitle.style.color = "var(--color-green)";
+        badgeIcon.innerHTML = `<svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+        badgeIcon.style.background = "var(--color-green)";
+        msgEl.style.borderLeftColor = "var(--color-green)";
+        msgEl.textContent = data.msg;
+        playBeep('success');
+      } else {
+        welcomeCard.className = "welcome-side-card show error";
+        cameraBox.className = "camera-frame-box error";
+        statusTitle.textContent = data.errorTitle || "KHÔNG HỢP LỆ";
+        statusTitle.style.color = "var(--color-red)";
+        badgeIcon.innerHTML = `<svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+        badgeIcon.style.background = "var(--color-red)";
+        msgEl.style.borderLeftColor = "var(--color-red)";
+        msgEl.textContent = data.msg;
+        playBeep('error');
+      }
+
+      resetTimer = setTimeout(() => {
+        welcomeCard.classList.remove('show');
+        standbyCard.style.display = 'flex';
+        cameraBox.className = isCameraReady ? "camera-frame-box" : "camera-frame-box disabled";
+      }, 2600);
+    }
+
+    // Các kịch bản Demo mô phỏng
+    function simRecognizeSuccess(type) {
+      if (type === 'vip') {
+        showWelcomeCard({
+          name: "Hà Thái Sơn",
+          tier: "VIP PASS",
+          tierClass: "tier-vip",
+          ticket: "PASS-789-VIP-SGU",
+          seat: "Khu vực: Hàng A - Ghế 08 (Đại biểu)",
+          avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400",
+          msg: "Chào mừng Đại biểu! Mời bạn vào bàn Teabreak sảnh VIP."
+        }, true);
+      } else {
+        showWelcomeCard({
+          name: "Trần Thị Mai Anh",
+          tier: "TIÊU CHUẨN",
+          tierClass: "tier-std",
+          ticket: "PASS-102-STD-SGU",
+          seat: "Khu vực: Khán đài Tầng 1 - Cửa 2",
+          avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=400",
+          msg: "Check-in thành công! Chúc bạn có trải nghiệm tuyệt vời tại TechDay 2026."
+        }, true);
+      }
+    }
+
+    function simRecognizeAlreadyChecked() {
+      showWelcomeCard({
+        name: "Nguyễn Quốc Bảo",
+        tier: "VÉ ĐÃ SỬ DỤNG",
+        tierClass: "tier-std",
+        ticket: "PASS-305-STD-SGU",
+        seat: "Đã vào lúc: 08:14:20",
+        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
+        errorTitle: "CẢNH BÁO: VÉ ĐÃ ĐIỂM DANH",
+        msg: "Mã vé này đã được check-in trước đó. Vui lòng liên hệ quầy hỗ trợ BTC."
+      }, false);
+    }
+
+    function simRecognizeUnknown() {
+      showWelcomeCard({
+        name: "Người dùng chưa đăng ký",
+        tier: "KHÔNG TÌM THẤY VÉ",
+        tierClass: "tier-std",
+        ticket: "UNKNOWN-PASS",
+        seat: "Chưa nạp Face ID",
+        avatar: "https://ui-avatars.com/api/?name=Unknown&background=dc2626&color=fff",
+        errorTitle: "KHÔNG NHẬN DIỆN ĐƯỢC",
+        msg: "Không tìm thấy thông tin khuôn mặt trong cơ sở dữ liệu vé sự kiện."
+      }, false);
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+  </script>
+</body>
+</html>

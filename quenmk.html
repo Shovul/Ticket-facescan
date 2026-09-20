@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass — Khôi phục mật khẩu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&display=swap&subset=vietnamese" rel="stylesheet">
+<style>
+  :root {
+    --color-navy: #023852;
+    --color-teal: #079FA0;
+    --color-mint: #9FD8C5;
+    --color-yellow: #FAC005;
+    --color-orange: #F58B01;
+    --color-red: #DC2E2F;
+
+    --bg-page: #f2f7f5;
+    --card-border: #cfe5dc;
+    --text-primary: #023852;
+    --text-muted: #537583;
+    --hairline: #e3efea;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Toolbar giả lập kiểm thử kịch bản BA */
+  .sim-bar {
+    background: var(--color-navy);
+    color: #e2e8f0;
+    padding: 10px 24px;
+    font-size: 13px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 2px solid var(--color-teal);
+    z-index: 100;
+  }
+  .sim-title { font-weight: 700; color: var(--color-yellow); }
+  .sim-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sim-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 5px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .sim-btn:hover {
+    background: var(--color-teal);
+    color: #fff;
+    border-color: var(--color-yellow);
+  }
+
+  /* Top bar */
+  .top-bar {
+    background: #012233;
+    color: #e2eff5;
+    padding: 8px 48px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .top-bar strong { color: var(--color-yellow); font-weight: 600; }
+
+  /* Header */
+  .header {
+    background: #fff;
+    border-bottom: 1.5px solid var(--card-border);
+    padding: 16px 48px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .brand-name {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--color-navy);
+    letter-spacing: -0.5px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  .brand-name span.pass-tag {
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--color-teal);
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+  }
+  .brand-name .accent-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-orange);
+    border-radius: 50%;
+    margin-left: 6px;
+    box-shadow: 0 0 8px var(--color-orange);
+  }
+
+  /* Layout chính */
+  .main-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 36px 20px;
+  }
+  .recover-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 20px 45px -15px rgba(2, 56, 82, 0.16);
+    display: flex;
+    width: 980px;
+    max-width: 100%;
+    min-height: 570px;
+    overflow: hidden;
+  }
+
+  /* Cột trái */
+  .visual-column {
+    flex: 0 0 42%;
+    position: relative;
+    background: linear-gradient(155deg, var(--color-navy) 0%, #044b6e 100%);
+    color: #fff;
+    padding: 44px 38px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .badge-kicker {
+    display: inline-block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--color-navy);
+    background: var(--color-yellow);
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .hero-title {
+    font-size: 23px;
+    font-weight: 800;
+    line-height: 1.35;
+    color: #ffffff;
+  }
+  .hero-desc {
+    font-size: 13.5px;
+    color: #bad8e5;
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+
+  .security-rules {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px dashed rgba(159, 216, 197, 0.4);
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 24px;
+    font-size: 12.5px;
+    color: #d1e7f0;
+    line-height: 1.65;
+  }
+  .security-rules strong {
+    color: var(--color-yellow);
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .security-rules ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  .security-rules li {
+    position: relative;
+    padding-left: 16px;
+    margin-bottom: 6px;
+  }
+  .security-rules li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--color-teal);
+    font-weight: bold;
+  }
+
+  /* Cột phải */
+  .form-column {
+    flex: 1;
+    padding: 44px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .form-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--color-navy);
+    letter-spacing: -0.5px;
+  }
+  .form-subtitle {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    margin-bottom: 22px;
+    line-height: 1.5;
+  }
+
+  .banner-alert {
+    display: none;
+    padding: 11px 14px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+  .banner-alert.show { display: block; }
+  .banner-alert.error {
+    background: #fde8e8;
+    color: var(--color-red);
+    border: 1px solid #f8b4b4;
+  }
+
+  .form-group { margin-bottom: 16px; position: relative; }
+  .form-label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--color-navy);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .form-label .req { color: var(--color-red); margin-left: 2px; }
+
+  .form-input {
+    width: 100%;
+    padding: 11px 13px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--color-navy);
+    background: #fbfdfc;
+    border: 1.5px solid var(--card-border);
+    border-radius: 7px;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  .form-input:focus {
+    border-color: var(--color-teal);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(7, 159, 160, 0.15);
+  }
+  .form-input.is-invalid {
+    border-color: var(--color-red);
+    background: #fff8f8;
+  }
+  .form-input::placeholder { color: #8faab5; font-size: 13px; }
+
+  .error-message {
+    display: none;
+    color: var(--color-red);
+    font-size: 11px;
+    margin-top: 4px;
+    font-weight: 600;
+  }
+  .form-group.has-error .error-message { display: block; }
+
+  .btn-submit {
+    width: 100%;
+    padding: 13px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
+  .btn-submit:hover { background: #058586; }
+  .btn-submit:active { transform: scale(0.99); }
+
+  .form-bottom-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 20px;
+    font-size: 13px;
+  }
+  .back-link {
+    color: var(--color-teal);
+    text-decoration: none;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .back-link:hover { text-decoration: underline; color: var(--color-navy); }
+
+  /* Hộp thư giả lập để test token */
+  .inbox-simulation {
+    display: none;
+    margin-top: 20px;
+    padding: 14px;
+    background: #eef7f4;
+    border: 1px dashed var(--color-teal);
+    border-radius: 8px;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .inbox-simulation.show { display: block; }
+  .inbox-simulation strong { color: var(--color-navy); display: block; margin-bottom: 4px; }
+  .btn-reset-link {
+    display: inline-block;
+    margin-top: 8px;
+    color: #fff;
+    background: var(--color-teal);
+    padding: 7px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 12px;
+    transition: background-color 0.2s ease;
+  }
+  .btn-reset-link:hover { background: var(--color-navy); }
+
+  /* Toast Notification */
+  .toast-notification {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--color-navy);
+    color: #fff;
+    border-left: 4px solid var(--color-teal);
+    padding: 14px 20px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(2, 56, 82, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .toast-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-teal);
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 860px) {
+    .recover-card { flex-direction: column; width: 100%; min-height: 0; }
+    .visual-column { padding: 32px 24px; }
+    .form-column { padding: 32px 24px; }
+    .top-bar, .header { padding-left: 20px; padding-right: 20px; }
+    .toast-notification { left: 16px; right: 16px; bottom: 16px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SIMULATION TOOLBAR -->
+  <div class="sim-bar">
+    <div><span class="sim-title">EventPass Sandbox:</span> Thử nghiệm Khôi phục mật khẩu (UC04)</div>
+    <div class="sim-actions">
+      <button type="button" class="sim-btn" onclick="simFillValid()">Fill dữ liệu đúng</button>
+      <button type="button" class="sim-btn" onclick="simTriggerEmpty()">Lỗi để trống (E1)</button>
+      <button type="button" class="sim-btn" onclick="simTriggerInvalidEmail()">Sai định dạng email (E1)</button>
+      <button type="button" class="sim-btn" onclick="simTriggerExpiredToken()">Giả lập Token hết hạn (E3)</button>
+      <button type="button" class="sim-btn" onclick="resetFormState()">Làm mới</button>
+    </div>
+  </div>
+
+  <div class="top-bar">
+    <span>Cổng phát hành vé điện tử và Điểm danh nhận diện khuôn mặt</span>
+    <span>Hệ thống sự kiện thông minh</span>
+  </div>
+
+  <header class="header">
+    <a href="#" class="brand-name">
+      EventPass<span class="pass-tag">TICKET</span><span class="accent-dot"></span>
+    </a>
+  </header>
+
+  <main class="main-wrapper">
+    <div class="recover-card">
+
+      <!-- CỘT TRÁI: BẢO MẬT & QUY TẮC -->
+      <div class="visual-column">
+        <div>
+          <span class="badge-kicker">Trung tâm an toàn</span>
+          <h1 class="hero-title">Khôi phục quyền truy cập an toàn</h1>
+          <p class="hero-desc">Bảo vệ thông tin vé điện tử và dữ liệu sinh trắc học cá nhân là cam kết hàng đầu của nền tảng EventPass.</p>
+        </div>
+
+        <div>
+          <div class="security-rules">
+            <strong>Quy tắc bảo mật hệ thống</strong>
+            <ul>
+              <li>Mật khẩu hiện tại được giữ nguyên cho đến khi xác nhận mật khẩu mới.</li>
+              <li>Mã xác thực gửi qua Email chỉ có hiệu lực sử dụng 01 lần trong 15 phút.</li>
+              <li>Tự động thu hồi phiên đăng nhập trên tất cả các thiết bị cũ sau khi đổi mật khẩu thành công.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- CỘT PHẢI: XỬ LÝ 2 MÀN HÌNH -->
+      <div class="form-column">
+        <div id="bannerAlert" class="banner-alert"></div>
+
+        <!-- MÀN HÌNH 1: GỬI YÊU CẦU XÁC NHẬN QUA EMAIL -->
+        <div id="stepRequestView">
+          <h2 class="form-title">Quên mật khẩu?</h2>
+          <p class="form-subtitle">Nhập Tên đăng nhập và Email đã liên kết với tài khoản để nhận liên kết đặt lại mật khẩu.</p>
+
+          <form id="forgotForm" novalidate>
+            <div class="form-group" id="fg-forgotUsername">
+              <label class="form-label" for="forgotUsername">Tên đăng nhập <span class="req">*</span></label>
+              <input type="text" id="forgotUsername" class="form-input" placeholder="Nhập tên đăng nhập của bạn">
+              <div class="error-message" id="err-forgotUsername">Vui lòng nhập tên đăng nhập</div>
+            </div>
+
+            <div class="form-group" id="fg-forgotEmail">
+              <label class="form-label" for="forgotEmail">Địa chỉ Email liên kết <span class="req">*</span></label>
+              <input type="email" id="forgotEmail" class="form-input" placeholder="name@domain.com">
+              <div class="error-message" id="err-forgotEmail">Vui lòng nhập đúng định dạng email</div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="btnSendLink">Gửi liên kết xác nhận</button>
+          </form>
+
+          <div class="form-bottom-row">
+            <a href="javascript:void(0)" class="back-link" id="linkBackLogin">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              Quay lại Đăng nhập
+            </a>
+          </div>
+
+          <!-- Mô phỏng nhận email -->
+          <div id="inboxSimulation" class="inbox-simulation">
+            <strong>Hộp thư giả lập EventPass</strong>
+            <span>Đã tạo mã xác thực tạm thời cho tài khoản (thời hạn 15 phút).</span><br>
+            <a href="javascript:void(0)" class="btn-reset-link" id="btnClickResetEmail">Nhấn vào đây để thiết lập mật khẩu mới</a>
+          </div>
+        </div>
+
+        <!-- MÀN HÌNH 2: THIẾT LẬP MẬT KHẨU MỚI -->
+        <div id="stepResetView" style="display: none;">
+          <h2 class="form-title">Đặt lại mật khẩu mới</h2>
+          <p class="form-subtitle">Mật khẩu mới phải chứa ít nhất 6 ký tự. Sau khi hoàn tất, mọi phiên đăng nhập cũ sẽ bị vô hiệu hóa.</p>
+
+          <form id="resetPasswordForm" novalidate>
+            <div class="form-group" id="fg-newPassword">
+              <label class="form-label" for="newPassword">Mật khẩu mới <span class="req">*</span></label>
+              <input type="password" id="newPassword" class="form-input" placeholder="Tối thiểu 6 ký tự">
+              <div class="error-message" id="err-newPassword">Mật khẩu phải từ 6 ký tự trở lên</div>
+            </div>
+
+            <div class="form-group" id="fg-confirmNewPassword">
+              <label class="form-label" for="confirmNewPassword">Xác nhận mật khẩu mới <span class="req">*</span></label>
+              <input type="password" id="confirmNewPassword" class="form-input" placeholder="Nhập lại mật khẩu mới">
+              <div class="error-message" id="err-confirmNewPassword">Mật khẩu xác nhận không trùng khớp</div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="btnConfirmReset">Xác nhận cập nhật</button>
+          </form>
+
+          <div class="form-bottom-row">
+            <a href="javascript:void(0)" class="back-link" id="linkCancelReset">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              Hủy và quay lại Đăng nhập
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- TOAST NOTIFICATION GÓC DƯỚI TRÁI -->
+  <div id="toastSuccess" class="toast-notification">
+    <span class="toast-icon">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span id="toastMessage">Xử lý thành công!</span>
+  </div>
+
+  <script>
+    const userDatabase = [
+      { username: "admin", email: "admin@eventpass.vn", password: "password123" },
+      { username: "sonha", email: "thaison@example.com", password: "password123" }
+    ];
+
+    let resetTokenState = {
+      token: null,
+      username: null,
+      createdAt: null,
+      isUsed: false
+    };
+
+    const stepRequestView = document.getElementById('stepRequestView');
+    const stepResetView = document.getElementById('stepResetView');
+    const bannerAlert = document.getElementById('bannerAlert');
+    const toastSuccess = document.getElementById('toastSuccess');
+    const toastMessage = document.getElementById('toastMessage');
+    const inboxSimulation = document.getElementById('inboxSimulation');
+    let toastTimeout = null;
+
+    function showBannerError(message) {
+      bannerAlert.className = 'banner-alert show error';
+      bannerAlert.textContent = message;
+    }
+
+    function clearBanner() {
+      bannerAlert.className = 'banner-alert';
+      bannerAlert.textContent = '';
+    }
+
+    function showToast(msg) {
+      toastMessage.textContent = msg;
+      toastSuccess.classList.add('show');
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toastSuccess.classList.remove('show');
+      }, 4000);
+    }
+
+    function clearErrors() {
+      clearBanner();
+      document.querySelectorAll('.form-group').forEach(fg => fg.classList.remove('has-error'));
+      document.querySelectorAll('.form-input').forEach(inp => inp.classList.remove('is-invalid'));
+    }
+
+    function setError(fieldId, message) {
+      const fg = document.getElementById('fg-' + fieldId);
+      const input = document.getElementById(fieldId);
+      const err = document.getElementById('err-' + fieldId);
+      if (fg && err && input) {
+        fg.classList.add('has-error');
+        input.classList.add('is-invalid');
+        err.textContent = message;
+      }
+    }
+
+    // 1. Luồng gửi liên kết xác nhận qua Email
+    document.getElementById('forgotForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      clearErrors();
+
+      const username = document.getElementById('forgotUsername').value.trim();
+      const email = document.getElementById('forgotEmail').value.trim();
+
+      let hasEmpty = false;
+
+      if (!username) {
+        setError('forgotUsername', 'Vui lòng nhập Tên đăng nhập.');
+        hasEmpty = true;
+      }
+      if (!email) {
+        setError('forgotEmail', 'Vui lòng nhập Email liên kết.');
+        hasEmpty = true;
+      } else {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          setError('forgotEmail', 'Email không đúng định dạng thư điện tử.');
+          hasEmpty = true;
+        }
+      }
+      if (hasEmpty) return;
+
+      const matchedUser = userDatabase.find(u => 
+        u.username.toLowerCase() === username.toLowerCase() && 
+        u.email.toLowerCase() === email.toLowerCase()
+      );
+
+      // Cơ chế chống enumeration: Luôn trả thông báo chung
+      showToast("Yêu cầu đã được ghi nhận. Vui lòng kiểm tra hộp thư email của bạn.");
+
+      if (matchedUser) {
+        resetTokenState = {
+          token: "token_" + Math.random().toString(36).substring(2),
+          username: matchedUser.username,
+          createdAt: Date.now(),
+          isUsed: false
+        };
+        inboxSimulation.classList.add('show');
+      } else {
+        inboxSimulation.classList.remove('show');
+      }
+    });
+
+    // 2. Mở form đặt lại mật khẩu từ email giả lập
+    document.getElementById('btnClickResetEmail').addEventListener('click', function() {
+      clearErrors();
+
+      const now = Date.now();
+      const isExpired = (now - resetTokenState.createdAt) > (15 * 60 * 1000);
+
+      if (!resetTokenState.token || resetTokenState.isUsed || isExpired) {
+        showBannerError("Liên kết xác thực đã hết hạn hoặc không hợp lệ. Vui lòng gửi lại yêu cầu.");
+        return;
+      }
+
+      stepRequestView.style.display = 'none';
+      stepResetView.style.display = 'block';
+    });
+
+    // 3. Xác nhận cập nhật mật khẩu mới
+    document.getElementById('resetPasswordForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      clearErrors();
+
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+      let hasError = false;
+
+      if (!newPassword) {
+        setError('newPassword', 'Vui lòng nhập mật khẩu mới.');
+        hasError = true;
+      } else if (newPassword.length < 6) {
+        setError('newPassword', 'Mật khẩu phải chứa ít nhất 6 ký tự.');
+        hasError = true;
+      }
+
+      if (!confirmNewPassword) {
+        setError('confirmNewPassword', 'Vui lòng xác nhận mật khẩu.');
+        hasError = true;
+      } else if (newPassword && newPassword !== confirmNewPassword) {
+        setError('confirmNewPassword', 'Mật khẩu xác nhận không trùng khớp.');
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      const targetUser = userDatabase.find(u => u.username === resetTokenState.username);
+      if (targetUser) {
+        targetUser.password = newPassword;
+      }
+      resetTokenState.isUsed = true;
+      resetTokenState.token = null;
+
+      showToast("Cập nhật mật khẩu thành công!");
+
+      const btnConfirm = document.getElementById('btnConfirmReset');
+      btnConfirm.disabled = true;
+      btnConfirm.innerText = "Đang chuyển về Đăng nhập...";
+
+      setTimeout(() => {
+        alert("Đổi mật khẩu thành công! Toàn bộ phiên làm việc cũ đã được thu hồi. Chuyển về trang Đăng nhập.");
+        stepResetView.style.display = 'none';
+        stepRequestView.style.display = 'block';
+        btnConfirm.disabled = false;
+        btnConfirm.innerText = "Xác nhận cập nhật";
+        document.getElementById('resetPasswordForm').reset();
+        document.getElementById('forgotForm').reset();
+        inboxSimulation.classList.remove('show');
+      }, 1500);
+    });
+
+    // Luồng quay lại đăng nhập
+    document.getElementById('linkBackLogin').addEventListener('click', function() {
+      alert("Chuyển hướng về màn hình Đăng nhập hệ thống.");
+    });
+    document.getElementById('linkCancelReset').addEventListener('click', function() {
+      alert("Hủy thao tác và chuyển về màn hình Đăng nhập hệ thống.");
+    });
+
+    /* ============================================================
+       CÁC HÀM GIẢ LẬP TEST CASE THEO SPEC BA (UC04)
+       ============================================================ */
+    function resetFormState() {
+      clearErrors();
+      document.getElementById('forgotForm').reset();
+      document.getElementById('resetPasswordForm').reset();
+      inboxSimulation.classList.remove('show');
+      stepResetView.style.display = 'none';
+      stepRequestView.style.display = 'block';
+      toastSuccess.classList.remove('show');
+    }
+
+    function simFillValid() {
+      resetFormState();
+      document.getElementById('forgotUsername').value = "sonha";
+      document.getElementById('forgotEmail').value = "thaison@example.com";
+    }
+
+    function simTriggerEmpty() {
+      resetFormState();
+      document.getElementById('btnSendLink').click();
+    }
+
+    function simTriggerInvalidEmail() {
+      resetFormState();
+      document.getElementById('forgotUsername').value = "sonha";
+      document.getElementById('forgotEmail').value = "email-khong-hop-le";
+      document.getElementById('btnSendLink').click();
+    }
+
+    function simTriggerExpiredToken() {
+      simFillValid();
+      document.getElementById('btnSendLink').click();
+      resetTokenState.createdAt = Date.now() - (20 * 60 * 1000); // Đặt thời gian lùi lại 20 phút trước
+      document.getElementById('btnClickResetEmail').click();
+    }
+  </script>
+</body>
+</html>

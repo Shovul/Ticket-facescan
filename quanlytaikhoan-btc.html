@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass Organizer — Quản lý Hồ sơ Ban Tổ Chức</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&display=swap&subset=vietnamese" rel="stylesheet">
+<style>
+  :root {
+    --color-navy: #023852;
+    --color-navy-dark: #012435;
+    --color-teal: #079FA0;
+    --color-teal-hover: #058586;
+    --color-mint: #9FD8C5;
+    --color-yellow: #FAC005;
+    --color-orange: #F58B01;
+    --color-red: #DC2E2F;
+
+    --bg-page: #f2f7f5;
+    --card-border: #cfe5dc;
+    --text-primary: #023852;
+    --text-muted: #537583;
+    --hairline: #e3efea;
+    --white: #ffffff;
+    --danger: #dc2626;
+    --danger-bg: #fff5f5;
+    --success: #15803d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Sandbox Toolbar dành cho BA test nhanh */
+  .sim-bar {
+    background: var(--color-navy-dark);
+    color: #e2e8f0;
+    padding: 7px 24px;
+    font-size: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 2px solid var(--color-teal);
+    z-index: 1000;
+  }
+  .sim-title { font-weight: 700; color: var(--color-yellow); }
+  .sim-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sim-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .sim-btn:hover { background: var(--color-teal); color: #fff; border-color: var(--color-yellow); }
+
+  /* BỐ CỤC KHUNG TOÀN HỆ THỐNG: SIDEBAR + MAIN VIEW */
+  .app-layout {
+    display: flex;
+    flex: 1;
+    min-height: calc(100vh - 35px);
+  }
+
+  /* ========================================================
+     1. SIDEBAR DỌC (CỐ ĐỊNH BÊN TRÁI)
+     ======================================================== */
+  .app-sidebar {
+    width: 270px;
+    background: var(--color-navy);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid #034b6e;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  .sidebar-top {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header thương hiệu góc trái trên */
+  .sidebar-brand-header {
+    padding: 24px 20px 20px 20px;
+    border-bottom: 1px solid rgba(159, 216, 197, 0.15);
+  }
+  .brand-logo {
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  .brand-logo span.role-tag {
+    font-size: 10.5px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--color-teal);
+    padding: 2px 7px;
+    border-radius: 5px;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+  }
+  .brand-logo .accent-dot {
+    width: 7px;
+    height: 7px;
+    background-color: var(--color-orange);
+    border-radius: 50%;
+    margin-left: 5px;
+    box-shadow: 0 0 7px var(--color-orange);
+  }
+
+  /* Card thông tin rút gọn của đơn vị ở Sidebar */
+  .sidebar-org-profile {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(159, 216, 197, 0.12);
+  }
+  .sidebar-org-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: #fff;
+    padding: 3px;
+    object-fit: contain;
+    border: 1.5px solid var(--color-yellow);
+    flex-shrink: 0;
+  }
+  .sidebar-org-meta {
+    overflow: hidden;
+  }
+  .sidebar-org-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sidebar-org-role {
+    font-size: 11px;
+    color: var(--color-mint);
+    margin-top: 2px;
+  }
+
+  /* Danh mục điều hướng nghiệp vụ chính */
+  .sidebar-nav-section {
+    padding: 18px 12px;
+  }
+  .sidebar-section-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(159, 216, 197, 0.6);
+    letter-spacing: 1px;
+    padding: 0 12px;
+    margin-bottom: 8px;
+  }
+  .sidebar-nav-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sidebar-nav-item a {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 14px;
+    color: #bad8e5;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .sidebar-nav-item a:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .sidebar-nav-item a.active {
+    color: #ffffff;
+    background: var(--color-teal);
+    font-weight: 700;
+  }
+  .badge-live-tag {
+    font-size: 10px;
+    background: var(--color-yellow);
+    color: var(--color-navy);
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: auto;
+  }
+
+  /* Khu vực chân Sidebar: Đặt Hồ sơ & Đổi mật khẩu ngay trên Đăng xuất */
+  .sidebar-bottom {
+    padding: 12px;
+    border-top: 1px solid rgba(159, 216, 197, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sidebar-bottom-link {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 14px;
+    color: #bad8e5;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .sidebar-bottom-link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .sidebar-bottom-link.active {
+    color: #ffffff;
+    background: var(--color-teal);
+    font-weight: 700;
+  }
+
+  .btn-sidebar-logout {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 14px;
+    color: #fca5a5;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-sidebar-logout:hover {
+    background: rgba(220, 38, 38, 0.15);
+    color: #ffcaca;
+  }
+
+  /* ========================================================
+     2. KHU VỰC NỘI DUNG CHÍNH (MAIN VIEWPORT)
+     ======================================================== */
+  .app-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* Top Bar Header */
+  .main-top-header {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--card-border);
+    padding: 14px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-page-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-navy);
+  }
+  .header-badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-teal);
+    background: #e6f3ee;
+    padding: 5px 12px;
+    border-radius: 20px;
+  }
+  .header-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--color-teal);
+  }
+
+  /* Vùng cuộn biểu mẫu */
+  .main-content-scroll {
+    padding: 30px 36px 50px 36px;
+    max-width: 980px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .form-panel {
+    background: var(--white);
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 8px 24px -6px rgba(2, 56, 82, 0.06);
+    padding: 28px 32px;
+  }
+  .panel-header {
+    border-bottom: 1.5px solid var(--hairline);
+    padding-bottom: 14px;
+    margin-bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .panel-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-navy);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .form-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 20px;
+  }
+  .form-field { display: flex; flex-direction: column; gap: 6px; }
+  .form-field.full { grid-column: span 2; }
+  .field-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--color-navy);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .field-label .req { color: var(--color-red); margin-left: 2px; }
+
+  .input-wrapper { position: relative; display: flex; align-items: center; }
+  .form-control {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 7px;
+    outline: none;
+    background: #fff;
+    transition: border-color 0.15s ease;
+  }
+  .form-control:focus {
+    border-color: var(--color-teal);
+    box-shadow: 0 0 0 3px rgba(7, 159, 160, 0.12);
+  }
+  .form-control.error-state {
+    border-color: var(--danger);
+    background: var(--danger-bg);
+  }
+  .form-control[readonly] {
+    background-color: var(--bg-page);
+    color: #64748b;
+    cursor: default;
+  }
+  .field-error-msg { font-size: 11px; color: var(--danger); font-weight: 600; display: none; margin-top: 2px; }
+
+  /* Khu vực Logo Đơn Vị */
+  .brand-identity-section {
+    grid-column: span 2;
+    background: #f8fbfa;
+    border: 1.5px dashed var(--color-teal);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .logo-preview-box {
+    width: 90px;
+    height: 90px;
+    border-radius: 10px;
+    border: 2px solid var(--card-border);
+    flex-shrink: 0;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(2, 56, 82, 0.05);
+  }
+  .logo-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 6px;
+  }
+  .brand-info-content { flex: 1; }
+  .brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #e2f2eb;
+    color: var(--color-teal);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+  }
+  .brand-title { font-size: 14px; font-weight: 700; color: var(--color-navy); margin-bottom: 4px; }
+  .brand-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
+
+  .btn-upload-logo {
+    padding: 7px 13px;
+    background: var(--color-navy);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s ease;
+  }
+  .btn-upload-logo:hover { background: #034b6e; }
+
+  /* Nút thao tác Form */
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .btn-submit-action {
+    padding: 10px 22px;
+    background: var(--color-teal);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s ease;
+  }
+  .btn-submit-action:hover { background: var(--color-teal-hover); }
+
+  .btn-trigger-pwd {
+    padding: 10px 18px;
+    background: #fff;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s ease;
+  }
+  .btn-trigger-pwd:hover {
+    border-color: var(--color-teal);
+    background: var(--bg-page);
+    color: var(--color-teal);
+  }
+
+  .toggle-pwd-btn {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s ease;
+  }
+  .toggle-pwd-btn:hover { color: var(--color-navy); }
+
+  /* Modal Xác nhận Đăng xuất */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 56, 82, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .modal-backdrop.show { opacity: 1; visibility: visible; }
+  .modal-box {
+    background: #fff;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px -10px rgba(2, 56, 82, 0.28);
+    padding: 24px 26px;
+    transform: scale(0.95);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .modal-backdrop.show .modal-box { transform: scale(1); }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-navy);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .modal-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 20px;
+    padding: 4px;
+    line-height: 1;
+  }
+  .modal-body {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 22px;
+  }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
+  .btn-modal-cancel {
+    padding: 9px 16px;
+    background: #fff;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-modal-confirm {
+    padding: 9px 18px;
+    background: var(--danger);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s ease;
+  }
+  .btn-modal-confirm:hover { opacity: 0.9; }
+
+  /* Toast Notification */
+  .toast-notification {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--color-navy);
+    color: #fff;
+    border-left: 4px solid var(--color-teal);
+    padding: 14px 20px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(2, 56, 82, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    z-index: 2000;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast-notification.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .toast-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-teal);
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 860px) {
+    .app-layout { flex-direction: column; }
+    .app-sidebar { width: 100%; height: auto; position: static; }
+    .main-top-header { padding: 12px 20px; }
+    .main-content-scroll { padding: 20px; }
+    .form-grid-layout { grid-template-columns: 1fr; }
+    .form-field.full, .brand-identity-section { grid-column: span 1; }
+    .brand-identity-section { flex-direction: column; align-items: flex-start; }
+    .form-actions { flex-direction: column; align-items: stretch; }
+    .toast-notification { left: 16px; right: 16px; bottom: 16px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SIMULATION TOOLBAR -->
+  <div class="sim-bar">
+    <div><span class="sim-title">EventPass Organizer Sandbox:</span> Bố cục Sidebar Dọc (UC04)</div>
+    <div class="sim-actions">
+      <button type="button" class="sim-btn" onclick="simFillUniversity()">Fill Mẫu ĐH Sài Gòn</button>
+      <button type="button" class="sim-btn" onclick="simFillCompany()">Fill Mẫu ProEvent</button>
+      <button type="button" class="sim-btn" onclick="simTriggerChangePassword()">Mở Đổi Mật Khẩu</button>
+      <button type="button" class="sim-btn" onclick="openLogoutModal()">Đăng xuất (UC03)</button>
+    </div>
+  </div>
+
+  <div class="app-layout">
+
+    <!-- ========================================================
+         SIDEBAR ĐIỀU HƯỚNG DỌC (BÊN TRÁI)
+         ======================================================== -->
+    <aside class="app-sidebar">
+      <div class="sidebar-top">
+        
+        <!-- Logo & Nhận diện hệ thống -->
+        <div class="sidebar-brand-header">
+          <a href="#" class="brand-logo">
+            EventPass<span class="role-tag">ORGANIZER</span><span class="accent-dot"></span>
+          </a>
+        </div>
+
+        <!-- Thẻ thông tin nhanh Ban Tổ Chức -->
+        <div class="sidebar-org-profile">
+          <img src="https://media.istockphoto.com/id/2149922267/vector/user-icon.jpg?s=612x612&w=0&k=20&c=i6jYPfB1pWjK8pll6YRxAK9fgBmf65-w5wbKH9R1dyQ=" class="sidebar-org-logo" id="sidebarOrgLogo" alt="Logo đơn vị">
+          <div class="sidebar-org-meta">
+            <div class="sidebar-org-name" id="sidebarOrgName">Đoàn Trường ĐH Sài Gòn</div>
+            <div class="sidebar-org-role">Tài khoản Ban Tổ Chức</div>
+          </div>
+        </div>
+
+        <!-- Menu nghiệp vụ chính (Đã bỏ Quản lý trạm soát vé để đưa vào trong từng sự kiện) -->
+        <div class="sidebar-nav-section">
+          <div class="sidebar-section-title">Quản Trị Sự Kiện</div>
+          <ul class="sidebar-nav-list">
+            <li class="sidebar-nav-item">
+              <a href="#" title="UC10: Bảng điều khiển thống kê">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                <span>Tổng quan số liệu</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="#" title="UC11, UC12: Quản lý sự kiện">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Sự kiện của tôi</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="#" title="UC13: Quản lý người tham dự & Xuất Excel">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Danh sách tham dự</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="#" title="UC12, UC14: Giám sát điểm danh thời gian thực">
+                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                <span>Giám sát điểm danh</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- CHÂN SIDEBAR: HỒ SƠ & ĐỔI MẬT KHẨU NẰM NGAY TRÊN ĐĂNG XUẤT -->
+      <div class="sidebar-bottom">
+        <a href="#profileOrgForm" class="sidebar-bottom-link active" title="UC04: Hồ sơ & Đổi mật khẩu">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Hồ sơ & Đổi mật khẩu</span>
+        </a>
+        <button type="button" class="btn-sidebar-logout" onclick="openLogoutModal()">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          <span>Đăng xuất tài khoản</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ========================================================
+         MAIN CONTENT: BIỂU MẪU HỒ SƠ & ĐỔI MẬT KHẨU (UC04)
+         ======================================================== -->
+    <main class="app-main">
+      
+      <!-- Top header phụ trách hiển thị trạng thái kết nối -->
+      <header class="main-top-header">
+        <h1 class="header-page-title">Hồ Sơ Đơn Vị & Bảo Mật</h1>
+        <div class="header-badge-status">
+          <span class="header-badge-dot"></span>
+          <span>Máy chủ điểm danh trực tuyến</span>
+        </div>
+      </header>
+
+      <div class="main-content-scroll">
+
+        <!-- PANEL 1: THÔNG TIN HỒ SƠ ĐƠN VỊ TỔ CHỨC -->
+        <section class="form-panel">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <svg class="icon" viewBox="0 0 24 24" style="color: var(--color-teal);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Hồ Sơ Ban Tổ Chức & Đơn Vị Phát Hành Vé
+            </h2>
+          </div>
+
+          <form id="profileOrgForm" onsubmit="handleUpdateOrgInfo(event)" style="display: flex; flex-direction: column;">
+            <div class="form-grid-layout">
+              
+              <div class="form-field">
+                <label class="field-label" for="orgUsername">Tên tài khoản quản trị</label>
+                <div class="input-wrapper">
+                  <input type="text" id="orgUsername" class="form-control" value="organizer_sgu" readonly>
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="field-label" for="orgEmail">Hòm thư điện tử chính thức</label>
+                <div class="input-wrapper">
+                  <input type="email" id="orgEmail" class="form-control" value="doan@sgu.edu.vn" readonly>
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="field-label" for="orgName">Tên cơ quan / Đơn vị tổ chức <span class="req">*</span></label>
+                <div class="input-wrapper">
+                  <input type="text" id="orgName" class="form-control" value="Đoàn Trường Đại học Sài Gòn" placeholder="VD: Đoàn Trường Đại học Sài Gòn">
+                </div>
+                <span class="field-error-msg" id="errorOrgName">Tên đơn vị tổ chức không được để trống</span>
+              </div>
+
+              <div class="form-field">
+                <label class="field-label" for="orgHotline">Đường dây nóng hỗ trợ khách vé <span class="req">*</span></label>
+                <div class="input-wrapper">
+                  <input type="text" id="orgHotline" class="form-control" value="02838354409" placeholder="Hotline tiếp nhận sự cố vé" maxlength="11">
+                </div>
+                <span class="field-error-msg" id="errorOrgHotline">Hotline phải gồm 10 hoặc 11 chữ số</span>
+              </div>
+
+              <div class="form-field">
+                <label class="field-label" for="orgWebsite">Website / Cổng thông tin sự kiện</label>
+                <div class="input-wrapper">
+                  <input type="text" id="orgWebsite" class="form-control" value="https://sgu.edu.vn" placeholder="https://domain.com">
+                </div>
+              </div>
+
+              <div class="form-field">
+                <label class="field-label" for="orgLegalCode">Mã định danh / Quyết định thành lập</label>
+                <div class="input-wrapper">
+                  <input type="text" id="orgLegalCode" class="form-control" value="SGU-QD-2026" placeholder="Mã số doanh nghiệp hoặc số quyết định">
+                </div>
+              </div>
+
+              <!-- LOGO BAN TỔ CHỨC -->
+              <div class="brand-identity-section">
+                <div class="logo-preview-box">
+                  <img src="https://media.istockphoto.com/id/2149922267/vector/user-icon.jpg?s=612x612&w=0&k=20&c=i6jYPfB1pWjK8pll6YRxAK9fgBmf65-w5wbKH9R1dyQ=" id="logoPreviewImg" class="logo-preview-img" alt="Logo đơn vị">
+                </div>
+
+                <div class="brand-info-content">
+                  <div class="brand-badge">Bộ Nhận Diện Chính Thức</div>
+                  <h3 class="brand-title">Biểu trưng (Logo) Đơn vị tổ chức sự kiện</h3>
+                  <p class="brand-desc">Biểu trưng này sẽ tự động xuất hiện trên đầu mẫu Vé điện tử (PDF/Apple Wallet), thư xác nhận email gửi cho khách và hiển thị trên màn hình trạm điểm danh camera.</p>
+                  
+                  <input type="file" id="logoFileInput" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
+                  <button type="button" class="btn-upload-logo" onclick="document.getElementById('logoFileInput').click()">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span>Tải lên logo mới</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-submit-action">Lưu cập nhật hồ sơ</button>
+              <button type="button" id="btnTogglePasswordPanel" class="btn-trigger-pwd" onclick="togglePasswordPanel()">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                <span>Đổi mật khẩu bảo mật</span>
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- PANEL 2: ĐỔI MẬT KHẨU BAN QUẢN TRỊ (UC04) -->
+        <section class="form-panel" id="pwd-form-section" style="display: none;">
+          <div class="panel-header">
+            <h2 class="panel-title">
+              <svg class="icon" viewBox="0 0 24 24" style="color: var(--color-navy);"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              Thiết Lập Mật Khẩu Quản Trị Mới
+            </h2>
+            <button type="button" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-weight:700;" onclick="togglePasswordPanel()">Đóng</button>
+          </div>
+
+          <form id="changeOrgPasswordForm" onsubmit="handleChangePassword(event)" style="display: flex; flex-direction: column;">
+            <div class="form-grid-layout">
+              
+              <!-- HÀNG 1: MẬT KHẨU HIỆN TẠI (FULL CHIỀU RỘNG) -->
+              <div class="form-field full">
+                <label class="field-label" for="inputCurrentPwd">Mật khẩu hiện tại <span class="req">*</span></label>
+                <div class="input-wrapper">
+                  <input type="password" id="inputCurrentPwd" class="form-control" placeholder="Nhập mật khẩu ban quản trị hiện tại">
+                  <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility('inputCurrentPwd')">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                <span class="field-error-msg" id="errorCurrentPwd">Mật khẩu hiện tại không chính xác</span>
+              </div>
+
+              <!-- HÀNG 2: MẬT KHẨU MỚI & XÁC NHẬN MẬT KHẨU MỚI CHUNG 1 HÀNG (2 CỘT) -->
+              <div class="form-field">
+                <label class="field-label" for="inputNewPwd">Mật khẩu mới <span class="req">*</span></label>
+                <div class="input-wrapper">
+                  <input type="password" id="inputNewPwd" class="form-control" placeholder="Tối thiểu 6 ký tự">
+                  <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility('inputNewPwd')">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                <span class="field-error-msg" id="errorNewPwd">Mật khẩu phải từ 6 ký tự và khác mật khẩu cũ</span>
+              </div>
+
+              <div class="form-field">
+                <label class="field-label" for="inputConfirmPwd">Xác nhận mật khẩu mới <span class="req">*</span></label>
+                <div class="input-wrapper">
+                  <input type="password" id="inputConfirmPwd" class="form-control" placeholder="Nhập lại mật khẩu mới">
+                  <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility('inputConfirmPwd')">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                <span class="field-error-msg" id="errorConfirmPwd">Mật khẩu xác nhận không trùng khớp</span>
+              </div>
+
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn-submit-action">Cập nhật mật khẩu Ban tổ chức</button>
+            </div>
+          </form>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- HỘP THOẠI XÁC NHẬN ĐĂNG XUẤT (UC03) -->
+  <div class="modal-backdrop" id="logoutModal" onclick="handleBackdropClick(event)">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg class="icon" viewBox="0 0 24 24" style="color: var(--danger);"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Xác nhận Đăng xuất Quản trị
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeLogoutModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        Bạn có chắc chắn muốn đăng xuất khỏi cổng quản trị Ban tổ chức? Phiên điều hành soát vé trên thiết bị này sẽ được đóng lại an toàn.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" onclick="closeLogoutModal()">Hủy</button>
+        <button type="button" class="btn-modal-confirm" onclick="executeLogout()">Đăng xuất ngay</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION GÓC DƯỚI TRÁI -->
+  <div id="toastNotification" class="toast-notification">
+    <span class="toast-icon">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span id="toastMessage">Thao tác thành công!</span>
+  </div>
+
+  <script>
+    let currentDBPassword = "password123";
+
+    const toastNotification = document.getElementById('toastNotification');
+    const toastMessage = document.getElementById('toastMessage');
+    let toastTimeout = null;
+
+    function showToast(msg) {
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastMessage.textContent = msg;
+      toastNotification.classList.add('show');
+      toastTimeout = setTimeout(() => {
+        toastNotification.classList.remove('show');
+      }, 3000);
+    }
+
+    /* USE CASE: ĐĂNG XUẤT HỆ THỐNG (UC03) */
+    const logoutModal = document.getElementById('logoutModal');
+    function openLogoutModal() { logoutModal.classList.add('show'); }
+    function closeLogoutModal() { logoutModal.classList.remove('show'); }
+    function handleBackdropClick(e) { if (e.target === logoutModal) closeLogoutModal(); }
+
+    function executeLogout() {
+      localStorage.clear();
+      sessionStorage.clear();
+      closeLogoutModal();
+      showToast('Đăng xuất phiên quản trị thành công!');
+      setTimeout(() => {
+        alert("Đã đóng phiên làm việc của Ban tổ chức! Điều hướng về trang Đăng nhập hệ thống (UC02).");
+      }, 700);
+    }
+
+    /* ĐỔI MẬT KHẨU & HỒ SƠ ĐƠN VỊ (UC04) */
+    function togglePasswordPanel() {
+      const panel = document.getElementById('pwd-form-section');
+      const isHidden = (panel.style.display === 'none' || panel.style.display === '');
+      panel.style.display = isHidden ? 'block' : 'none';
+      if (isHidden) panel.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function togglePasswordVisibility(fieldId) {
+      const input = document.getElementById(fieldId);
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function checkField(inputId, errorId, condition) {
+      const input = document.getElementById(inputId);
+      const error = document.getElementById(errorId);
+      if (condition) {
+        input.classList.remove('error-state');
+        if (error) error.style.display = 'none';
+        return true;
+      } else {
+        input.classList.add('error-state');
+        if (error) error.style.display = 'block';
+        return false;
+      }
+    }
+
+    function handleUpdateOrgInfo(e) {
+      e.preventDefault();
+      const orgName = document.getElementById('orgName').value.trim();
+      const orgHotline = document.getElementById('orgHotline').value.trim();
+      const hotlineRegex = /^[0-9]{10,11}$/;
+
+      const v1 = checkField('orgName', 'errorOrgName', orgName.length > 0);
+      const v2 = checkField('orgHotline', 'errorOrgHotline', hotlineRegex.test(orgHotline));
+
+      if (!v1 || !v2) return;
+
+      document.getElementById('sidebarOrgName').textContent = orgName;
+      showToast('Đã lưu thông tin Ban tổ chức thành công!');
+    }
+
+    function handleLogoUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          document.getElementById('logoPreviewImg').src = event.target.result;
+          document.getElementById('sidebarOrgLogo').src = event.target.result;
+          showToast('Đã cập nhật biểu trưng (Logo) Ban tổ chức mới!');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function handleChangePassword(e) {
+      e.preventDefault();
+      const currentPwd = document.getElementById('inputCurrentPwd');
+      const newPwd = document.getElementById('inputNewPwd');
+      const confirmPwd = document.getElementById('inputConfirmPwd');
+
+      const errCurrent = document.getElementById('errorCurrentPwd');
+      const errNew = document.getElementById('errorNewPwd');
+      const errConfirm = document.getElementById('errorConfirmPwd');
+
+      let isValid = true;
+
+      if (currentPwd.value !== currentDBPassword) {
+        currentPwd.classList.add('error-state');
+        errCurrent.style.display = 'block';
+        isValid = false;
+      } else {
+        currentPwd.classList.remove('error-state');
+        errCurrent.style.display = 'none';
+      }
+
+      if (newPwd.value.length < 6 || newPwd.value === currentDBPassword) {
+        newPwd.classList.add('error-state');
+        errNew.style.display = 'block';
+        isValid = false;
+      } else {
+        newPwd.classList.remove('error-state');
+        errNew.style.display = 'none';
+      }
+
+      if (!confirmPwd.value || confirmPwd.value !== newPwd.value) {
+        confirmPwd.classList.add('error-state');
+        errConfirm.style.display = 'block';
+        isValid = false;
+      } else {
+        confirmPwd.classList.remove('error-state');
+        errConfirm.style.display = 'none';
+      }
+
+      if (!isValid) return;
+
+      currentDBPassword = newPwd.value;
+      currentPwd.value = '';
+      newPwd.value = '';
+      confirmPwd.value = '';
+
+      showToast('Đã đổi mật khẩu quản trị viên thành công!');
+      togglePasswordPanel();
+    }
+
+    /* MOCK DATA CHO BA TEST CASE */
+    function simFillUniversity() {
+      document.getElementById('orgName').value = "Đoàn Trường Đại học Sài Gòn";
+      document.getElementById('orgHotline').value = "02838354409";
+      document.getElementById('orgWebsite').value = "https://sgu.edu.vn";
+      document.getElementById('orgLegalCode').value = "SGU-QD-2026";
+      const uLogo = "https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png";
+      document.getElementById('logoPreviewImg').src = uLogo;
+      document.getElementById('sidebarOrgLogo').src = uLogo;
+      document.getElementById('sidebarOrgName').textContent = "Đoàn Trường ĐH Sài Gòn";
+      showToast('Đã nạp dữ liệu mẫu: Trường Đại học Sài Gòn');
+    }
+
+    function simFillCompany() {
+      document.getElementById('orgName').value = "Công ty CP Giải pháp Sự kiện ProEvent";
+      document.getElementById('orgHotline').value = "0909988776";
+      document.getElementById('orgWebsite').value = "https://proevent.vn";
+      document.getElementById('orgLegalCode').value = "0312456789";
+      const cLogo = "https://images.unsplash.com/photo-1516873240891-4bf014598ab4?auto=format&fit=crop&q=80&w=200";
+      document.getElementById('logoPreviewImg').src = cLogo;
+      document.getElementById('sidebarOrgLogo').src = cLogo;
+      document.getElementById('sidebarOrgName').textContent = "ProEvent Corp";
+      showToast('Đã nạp dữ liệu mẫu: Công ty ProEvent');
+    }
+
+    function simTriggerChangePassword() {
+      const panel = document.getElementById('pwd-form-section');
+      panel.style.display = 'block';
+      panel.scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

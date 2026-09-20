@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass — Khám phá Sự kiện & Đặt vé Face ID</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&display=swap&subset=vietnamese" rel="stylesheet">
+<style>
+  :root {
+    --color-navy: #023852;
+    --color-navy-dark: #012233;
+    --color-teal: #079FA0;
+    --color-teal-hover: #058586;
+    --color-mint: #9FD8C5;
+    --color-yellow: #FAC005;
+    --color-orange: #F58B01;
+    --color-red: #DC2E2F;
+
+    --bg-page: #f2f7f5;
+    --card-border: #cfe5dc;
+    --text-primary: #023852;
+    --text-muted: #537583;
+    --hairline: #e3efea;
+    --white: #ffffff;
+    --danger: #dc2626;
+    --danger-bg: #fff5f5;
+    --success: #15803d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Toolbar giả lập kiểm thử BA */
+  .sim-bar {
+    background: var(--color-navy);
+    color: #e2e8f0;
+    padding: 8px 24px;
+    font-size: 12.5px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 2px solid var(--color-teal);
+    z-index: 100;
+  }
+  .sim-title { font-weight: 700; color: var(--color-yellow); }
+  .sim-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sim-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .sim-btn:hover { background: var(--color-teal); color: #fff; border-color: var(--color-yellow); }
+
+  /* 1. Top Bar */
+  .top-bar {
+    background: var(--color-navy-dark);
+    color: #e2eff5;
+    padding: 8px 48px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .top-bar strong { color: var(--color-yellow); font-weight: 600; }
+
+  /* 2. Header & Storefront Navbar */
+  .store-header {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--card-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .navbar-main {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .brand-logo {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--color-navy);
+    letter-spacing: -0.5px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .brand-logo span.pass-tag {
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--color-teal);
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+  }
+  .brand-logo .accent-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-orange);
+    border-radius: 50%;
+    margin-left: 6px;
+    box-shadow: 0 0 8px var(--color-orange);
+  }
+
+  .navbar-search-box {
+    flex: 1;
+    max-width: 460px;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .nav-search-input {
+    width: 100%;
+    padding: 9px 38px 9px 16px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--color-navy);
+    background: var(--bg-page);
+    border: 1.5px solid var(--card-border);
+    border-radius: 20px;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  .nav-search-input:focus {
+    background: #fff;
+    border-color: var(--color-teal);
+    box-shadow: 0 0 0 3px rgba(7, 159, 160, 0.12);
+  }
+  .nav-search-btn {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 50%;
+  }
+  .nav-search-btn:hover { color: var(--color-teal); }
+
+  .nav-right-cluster {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .nav-action-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 13.5px;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+  }
+  .nav-action-link:hover, .nav-action-link.active {
+    color: var(--color-teal);
+    background: var(--bg-page);
+  }
+  .badge-tag-count {
+    background: var(--color-teal);
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 2px;
+  }
+
+  .user-menu-wrapper { position: relative; padding: 4px 0; }
+  .user-dropdown-trigger {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 3px 12px 3px 3px;
+    border-radius: 999px;
+    background: var(--bg-page);
+    border: 1.5px solid var(--card-border);
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+  }
+  .user-menu-wrapper:hover .user-dropdown-trigger {
+    border-color: var(--color-teal);
+    background: #e6f3ee;
+  }
+  .user-avatar-tiny {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 1.5px solid var(--color-yellow);
+    background: #fff;
+  }
+  .user-name-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-navy);
+  }
+
+  .user-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 230px;
+    background: var(--white);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 6px;
+    display: none;
+    z-index: 1000;
+    list-style: none;
+    box-shadow: 0 8px 24px -6px rgba(2, 56, 82, 0.15);
+  }
+  .user-menu-wrapper:hover .user-dropdown-menu { display: block; }
+  .dropdown-item-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-navy);
+    text-decoration: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .dropdown-item-link:hover { background: var(--bg-page); color: var(--color-teal); }
+  .dropdown-item-link.danger {
+    color: var(--danger);
+    border-top: 1px solid var(--hairline);
+    margin-top: 4px;
+    border-radius: 0 0 6px 6px;
+  }
+  .dropdown-item-link.danger:hover { background: var(--danger-bg); }
+
+  /* 3. HERO BANNER SỰ KIỆN */
+  .hero-banner-section {
+    background: linear-gradient(135deg, var(--color-navy) 0%, #034b6e 100%);
+    color: #fff;
+    padding: 40px 24px;
+    border-bottom: 2px solid var(--color-teal);
+  }
+  .hero-inner-container {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+  }
+  .hero-text-block { max-width: 620px; }
+  .hero-tagline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(7, 159, 160, 0.25);
+    border: 1px solid var(--color-teal);
+    color: var(--color-mint);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .hero-heading {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+  .hero-desc {
+    font-size: 14px;
+    color: #d2e9f3;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .hero-cta-btn {
+    padding: 11px 24px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s ease;
+  }
+  .hero-cta-btn:hover {
+    background: var(--color-teal-hover);
+    transform: translateY(-1px);
+  }
+
+  .hero-badge-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1.5px solid rgba(159, 216, 197, 0.25);
+    border-radius: 14px;
+    padding: 24px;
+    width: 360px;
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .hero-stat-row { display: flex; justify-content: space-between; align-items: center; }
+  .stat-label { font-size: 12.5px; color: var(--color-mint); }
+  .stat-val { font-size: 16px; font-weight: 800; color: #fff; }
+
+  /* 4. MAIN CONTENT WORKSPACE */
+  .storefront-main {
+    max-width: 1180px;
+    margin: 30px auto 60px auto;
+    padding: 0 24px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Thanh công cụ tìm kiếm & lọc nhanh */
+  .filter-toolbar-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 12px;
+    padding: 18px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 4px 14px rgba(2, 56, 82, 0.04);
+  }
+  .filter-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .filter-pills-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .pill-filter-btn {
+    padding: 7px 16px;
+    background: var(--bg-page);
+    border: 1.5px solid var(--card-border);
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .pill-filter-btn:hover {
+    border-color: var(--color-teal);
+    color: var(--color-teal);
+  }
+  .pill-filter-btn.active {
+    background: var(--color-teal);
+    border-color: var(--color-teal);
+    color: #fff;
+  }
+
+  .sort-select-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .sort-select {
+    padding: 7px 12px;
+    border-radius: 6px;
+    border: 1.5px solid var(--card-border);
+    background: #fff;
+    font-family: inherit;
+    font-size: 12.5px;
+    color: var(--color-navy);
+    outline: none;
+    cursor: pointer;
+  }
+
+  /* Grid Sự kiện (3 cột) */
+  .event-catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .event-item-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 6px 18px rgba(2, 56, 82, 0.05);
+    transition: all 0.2s ease;
+  }
+  .event-item-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-teal);
+    box-shadow: 0 12px 28px rgba(7, 159, 160, 0.15);
+  }
+
+  .card-cover-wrap {
+    position: relative;
+    width: 100%;
+    height: 170px;
+    background: #011420;
+    overflow: hidden;
+  }
+  .card-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  .event-item-card:hover .card-cover-img { transform: scale(1.05); }
+
+  .card-status-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .card-status-badge.open { background: #e6f7f3; color: #0d7a60; border: 1px solid #bcf0e2; }
+  .card-status-badge.upcoming { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  .card-status-badge.free { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+
+  .card-body-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    gap: 14px;
+  }
+  .card-org-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--color-teal);
+  }
+  .card-org-avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    object-fit: contain;
+    background: #fff;
+  }
+
+  .card-event-title {
+    font-size: 16.5px;
+    font-weight: 800;
+    color: var(--color-navy);
+    line-height: 1.35;
+    margin-top: 4px;
+  }
+
+  .card-meta-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .meta-row { display: flex; align-items: center; gap: 7px; }
+
+  .card-tier-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding-top: 8px;
+    border-top: 1px solid var(--hairline);
+  }
+  .tier-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--bg-page);
+    color: var(--color-navy);
+    border: 1px solid var(--card-border);
+  }
+  .tier-pill.vip { color: var(--color-orange); border-color: #fed7aa; }
+
+  .card-action-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+  }
+  .slot-left-info {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .slot-left-info strong {
+    color: var(--color-teal);
+    font-weight: 800;
+  }
+
+  .btn-book-ticket {
+    padding: 8px 16px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s ease;
+  }
+  .btn-book-ticket:hover { background: var(--color-teal-hover); }
+
+  /* 5. MODAL CHI TIẾT SỰ KIỆN & CHỌN VÉ (QUICK VIEW) */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 56, 82, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .modal-backdrop.show { opacity: 1; visibility: visible; }
+  .modal-box {
+    background: #fff;
+    width: 100%;
+    max-width: 580px;
+    border-radius: 14px;
+    box-shadow: 0 20px 40px -10px rgba(2, 56, 82, 0.28);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.95);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .modal-backdrop.show .modal-box { transform: scale(1); }
+
+  .modal-event-cover {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+  .modal-header-padded {
+    padding: 20px 24px 10px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .modal-event-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--color-navy);
+    line-height: 1.3;
+  }
+  .modal-body-scroll {
+    padding: 10px 24px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 55vh;
+    overflow-y: auto;
+  }
+  .modal-desc-box {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    background: var(--bg-page);
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+  }
+  .tier-select-item {
+    border: 1.5px solid var(--card-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .tier-select-item:hover, .tier-select-item.selected {
+    border-color: var(--color-teal);
+    background: #f0f9f7;
+  }
+
+  .modal-footer {
+    padding: 14px 24px;
+    background: var(--bg-page);
+    border-top: 1px solid var(--hairline);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .btn-modal-cancel {
+    padding: 9px 16px;
+    background: #fff;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-modal-confirm {
+    padding: 9px 20px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn-modal-confirm:hover { background: var(--color-teal-hover); }
+
+  /* Toast Notification */
+  .toast-notification {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--color-navy);
+    color: #fff;
+    border-left: 4px solid var(--color-teal);
+    padding: 14px 20px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(2, 56, 82, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    z-index: 4000;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast-notification.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .toast-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--color-teal);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @media (max-width: 980px) {
+    .event-catalog-grid { grid-template-columns: repeat(2, 1fr); }
+    .hero-inner-container { flex-direction: column; align-items: flex-start; }
+    .hero-badge-card { width: 100%; }
+  }
+  @media (max-width: 680px) {
+    .event-catalog-grid { grid-template-columns: 1fr; }
+    .navbar-search-box { display: none; }
+    .top-bar { padding: 8px 16px; flex-direction: column; gap: 4px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SIMULATION TOOLBAR CHO KIỂM THỬ -->
+  <div class="sim-bar">
+    <div><span class="sim-title">EventPass UC05 Sandbox:</span> Khám phá sự kiện & Đăng ký vé Face ID</div>
+    <div class="sim-actions">
+      <button type="button" class="sim-btn" onclick="simQuickView(1)">Xem Sự Kiện SGU TechDay</button>
+      <button type="button" class="sim-btn" onclick="simFilterTag('tech')">Lọc Sự kiện Công nghệ</button>
+      <button type="button" class="sim-btn" onclick="simFilterTag('music')">Lọc Gala Âm nhạc</button>
+      <button type="button" class="sim-btn" onclick="openLogoutModal()">Kiểm thử Đăng xuất (UC03)</button>
+    </div>
+  </div>
+
+  <!-- 1. TOP UTILITY BAR -->
+  <div class="top-bar">
+    <span>Cổng soát vé nhận diện khuôn mặt tức thời &bullet; Điểm danh tự động dưới 1 giây tại sảnh</span>
+    <span>Hỗ trợ kỹ thuật & Kiểm soát cửa: <strong>1900 888 234</strong></span>
+  </div>
+
+  <!-- 2. NAVBAR SỰ KIỆN -->
+  <header class="store-header">
+    <div class="navbar-main">
+      <a href="#" class="brand-logo">
+        EventPass<span class="pass-tag">TICKET</span><span class="accent-dot"></span>
+      </a>
+
+      <!-- Ô TÌM KIẾM SỰ KIỆN -->
+      <div class="navbar-search-box">
+        <input type="text" class="nav-search-input" id="eventSearchInput" placeholder="Tìm tên sự kiện, hội thảo, ca nhạc, địa điểm..." oninput="handleSearchEvent(this.value)">
+        <button class="nav-search-btn" title="Tìm kiếm">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </button>
+      </div>
+
+      <!-- VÉ CỦA TÔI & PROFILE MENU -->
+      <div class="nav-right-cluster">
+        <a href="#" class="nav-action-link" title="Xem vé đã đăng ký">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
+          <span>Vé của tôi</span>
+          <span class="badge-tag-count">2</span>
+        </a>
+
+        <div class="user-menu-wrapper">
+          <div class="user-dropdown-trigger">
+            <img src="https://media.istockphoto.com/id/2149922267/vector/user-icon.jpg?s=612x612&w=0&k=20&c=i6jYPfB1pWjK8pll6YRxAK9fgBmf65-w5wbKH9R1dyQ=" class="user-avatar-tiny" id="navAvatarImg" alt="Avatar">
+            <span class="user-name-text">Hà Thái Sơn</span>
+            <svg class="icon" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+
+          <ul class="user-dropdown-menu">
+            <li>
+              <a href="#" class="dropdown-item-link">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Hồ sơ & Đổi mật khẩu</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="dropdown-item-link">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+                <span>Danh sách vé đã đăng ký</span>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" class="dropdown-item-link danger" onclick="openLogoutModal()">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                <span>Đăng xuất tài khoản</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- 3. HERO BANNER SỰ KIỆN TÂM ĐIỂM -->
+  <section class="hero-banner-section">
+    <div class="hero-inner-container">
+      <div class="hero-text-block">
+        <div class="hero-tagline">
+          <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span>Sự kiện công nghệ tâm điểm năm 2026</span>
+        </div>
+        <h1 class="hero-heading">SGU TechDay 2026 — Trải Nghiệm Điểm Danh Face ID Siêu Tốc</h1>
+        <p class="hero-desc">
+          Triển lãm công nghệ, tuyển dụng kỹ sư công nghệ thông tin và giao lưu học thuật. Đăng ký nhận vé điện tử, nạp ảnh khuôn mặt để vào cổng hội trường tự động không cần xuất trình giấy tờ.
+        </p>
+        <button type="button" class="hero-cta-btn" onclick="openEventQuickView(1)">
+          <span>Đăng ký nhận vé ngay</span>
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <div class="hero-badge-card">
+        <div class="hero-stat-row">
+          <span class="stat-label">Thời gian bắt đầu</span>
+          <span class="stat-val">08:00 • 20/09/2026</span>
+        </div>
+        <div class="hero-stat-row">
+          <span class="stat-label">Địa điểm tổ chức</span>
+          <span class="stat-val">Hội trường A - SGU</span>
+        </div>
+        <div class="hero-stat-row">
+          <span class="stat-label">Tình trạng vé</span>
+          <span class="stat-val" style="color:var(--color-yellow);">Còn 15 chỗ cuối</span>
+        </div>
+        <div class="hero-stat-row">
+          <span class="stat-label">Hình thức check-in</span>
+          <span class="stat-val" style="color:var(--color-mint);">Quét mặt tự động &lt;1s</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. CATALOG SỰ KIỆN CHÍNH -->
+  <main class="storefront-main">
+
+    <!-- Bộ lọc sự kiện đa chiều -->
+    <div class="filter-toolbar-card">
+      <div class="filter-top-row">
+        <div class="filter-pills-group" id="filterCategoryGroup">
+          <button type="button" class="pill-filter-btn active" onclick="applyCategoryFilter('all', this)">Tất cả sự kiện</button>
+          <button type="button" class="pill-filter-btn" onclick="applyCategoryFilter('tech', this)">Công nghệ & AI</button>
+          <button type="button" class="pill-filter-btn" onclick="applyCategoryFilter('workshop', this)">Hội thảo Khoa học</button>
+          <button type="button" class="pill-filter-btn" onclick="applyCategoryFilter('music', this)">Đại nhạc hội</button>
+          <button type="button" class="pill-filter-btn" onclick="applyCategoryFilter('career', this)">Hướng nghiệp</button>
+        </div>
+
+        <div class="sort-select-box">
+          <label for="sortSelect">Sắp xếp theo:</label>
+          <select id="sortSelect" class="sort-select" onchange="handleSortEvents(this.value)">
+            <option value="date-asc">Thời gian: Gần nhất trước</option>
+            <option value="slot-asc">Số lượng vé: Sắp hết trước</option>
+            <option value="name-asc">Tên sự kiện: A - Z</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Danh sách Grid Sự Kiện -->
+    <div class="event-catalog-grid" id="eventCatalogGrid">
+      <!-- Các card sự kiện được render động từ JS -->
+    </div>
+
+  </main>
+
+  <!-- 5. MODAL XEM NHANH CHI TIẾT & CHỌN HẠNG VÉ -->
+  <div class="modal-backdrop" id="quickViewModal">
+    <div class="modal-box">
+      <img id="modalCoverImg" src="" class="modal-event-cover" alt="Event Cover">
+      
+      <div class="modal-header-padded">
+        <div>
+          <span class="card-status-badge open" id="modalStatusBadge">Đang mở đăng ký</span>
+          <h3 class="modal-event-title" id="modalEventTitle" style="margin-top:6px;">Tên sự kiện</h3>
+        </div>
+        <button type="button" class="btn-modal-cancel" style="padding:4px 8px; border:none; font-size:18px;" onclick="closeModal('quickViewModal')">&times;</button>
+      </div>
+
+      <div class="modal-body-scroll">
+        <div class="modal-desc-box" id="modalEventDesc">
+          Mô tả chi tiết nội dung sự kiện.
+        </div>
+
+        <div style="font-size:13px; color:var(--text-muted); display:flex; flex-direction:column; gap:6px;">
+          <div><strong style="color:var(--color-navy);">Thời gian:</strong> <span id="modalEventTime">08:00 - 17:30</span></div>
+          <div><strong style="color:var(--color-navy);">Địa điểm:</strong> <span id="modalEventLocation">Hội trường A</span></div>
+          <div><strong style="color:var(--color-navy);">Đơn vị tổ chức:</strong> <span id="modalEventOrg">Đoàn Trường ĐH Sài Gòn</span></div>
+        </div>
+
+        <div>
+          <label style="font-size:11.5px; font-weight:800; color:var(--color-navy); text-transform:uppercase; display:block; margin-bottom:8px;">
+            Chọn phân hạng vé tham dự:
+          </label>
+          <div id="modalTierList" style="display:flex; flex-direction:column; gap:8px;">
+            <!-- Render hạng vé -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" onclick="closeModal('quickViewModal')">Đóng</button>
+        <button type="button" class="btn-modal-confirm" onclick="proceedToCheckout()">Tiếp tục đặt vé & Nạp Face ID</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL XÁC NHẬN ĐĂNG XUẤT -->
+  <div class="modal-backdrop" id="logoutModal">
+    <div class="modal-box" style="max-width:400px; padding:24px;">
+      <h3 style="font-size:18px; font-weight:800; color:var(--color-navy); margin-bottom:8px;">Xác nhận Đăng xuất</h3>
+      <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:20px;">
+        Bạn có chắc chắn muốn đăng xuất khỏi tài khoản khách hàng này?
+      </p>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" class="btn-modal-cancel" onclick="closeModal('logoutModal')">Hủy</button>
+        <button type="button" class="btn-modal-confirm" style="background:var(--danger);" onclick="executeLogout()">Đăng xuất ngay</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification" class="toast-notification">
+    <span class="toast-icon">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span id="toastMessage">Thao tác thành công!</span>
+  </div>
+
+  <script>
+    // Dữ liệu sự kiện công khai (Storefront Mock Data)
+    const storeEvents = [
+      {
+        id: 1,
+        title: "Ngày Hội Công Nghệ SGU TechDay 2026",
+        category: "tech",
+        orgName: "Đoàn Trường ĐH Sài Gòn",
+        orgLogo: "https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png",
+        cover: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=600",
+        date: "20/09/2026 • 08:00 - 17:30",
+        timestamp: "2026-09-20T08:00",
+        location: "Hội trường A - Cơ sở chính SGU",
+        desc: "Triển lãm công nghệ và các giải pháp thị giác máy tính, DeepFace Kiosk. Đăng ký nhận vé và nạp ảnh khuôn mặt để vào cổng tự động.",
+        statusText: "Đang mở vé",
+        statusClass: "open",
+        totalSlots: 800,
+        availableSlots: 15,
+        tiers: [
+          { name: "Vé Tiêu Chuẩn (Standard Pass)", slotsLeft: 10, desc: "Tham quan toàn bộ gian hàng công nghệ" },
+          { name: "Vé Khách Mời VIP (VIP Pass)", slotsLeft: 5, desc: "Ghế hàng đầu & tham gia tiệc trà networking" }
+        ]
+      },
+      {
+        id: 2,
+        title: "Hội thảo Khoa học Quốc tế AI & DeepFace Vision",
+        category: "workshop",
+        orgName: "Khoa CNTT - ĐH Sài Gòn",
+        orgLogo: "https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png",
+        cover: "https://images.unsplash.com/photo-1591115765373-5207764f72e7?auto=format&fit=crop&q=80&w=600",
+        date: "25/09/2026 • 13:30 - 16:30",
+        timestamp: "2026-09-25T13:30",
+        location: "Phòng Hội thảo B302",
+        desc: "Báo cáo chuyên sâu về các thuật toán trích xuất vector khuôn mặt và ứng dụng xác thực sinh trắc học thời gian thực.",
+        statusText: "Đang mở vé",
+        statusClass: "open",
+        totalSlots: 250,
+        availableSlots: 42,
+        tiers: [
+          { name: "Vé Hội Thảo (General Pass)", slotsLeft: 42, desc: "Tham dự báo cáo và nhận tài liệu số" }
+        ]
+      },
+      {
+        id: 3,
+        title: "Đại nhạc hội Chào Tân Sinh viên Khóa 2026",
+        category: "music",
+        orgName: "Hội Sinh Viên SGU",
+        orgLogo: "https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png",
+        cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=600",
+        date: "10/10/2026 • 18:00 - 22:00",
+        timestamp: "2026-10-10T18:00",
+        location: "Sân vận động Cơ sở chính SGU",
+        desc: "Đêm hội âm nhạc chào đón tân sinh viên với sự góp mặt của các ca sĩ khách mời và các tiết mục nghệ thuật trẻ trung.",
+        statusText: "Sắp diễn ra",
+        statusClass: "upcoming",
+        totalSlots: 2000,
+        availableSlots: 800,
+        tiers: [
+          { name: "Khán Đài A (Zone A)", slotsLeft: 300, desc: "Khu vực đứng gần sân khấu chính" },
+          { name: "Khán Đài B (Zone B)", slotsLeft: 500, desc: "Khán đài ngồi tự do" }
+        ]
+      },
+      {
+        id: 4,
+        title: "Tọa đàm Hướng nghiệp Kỹ sư AI & Kỹ thuật Phần mềm",
+        category: "career",
+        orgName: "CLB Tin Học SGU",
+        orgLogo: "https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png",
+        cover: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&q=80&w=600",
+        date: "28/10/2026 • 08:30 - 11:30",
+        timestamp: "2026-10-28T08:30",
+        location: "Hội trường C - Cơ sở chính SGU",
+        desc: "Gặp gỡ đại diện các doanh nghiệp phần mềm hàng đầu, định hướng phát triển kỹ năng AI và quy trình phỏng vấn tuyển dụng.",
+        statusText: "Vé miễn phí",
+        statusClass: "free",
+        totalSlots: 300,
+        availableSlots: 95,
+        tiers: [
+          { name: "Vé Tham Dự Miễn Phí", slotsLeft: 95, desc: "Dành riêng cho sinh viên ngành CNTT" }
+        ]
+      }
+    ];
+
+    let currentCategory = 'all';
+    let searchQuery = '';
+    let currentSort = 'date-asc';
+    let selectedEventForBooking = null;
+
+    // Toast Notification
+    const toastNotification = document.getElementById('toastNotification');
+    const toastMessage = document.getElementById('toastMessage');
+    let toastTimeout = null;
+    function showToast(msg) {
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastMessage.textContent = msg;
+      toastNotification.classList.add('show');
+      toastTimeout = setTimeout(() => {
+        toastNotification.classList.remove('show');
+      }, 3000);
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    // Render Grid Sự Kiện
+    function renderEventCatalog() {
+      const grid = document.getElementById('eventCatalogGrid');
+      grid.innerHTML = '';
+
+      let filtered = storeEvents.filter(evt => {
+        const matchCat = (currentCategory === 'all' || evt.category === currentCategory);
+        const matchQuery = evt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           evt.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           evt.orgName.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchCat && matchQuery;
+      });
+
+      // Sắp xếp
+      if (currentSort === 'date-asc') {
+        filtered.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      } else if (currentSort === 'slot-asc') {
+        filtered.sort((a, b) => a.availableSlots - b.availableSlots);
+      } else if (currentSort === 'name-asc') {
+        filtered.sort((a, b) => a.title.localeCompare(b.title));
+      }
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: span 3; text-align:center; padding: 60px 20px; background:#fff; border-radius:12px; border:1.5px dashed var(--card-border); color:var(--text-muted);">
+            <svg class="icon" style="width:40px;height:40px;color:var(--text-muted);margin-bottom:8px;" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <h3 style="font-size:16px; font-weight:700; color:var(--color-navy); margin-bottom:4px;">Không tìm thấy sự kiện nào</h3>
+            <p style="font-size:13px;">Hãy thử tìm kiếm với từ khóa khác hoặc chuyển danh mục hiển thị.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(evt => {
+        const card = document.createElement('div');
+        card.className = 'event-item-card';
+
+        // Render phân hạng vé tóm tắt
+        const tiersHtml = evt.tiers.map(t => `<span class="tier-pill ${t.name.includes('VIP') ? 'vip' : ''}">${t.name}</span>`).join('');
+
+        card.innerHTML = `
+          <div class="card-cover-wrap">
+            <img src="${evt.cover}" class="card-cover-img" alt="${evt.title}">
+            <span class="card-status-badge ${evt.statusClass}">${evt.statusText}</span>
+          </div>
+
+          <div class="card-body-content">
+            <div>
+              <div class="card-org-tag">
+                <img src="${evt.orgLogo}" class="card-org-avatar" alt="Org Logo">
+                <span>${evt.orgName}</span>
+              </div>
+              <h3 class="card-event-title">${evt.title}</h3>
+
+              <div class="card-meta-list" style="margin-top:10px;">
+                <div class="meta-row">
+                  <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>${evt.date}</span>
+                </div>
+                <div class="meta-row">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <span>${evt.location}</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="card-tier-pills">
+                ${tiersHtml}
+              </div>
+
+              <div class="card-action-footer">
+                <span class="slot-left-info">Còn <strong>${evt.availableSlots}</strong> chỗ trống</span>
+                <button type="button" class="btn-book-ticket" onclick="openEventQuickView(${evt.id})">
+                  <span>Đặt vé ngay</span>
+                  <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Xử lý bộ lọc danh mục
+    function applyCategoryFilter(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('#filterCategoryGroup .pill-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderEventCatalog();
+    }
+
+    // Xử lý tìm kiếm
+    function handleSearchEvent(val) {
+      searchQuery = val.trim();
+      renderEventCatalog();
+    }
+
+    // Xử lý sắp xếp
+    function handleSortEvents(val) {
+      currentSort = val;
+      renderEventCatalog();
+    }
+
+    // Modal Quick View Chi tiết sự kiện & Chọn vé
+    function openEventQuickView(id) {
+      const evt = storeEvents.find(e => e.id === id);
+      if (!evt) return;
+
+      selectedEventForBooking = evt;
+
+      document.getElementById('modalCoverImg').src = evt.cover;
+      document.getElementById('modalEventTitle').textContent = evt.title;
+      document.getElementById('modalEventDesc').textContent = evt.desc;
+      document.getElementById('modalEventTime').textContent = evt.date;
+      document.getElementById('modalEventLocation').textContent = evt.location;
+      document.getElementById('modalEventOrg').textContent = evt.orgName;
+
+      const badge = document.getElementById('modalStatusBadge');
+      badge.className = `card-status-badge ${evt.statusClass}`;
+      badge.textContent = evt.statusText;
+
+      // Render danh sách hạng vé trong modal
+      const tierListEl = document.getElementById('modalTierList');
+      tierListEl.innerHTML = '';
+      evt.tiers.forEach((tier, idx) => {
+        const div = document.createElement('div');
+        div.className = `tier-select-item ${idx === 0 ? 'selected' : ''}`;
+        div.onclick = function() {
+          document.querySelectorAll('.tier-select-item').forEach(el => el.classList.remove('selected'));
+          div.classList.add('selected');
+        };
+        div.innerHTML = `
+          <div>
+            <div style="font-size:13.5px; font-weight:800; color:var(--color-navy);">${tier.name}</div>
+            <div style="font-size:12px; color:var(--text-muted);">${tier.desc}</div>
+          </div>
+          <span style="font-size:12px; font-weight:700; color:var(--color-teal);">Còn ${tier.slotsLeft} vé</span>
+        `;
+        tierListEl.appendChild(div);
+      });
+
+      openModal('quickViewModal');
+    }
+
+    function proceedToCheckout() {
+      closeModal('quickViewModal');
+      showToast(`Chuyển đến màn hình đặt vé cho [${selectedEventForBooking.title}] (UC06)...`);
+      setTimeout(() => {
+        alert(`Bắt đầu quy trình Đặt vé & Nhập thông tin người tham dự (Gắn Face ID) cho: ${selectedEventForBooking.title}`);
+      }, 600);
+    }
+
+    // Đăng xuất
+    function openLogoutModal() { openModal('logoutModal'); }
+    function executeLogout() {
+      localStorage.clear();
+      sessionStorage.clear();
+      closeModal('logoutModal');
+      showToast('Đăng xuất tài khoản thành công!');
+    }
+
+    // Simulation helpers
+    function simQuickView(id) { openEventQuickView(id); }
+    function simFilterTag(cat) {
+      const btn = Array.from(document.querySelectorAll('#filterCategoryGroup .pill-filter-btn')).find(b => b.getAttribute('onclick').includes(cat));
+      if (btn) applyCategoryFilter(cat, btn);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderEventCatalog();
+    });
+  </script>
+</body>
+</html>

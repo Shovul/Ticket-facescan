@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass — Hồ sơ cá nhân & Bảo mật sinh trắc học</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&display=swap&subset=vietnamese" rel="stylesheet">
+<style>
+  :root {
+    --color-navy: #023852;
+    --color-teal: #079FA0;
+    --color-mint: #9FD8C5;
+    --color-yellow: #FAC005;
+    --color-orange: #F58B01;
+    --color-red: #DC2E2F;
+
+    --bg-page: #f2f7f5;
+    --card-border: #cfe5dc;
+    --text-primary: #023852;
+    --text-muted: #537583;
+    --hairline: #e3efea;
+    --white: #ffffff;
+    --danger: #dc2626;
+    --danger-bg: #fff5f5;
+    --success: #15803d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Toolbar giả lập kiểm thử BA */
+  .sim-bar {
+    background: var(--color-navy);
+    color: #e2e8f0;
+    padding: 8px 24px;
+    font-size: 12.5px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 2px solid var(--color-teal);
+    z-index: 100;
+  }
+  .sim-title { font-weight: 700; color: var(--color-yellow); }
+  .sim-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sim-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .sim-btn:hover { background: var(--color-teal); color: #fff; border-color: var(--color-yellow); }
+
+  /* 1. Top Bar */
+  .top-bar {
+    background: #012233;
+    color: #e2eff5;
+    padding: 8px 48px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .top-bar strong { color: var(--color-yellow); font-weight: 600; }
+
+  /* 2. Header & Storefront Event Navbar */
+  .store-header {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--card-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .navbar-main {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .brand-logo {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--color-navy);
+    letter-spacing: -0.5px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .brand-logo span.pass-tag {
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--color-teal);
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+  }
+  .brand-logo .accent-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-orange);
+    border-radius: 50%;
+    margin-left: 6px;
+    box-shadow: 0 0 8px var(--color-orange);
+  }
+
+  /* Ô tìm kiếm sự kiện ở Navbar */
+  .navbar-search-box {
+    flex: 1;
+    max-width: 440px;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .nav-search-input {
+    width: 100%;
+    padding: 8px 36px 8px 14px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--color-navy);
+    background: var(--bg-page);
+    border: 1.5px solid var(--card-border);
+    border-radius: 20px;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  .nav-search-input:focus {
+    background: #fff;
+    border-color: var(--color-teal);
+    box-shadow: 0 0 0 3px rgba(7, 159, 160, 0.12);
+  }
+  .nav-search-btn {
+    position: absolute;
+    right: 6px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 50%;
+  }
+  .nav-search-btn:hover { color: var(--color-teal); }
+
+  .nav-right-cluster {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .nav-action-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 13.5px;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+  }
+  .nav-action-link:hover, .nav-action-link.active {
+    color: var(--color-teal);
+    background: var(--bg-page);
+  }
+  .badge-tag-count {
+    background: var(--color-teal);
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 2px;
+  }
+
+  /* User Menu Trigger */
+  .user-menu-wrapper { position: relative; padding: 4px 0; }
+  .user-dropdown-trigger {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 3px 12px 3px 3px;
+    border-radius: 999px;
+    background: var(--bg-page);
+    border: 1.5px solid var(--card-border);
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+  }
+  .user-menu-wrapper:hover .user-dropdown-trigger {
+    border-color: var(--color-teal);
+    background: #e6f3ee;
+  }
+  .user-avatar-tiny {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 1.5px solid var(--color-yellow);
+    background: #fff;
+  }
+  .user-name-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-navy);
+  }
+
+  .user-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    width: 230px;
+    background: var(--white);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 6px;
+    display: none;
+    z-index: 1000;
+    list-style: none;
+    box-shadow: 0 8px 24px -6px rgba(2, 56, 82, 0.15);
+  }
+  .user-menu-wrapper:hover .user-dropdown-menu { display: block; }
+  .dropdown-item-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-navy);
+    text-decoration: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .dropdown-item-link:hover { background: var(--bg-page); color: var(--color-teal); }
+  .dropdown-item-link.danger {
+    color: var(--danger);
+    border-top: 1px solid var(--hairline);
+    margin-top: 4px;
+    border-radius: 0 0 6px 6px;
+  }
+  .dropdown-item-link.danger:hover { background: var(--danger-bg); }
+
+  /* 3. Main Workspace */
+  .main-container-single {
+    flex: 1;
+    max-width: 900px;
+    width: 100%;
+    margin: 30px auto;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  .form-panel {
+    background: var(--white);
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 10px 30px -10px rgba(2, 56, 82, 0.08);
+    padding: 28px 34px;
+  }
+  .panel-header {
+    border-bottom: 1.5px solid var(--hairline);
+    padding-bottom: 14px;
+    margin-bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .panel-title {
+    font-size: 19px;
+    font-weight: 800;
+    color: var(--color-navy);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .form-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 20px;
+  }
+  .form-field { display: flex; flex-direction: column; gap: 6px; }
+  .form-field.full { grid-column: span 2; }
+  .field-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--color-navy);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .field-label .req { color: var(--color-red); margin-left: 2px; }
+
+  .input-wrapper { position: relative; display: flex; align-items: center; }
+  .form-control {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 7px;
+    outline: none;
+    background: #fff;
+    transition: border-color 0.15s ease;
+  }
+  .form-control:focus {
+    border-color: var(--color-teal);
+    box-shadow: 0 0 0 3px rgba(7, 159, 160, 0.12);
+  }
+  .form-control.error-state {
+    border-color: var(--danger);
+    background: var(--danger-bg);
+  }
+  .form-control[readonly] {
+    background-color: var(--bg-page);
+    color: #64748b;
+    cursor: default;
+  }
+  .field-error-msg { font-size: 11px; color: var(--danger); font-weight: 600; display: none; margin-top: 2px; }
+
+  /* Khu vực Đăng ký khuôn mặt Sinh trắc học */
+  .face-biometric-section {
+    grid-column: span 2;
+    background: #f8fbfa;
+    border: 1.5px dashed var(--color-teal);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+  .face-preview-container {
+    position: relative;
+    width: 104px;
+    height: 104px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid var(--card-border);
+    flex-shrink: 0;
+    background: #e6f0ed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .face-preview-container.active-scan {
+    border-color: var(--color-teal);
+  }
+  .face-preview-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .face-placeholder-icon {
+    color: var(--text-muted);
+    width: 44px;
+    height: 44px;
+  }
+  .face-scan-overlay {
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--color-yellow);
+    border-radius: 10px;
+    pointer-events: none;
+    display: none;
+  }
+  .face-preview-container.active-scan .face-scan-overlay {
+    display: block;
+  }
+
+  .face-info-content { flex: 1; }
+
+  /* Badge Trạng thái Face ID */
+  .face-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+  }
+  .face-status-badge.activated {
+    background: #dcfce7;
+    color: #166534;
+  }
+  .face-status-badge.not-activated {
+    background: #f1f5f9;
+    color: var(--text-muted);
+    border: 1px solid var(--card-border);
+  }
+
+  .face-title { font-size: 14px; font-weight: 700; color: var(--color-navy); margin-bottom: 4px; }
+  .face-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
+  .face-action-btns { display: flex; gap: 10px; }
+  
+  .btn-face-upload {
+    padding: 8px 14px;
+    background: var(--color-navy);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s ease;
+  }
+  .btn-face-upload:hover { background: #034b6e; }
+
+  /* Nút thao tác */
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .btn-submit-action {
+    padding: 10px 22px;
+    background: var(--color-teal);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.15s ease;
+  }
+  .btn-submit-action:hover { background: #058586; }
+
+  .btn-trigger-pwd {
+    padding: 10px 18px;
+    background: #fff;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s ease;
+  }
+  .btn-trigger-pwd:hover {
+    border-color: var(--color-teal);
+    background: var(--bg-page);
+    color: var(--color-teal);
+  }
+
+  .toggle-pwd-btn {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s ease;
+  }
+  .toggle-pwd-btn:hover { color: var(--color-navy); }
+
+  /* Modal Đăng xuất */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 56, 82, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 3000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .modal-backdrop.show { opacity: 1; visibility: visible; }
+  .modal-box {
+    background: #fff;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px -10px rgba(2, 56, 82, 0.28);
+    padding: 24px 26px;
+    transform: scale(0.95);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .modal-backdrop.show .modal-box { transform: scale(1); }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-navy);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .modal-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 20px;
+    padding: 4px;
+    line-height: 1;
+  }
+  .modal-body {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 22px;
+  }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
+  .btn-modal-cancel {
+    padding: 9px 16px;
+    background: #fff;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-modal-confirm {
+    padding: 9px 18px;
+    background: var(--danger);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.15s ease;
+  }
+  .btn-modal-confirm:hover { opacity: 0.9; }
+
+  /* Toast Notification */
+  .toast-notification {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--color-navy);
+    color: #fff;
+    border-left: 4px solid var(--color-teal);
+    padding: 14px 20px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(2, 56, 82, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast-notification.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .toast-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-teal);
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 860px) {
+    .navbar-search-box { display: none; }
+    .form-grid-layout { grid-template-columns: 1fr; }
+    .face-biometric-section { flex-direction: column; align-items: flex-start; }
+    .top-bar, .navbar-main { padding-left: 16px; padding-right: 16px; }
+    .form-panel { padding: 22px 18px; }
+    .form-actions { flex-direction: column; align-items: stretch; }
+    .toast-notification { left: 16px; right: 16px; bottom: 16px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SIMULATION TOOLBAR -->
+  <div class="sim-bar">
+    <div><span class="sim-title">EventPass UC04 Sandbox:</span> Kiểm thử Hồ sơ & Face ID</div>
+    <div class="sim-actions">
+      <button type="button" class="sim-btn" onclick="simTriggerChangePassword()">Mở Đổi Mật Khẩu</button>
+      <button type="button" class="sim-btn" onclick="simUploadFaceMock()">Mô phỏng Đã nạp Face ID</button>
+      <button type="button" class="sim-btn" onclick="simResetFaceMock()">Reset về Chưa có ảnh</button>
+      <button type="button" class="sim-btn" onclick="openLogoutModal()">Kiểm thử Đăng xuất (UC03)</button>
+    </div>
+  </div>
+
+  <!-- 1. TOP UTILITY BAR -->
+  <div class="top-bar">
+    <span>Cổng điểm danh sinh trắc học siêu tốc | Kết nối tức thời tới máy chủ DeepFace</span>
+    <span>Tổng đài hỗ trợ sự kiện: <strong>1900 888 234</strong></span>
+  </div>
+
+  <!-- 2. NAVBAR SỰ KIỆN -->
+  <header class="store-header">
+    <div class="navbar-main">
+      <a href="#" class="brand-logo">
+        EventPass<span class="pass-tag">TICKET</span><span class="accent-dot"></span>
+      </a>
+
+      <!-- Ô NHẬP LIỆU TÌM KIẾM TRÊN NAVBAR -->
+      <div class="navbar-search-box">
+        <input type="text" class="nav-search-input" id="eventSearchInput" placeholder="Tìm tên sự kiện, hội thảo, ca nhạc..." onkeypress="handleSearchKey(event)">
+        <button class="nav-search-btn" title="Tìm kiếm" onclick="handleSearchSubmit()">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </button>
+      </div>
+
+      <!-- VÉ CỦA TÔI & USER MENU -->
+      <div class="nav-right-cluster">
+        <a href="#" class="nav-action-link active">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
+          <span>Vé của tôi</span>
+          <span class="badge-tag-count">2</span>
+        </a>
+
+        <!-- USER PILL & DROPDOWN -->
+        <div class="user-menu-wrapper">
+          <div class="user-dropdown-trigger">
+            <img src="https://media.istockphoto.com/id/2149922267/vector/user-icon.jpg?s=612x612&w=0&k=20&c=i6jYPfB1pWjK8pll6YRxAK9fgBmf65-w5wbKH9R1dyQ=" class="user-avatar-tiny" id="navAvatarImg" alt="User Avatar">
+            <span class="user-name-text" id="navUserName">Hà Thái Sơn</span>
+            <svg class="icon" viewBox="0 0 24 24" style="width:13px;height:13px;"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+
+          <ul class="user-dropdown-menu">
+            <li>
+              <a href="#profileInfoForm" class="dropdown-item-link">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Hồ sơ & Đổi mật khẩu</span>
+              </a>
+            </li>
+            <li>
+              <a href="#" class="dropdown-item-link">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+                <span>Danh sách vé đã đăng ký</span>
+              </a>
+            </li>
+            <li>
+              <a href="javascript:void(0)" class="dropdown-item-link danger" onclick="openLogoutModal()">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                <span>Đăng xuất tài khoản</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- 3. MAIN WORKSPACE -->
+  <main class="main-container-single">
+
+    <!-- BIỂU MẪU: THÔNG TIN CÁ NHÂN & SINH TRẮC HỌC (UC04) -->
+    <section class="form-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <svg class="icon" viewBox="0 0 24 24" style="color: var(--color-teal);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Hồ Sơ Cá Nhân & Dữ Liệu Sinh Trắc Học
+        </h2>
+      </div>
+
+      <form id="profileInfoForm" onsubmit="handleUpdateInfo(event)" style="display: flex; flex-direction: column;">
+        <div class="form-grid-layout">
+          
+          <div class="form-field">
+            <label class="field-label" for="inputUsername">Tên đăng nhập</label>
+            <div class="input-wrapper">
+              <input type="text" id="inputUsername" class="form-control" value="thaison_dev" readonly>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="field-label" for="inputEmail">Địa chỉ Email</label>
+            <div class="input-wrapper">
+              <input type="email" id="inputEmail" class="form-control" value="thaison@example.com" readonly>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="field-label" for="inputFullName">Họ và tên người tham dự <span class="req">*</span></label>
+            <div class="input-wrapper">
+              <input type="text" id="inputFullName" class="form-control" value="Hà Thái Sơn" placeholder="Nhập họ và tên">
+            </div>
+            <span class="field-error-msg" id="errorFullName">Vui lòng nhập họ và tên</span>
+          </div>
+
+          <div class="form-field">
+            <label class="field-label" for="inputPhone">Số điện thoại liên hệ <span class="req">*</span></label>
+            <div class="input-wrapper">
+              <input type="text" id="inputPhone" class="form-control" value="0909123456" placeholder="Nhập số điện thoại" maxlength="10">
+            </div>
+            <span class="field-error-msg" id="errorPhone">Số điện thoại phải gồm 10 chữ số (bắt đầu bằng 0)</span>
+          </div>
+
+          <!-- PHẦN SINH TRẮC HỌC: XỬ LÝ TRẠNG THÁI TRƯỚC / SAU KHI TẢI ẢNH -->
+          <div class="face-biometric-section">
+            <div class="face-preview-container" id="facePreviewContainer">
+              <!-- Placeholder khi chưa có ảnh -->
+              <svg id="facePlaceholderIcon" class="face-placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <img src="" id="facePreviewImg" class="face-preview-img" alt="Ảnh nhận diện" style="display: none;">
+              <div class="face-scan-overlay"></div>
+            </div>
+
+            <div class="face-info-content">
+              <!-- HUY HIỆU TRẠNG THÁI -->
+              <div class="face-status-badge not-activated" id="faceStatusBadge">
+                <span id="faceStatusText">Chưa kích hoạt Face ID</span>
+              </div>
+
+              <h3 class="face-title">Ảnh chân dung nhận diện khuôn mặt</h3>
+              <p class="face-desc">Dữ liệu được mã hóa an toàn. Camera tại cổng sẽ tự động nhận diện bạn chỉ trong 1 giây.</p>
+              
+              <div class="face-action-btns">
+                <input type="file" id="faceFileInput" accept="image/*" style="display: none;" onchange="handleFaceUpload(event)">
+                <button type="button" class="btn-face-upload" onclick="document.getElementById('faceFileInput').click()">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span id="btnUploadText">Tải ảnh khuôn mặt</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-submit-action">Lưu thay đổi hồ sơ</button>
+          <button type="button" id="btnTogglePasswordPanel" class="btn-trigger-pwd" onclick="togglePasswordPanel()">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <span>Đổi mật khẩu</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- BIỂU MẪU: ĐỔI MẬT KHẨU (UC04) -->
+    <section class="form-panel" id="pwd-form-section" style="display: none;">
+      <div class="panel-header">
+        <h2 class="panel-title">
+          <svg class="icon" viewBox="0 0 24 24" style="color: var(--color-navy);"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          Thiết Lập Mật Khẩu Mới
+        </h2>
+        <button type="button" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-weight:700;" onclick="togglePasswordPanel()">Đóng</button>
+      </div>
+
+      <form id="changePasswordForm" onsubmit="handleChangePassword(event)" style="display: flex; flex-direction: column;">
+        <div class="form-grid-layout">
+          <!-- HÀNG 1: MẬT KHẨU HIỆN TẠI (FULL CHIỀU RỘNG) -->
+          <div class="form-field full">
+            <label class="field-label" for="inputCurrentPwd">Mật khẩu hiện tại <span class="req">*</span></label>
+            <div class="input-wrapper">
+              <input type="password" id="inputCurrentPwd" class="form-control" placeholder="Nhập mật khẩu hiện tại">
+              <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility('inputCurrentPwd')">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <span class="field-error-msg" id="errorCurrentPwd">Mật khẩu hiện tại không chính xác</span>
+          </div>
+
+          <!-- HÀNG 2: MẬT KHẨU MỚI & XÁC NHẬN MẬT KHẨU MỚI CHUNG 1 HÀNG (2 CỘT) -->
+          <div class="form-field">
+            <label class="field-label" for="inputNewPwd">Mật khẩu mới <span class="req">*</span></label>
+            <div class="input-wrapper">
+              <input type="password" id="inputNewPwd" class="form-control" placeholder="Tối thiểu 6 ký tự">
+              <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility('inputNewPwd')">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <span class="field-error-msg" id="errorNewPwd">Mật khẩu phải từ 6 ký tự và khác mật khẩu cũ</span>
+          </div>
+
+          <div class="form-field">
+            <label class="field-label" for="inputConfirmPwd">Xác nhận mật khẩu mới <span class="req">*</span></label>
+            <div class="input-wrapper">
+              <input type="password" id="inputConfirmPwd" class="form-control" placeholder="Nhập lại mật khẩu mới">
+              <button type="button" class="toggle-pwd-btn" onclick="togglePasswordVisibility('inputConfirmPwd')">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <span class="field-error-msg" id="errorConfirmPwd">Mật khẩu xác nhận không trùng khớp</span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-submit-action">Cập nhật mật khẩu</button>
+        </div>
+      </form>
+    </section>
+
+  </main>
+
+  <!-- HỘP THOẠI XÁC NHẬN ĐĂNG XUẤT (UC03) -->
+  <div class="modal-backdrop" id="logoutModal" onclick="handleBackdropClick(event)">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg class="icon" viewBox="0 0 24 24" style="color: var(--danger);"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Xác nhận Đăng xuất
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="closeLogoutModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        Bạn có chắc chắn muốn đăng xuất khỏi hệ thống? Phiên làm việc trên thiết bị này sẽ được đóng lại an toàn.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" onclick="closeLogoutModal()">Hủy</button>
+        <button type="button" class="btn-modal-confirm" onclick="executeLogout()">Đăng xuất ngay</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST THÔNG BÁO GÓC TRÁI DƯỚI -->
+  <div id="toastNotification" class="toast-notification">
+    <span class="toast-icon">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span id="toastMessage">Thao tác thành công!</span>
+  </div>
+
+  <script>
+    let currentDBPassword = "password123";
+    let isFaceEnrolled = false;
+
+    const toastNotification = document.getElementById('toastNotification');
+    const toastMessage = document.getElementById('toastMessage');
+    let toastTimeout = null;
+
+    function showToast(msg) {
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastMessage.textContent = msg;
+      toastNotification.classList.add('show');
+      toastTimeout = setTimeout(() => {
+        toastNotification.classList.remove('show');
+      }, 3000);
+    }
+
+    /* XỬ LÝ TÌM KIẾM TRÊN NAVBAR */
+    function handleSearchSubmit() {
+      const query = document.getElementById('eventSearchInput').value.trim();
+      if (!query) {
+        showToast('Vui lòng nhập từ khóa tìm kiếm sự kiện.');
+        return;
+      }
+      showToast(`Đang tìm kiếm sự kiện với từ khóa: "${query}"...`);
+      setTimeout(() => {
+        alert(`Chuyển hướng đến danh sách sự kiện lọc theo từ khóa: [${query}] (UC05).`);
+      }, 700);
+    }
+
+    function handleSearchKey(e) {
+      if (e.key === 'Enter') {
+        handleSearchSubmit();
+      }
+    }
+
+    /* XỬ LÝ TRẠNG THÁI ẢNH VÀ HUY HIỆU FACE ID */
+    function updateFaceUI(enrolled, imageUrl = '') {
+      isFaceEnrolled = enrolled;
+      const previewContainer = document.getElementById('facePreviewContainer');
+      const placeholderIcon = document.getElementById('facePlaceholderIcon');
+      const previewImg = document.getElementById('facePreviewImg');
+      const statusBadge = document.getElementById('faceStatusBadge');
+      const statusText = document.getElementById('faceStatusText');
+      const btnUploadText = document.getElementById('btnUploadText');
+
+      if (enrolled) {
+        placeholderIcon.style.display = 'none';
+        previewImg.style.display = 'block';
+        previewImg.src = imageUrl;
+        previewContainer.classList.add('active-scan');
+
+        statusBadge.className = 'face-status-badge activated';
+        statusText.innerHTML = `Đã kích hoạt Face ID vào cổng`;
+        btnUploadText.textContent = 'Cập nhật lại ảnh';
+      } else {
+        placeholderIcon.style.display = 'block';
+        previewImg.style.display = 'none';
+        previewImg.src = '';
+        previewContainer.classList.remove('active-scan');
+
+        statusBadge.className = 'face-status-badge not-activated';
+        statusText.innerHTML = `Chưa kích hoạt Face ID`;
+        btnUploadText.textContent = 'Tải ảnh khuôn mặt';
+      }
+    }
+
+    function handleFaceUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          updateFaceUI(true, event.target.result);
+          document.getElementById('navAvatarImg').src = event.target.result;
+          showToast('Đã trích xuất và kích hoạt nhận diện khuôn mặt thành công!');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    /* USE CASE: ĐĂNG XUẤT HỆ THỐNG (UC03) */
+    const logoutModal = document.getElementById('logoutModal');
+    function openLogoutModal() { logoutModal.classList.add('show'); }
+    function closeLogoutModal() { logoutModal.classList.remove('show'); }
+    function handleBackdropClick(e) { if (e.target === logoutModal) closeLogoutModal(); }
+
+    function executeLogout() {
+      localStorage.clear();
+      sessionStorage.clear();
+      closeLogoutModal();
+      showToast('Đăng xuất thành công!');
+      setTimeout(() => {
+        alert("Đã kết thúc phiên làm việc! Chuyển hướng về trang Đăng nhập hệ thống (UC02).");
+      }, 700);
+    }
+
+    /* ĐỔI MẬT KHẨU & HỒ SƠ CÁ NHÂN (UC04) */
+    function togglePasswordPanel() {
+      const panel = document.getElementById('pwd-form-section');
+      const isHidden = (panel.style.display === 'none' || panel.style.display === '');
+      panel.style.display = isHidden ? 'block' : 'none';
+      if (isHidden) panel.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function togglePasswordVisibility(fieldId) {
+      const input = document.getElementById(fieldId);
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    function checkField(inputId, errorId, condition) {
+      const input = document.getElementById(inputId);
+      const error = document.getElementById(errorId);
+      if (condition) {
+        input.classList.remove('error-state');
+        if (error) error.style.display = 'none';
+        return true;
+      } else {
+        input.classList.add('error-state');
+        if (error) error.style.display = 'block';
+        return false;
+      }
+    }
+
+    function handleUpdateInfo(e) {
+      e.preventDefault();
+      const fullName = document.getElementById('inputFullName').value.trim();
+      const phone = document.getElementById('inputPhone').value.trim();
+      const phoneRegex = /^0\d{9}$/;
+
+      const v1 = checkField('inputFullName', 'errorFullName', fullName.length > 0);
+      const v2 = checkField('inputPhone', 'errorPhone', phoneRegex.test(phone));
+
+      if (!v1 || !v2) return;
+
+      document.getElementById('navUserName').textContent = fullName;
+      showToast('Đã lưu thay đổi hồ sơ cá nhân thành công!');
+    }
+
+    function handleChangePassword(e) {
+      e.preventDefault();
+      const currentPwd = document.getElementById('inputCurrentPwd');
+      const newPwd = document.getElementById('inputNewPwd');
+      const confirmPwd = document.getElementById('inputConfirmPwd');
+
+      const errCurrent = document.getElementById('errorCurrentPwd');
+      const errNew = document.getElementById('errorNewPwd');
+      const errConfirm = document.getElementById('errorConfirmPwd');
+
+      let isValid = true;
+
+      if (currentPwd.value !== currentDBPassword) {
+        currentPwd.classList.add('error-state');
+        errCurrent.style.display = 'block';
+        isValid = false;
+      } else {
+        currentPwd.classList.remove('error-state');
+        errCurrent.style.display = 'none';
+      }
+
+      if (newPwd.value.length < 6 || newPwd.value === currentDBPassword) {
+        newPwd.classList.add('error-state');
+        errNew.style.display = 'block';
+        isValid = false;
+      } else {
+        newPwd.classList.remove('error-state');
+        errNew.style.display = 'none';
+      }
+
+      if (!confirmPwd.value || confirmPwd.value !== newPwd.value) {
+        confirmPwd.classList.add('error-state');
+        errConfirm.style.display = 'block';
+        isValid = false;
+      } else {
+        confirmPwd.classList.remove('error-state');
+        errConfirm.style.display = 'none';
+      }
+
+      if (!isValid) return;
+
+      currentDBPassword = newPwd.value;
+      currentPwd.value = '';
+      newPwd.value = '';
+      confirmPwd.value = '';
+
+      showToast('Đổi mật khẩu thành công!');
+      togglePasswordPanel();
+    }
+
+    /* HÀM GIẢ LẬP TEST CASE CHO BA */
+    function simTriggerChangePassword() {
+      const panel = document.getElementById('pwd-form-section');
+      panel.style.display = 'block';
+      panel.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function simUploadFaceMock() {
+      const sampleFace = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200";
+      updateFaceUI(true, sampleFace);
+      document.getElementById('navAvatarImg').src = sampleFace;
+      showToast('Mô phỏng: Đã tải ảnh khuôn mặt và bật Face ID');
+    }
+
+    function simResetFaceMock() {
+      updateFaceUI(false);
+      document.getElementById('navAvatarImg').src = "https://media.istockphoto.com/id/2149922267/vector/user-icon.jpg?s=612x612&w=0&k=20&c=i6jYPfB1pWjK8pll6YRxAK9fgBmf65-w5wbKH9R1dyQ=";
+      showToast('Mô phỏng: Đã reset về trạng thái chưa có Face ID');
+    }
+  </script>
+</body>
+</html>

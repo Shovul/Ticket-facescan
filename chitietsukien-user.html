@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass — Chi tiết sự kiện & Đặt vé Free (Face ID Lock)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-navy: #023852;
+    --color-navy-dark: #012233;
+    --color-teal: #079FA0;
+    --color-teal-hover: #058586;
+    --color-mint: #9FD8C5;
+    --color-yellow: #FAC005;
+    --color-orange: #F58B01;
+    --color-red: #DC2E2F;
+
+    --bg-page: #f2f7f5;
+    --card-border: #cfe5dc;
+    --text-primary: #023852;
+    --text-muted: #537583;
+    --hairline: #e3efea;
+    --white: #ffffff;
+    --danger: #dc2626;
+    --danger-bg: #fff5f5;
+    --success: #15803d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Sandbox Toolbar */
+  .sim-bar {
+    background: var(--color-navy);
+    color: #e2e8f0;
+    padding: 8px 24px;
+    font-size: 12.5px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 2px solid var(--color-teal);
+    z-index: 100;
+  }
+  .sim-title { font-weight: 700; color: var(--color-yellow); }
+  .sim-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sim-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .sim-btn:hover { background: var(--color-teal); color: #fff; border-color: var(--color-yellow); }
+
+  /* 1. Top Bar */
+  .top-bar {
+    background: var(--color-navy-dark);
+    color: #e2eff5;
+    padding: 8px 48px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .top-bar strong { color: var(--color-yellow); font-weight: 600; }
+
+  /* 2. Header & Storefront Navbar */
+  .store-header {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--card-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .navbar-main {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .brand-logo {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--color-navy);
+    letter-spacing: -0.5px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .brand-logo span.pass-tag {
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--color-teal);
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+  }
+  .brand-logo .accent-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-orange);
+    border-radius: 50%;
+    margin-left: 6px;
+    box-shadow: 0 0 8px var(--color-orange);
+  }
+
+  .nav-right-cluster { display: flex; align-items: center; gap: 16px; }
+  .nav-action-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 13.5px;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+  }
+  .nav-action-link:hover, .nav-action-link.active {
+    color: var(--color-teal);
+    background: var(--bg-page);
+  }
+  .badge-tag-count {
+    background: var(--color-teal);
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 2px;
+  }
+
+  .user-menu-wrapper { position: relative; padding: 4px 0; }
+  .user-dropdown-trigger {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 3px 12px 3px 3px;
+    border-radius: 999px;
+    background: var(--bg-page);
+    border: 1.5px solid var(--card-border);
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+  }
+  .user-avatar-tiny {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 1.5px solid var(--color-yellow);
+    background: #fff;
+  }
+  .user-name-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-navy);
+  }
+
+  /* 3. BREADCRUMB */
+  .breadcrumb-nav {
+    max-width: 1180px;
+    margin: 16px auto 0 auto;
+    padding: 0 24px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .breadcrumb-link {
+    color: var(--color-teal);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .breadcrumb-link:hover { text-decoration: underline; }
+
+  /* 4. MAIN DETAIL LAYOUT */
+  .detail-layout-container {
+    max-width: 1180px;
+    margin: 14px auto 60px auto;
+    padding: 0 24px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* CỘT TRÁI */
+  .event-info-panel { display: flex; flex-direction: column; gap: 22px; }
+  .event-main-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(2, 56, 82, 0.04);
+  }
+  .event-cover-hero {
+    width: 100%;
+    height: 290px;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
+  }
+  .event-hero-body {
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .event-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 800;
+    padding: 3px 12px;
+    border-radius: 20px;
+    background: #e6f7f3;
+    color: #0d7a60;
+    border: 1px solid #bcf0e2;
+    text-transform: uppercase;
+    width: fit-content;
+  }
+  .event-title-h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--color-navy);
+    line-height: 1.3;
+    letter-spacing: -0.4px;
+  }
+
+  .event-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    background: var(--bg-page);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .meta-item { display: flex; align-items: flex-start; gap: 10px; }
+  .meta-icon-box {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1.5px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-teal);
+    flex-shrink: 0;
+  }
+  .meta-text-box div:first-child {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .meta-text-box div:last-child {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--color-navy);
+    margin-top: 2px;
+  }
+
+  .event-description-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    padding: 24px 28px;
+    box-shadow: 0 6px 18px rgba(2, 56, 82, 0.04);
+  }
+  .section-heading-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16.5px;
+    font-weight: 800;
+    color: var(--color-navy);
+    padding-bottom: 12px;
+    border-bottom: 1.5px solid var(--hairline);
+    margin-bottom: 14px;
+  }
+  .event-desc-text { font-size: 14px; color: #334155; line-height: 1.7; }
+
+  /* CỘT PHẢI: BOOKING CARD */
+  .booking-flow-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: sticky;
+    top: 80px;
+  }
+  .booking-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    box-shadow: 0 8px 24px rgba(2, 56, 82, 0.06);
+  }
+
+  /* THANH ĐẾM NGƯỢC 5 PHÚT */
+  .reservation-countdown-bar {
+    background: #fffbeb;
+    border: 1.5px solid var(--color-yellow);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    animation: fadeIn 0.3s ease;
+  }
+  .reservation-countdown-bar.active { display: flex; }
+  .timer-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--danger);
+    background: #fee2e2;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 1px;
+  }
+
+  /* Danh sách phân hạng vé */
+  .tier-ticket-list { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+  .tier-booking-item {
+    border: 1.5px solid var(--card-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-page);
+    transition: all 0.15s ease;
+  }
+  .tier-booking-item.active-selected {
+    border-color: var(--color-teal);
+    background: #f0f9f7;
+  }
+  .tier-left-info h4 { font-size: 13.5px; font-weight: 800; color: var(--color-navy); }
+  .tier-left-info p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .tier-left-info .slots-badge { font-size: 11px; color: var(--color-teal); font-weight: 700; margin-top: 4px; display: block; }
+
+  /* Quantity Stepper */
+  .quantity-stepper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    padding: 2px 4px;
+  }
+  .btn-step {
+    width: 26px;
+    height: 26px;
+    border: none;
+    background: transparent;
+    color: var(--color-navy);
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+  .btn-step:hover:not(:disabled) { background: var(--bg-page); color: var(--color-teal); }
+  .btn-step:disabled { color: #cbd5e1; cursor: not-allowed; }
+  .step-value {
+    width: 22px;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--color-navy);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* NÚT BẮT ĐẦU GIỮ CHỖ 5 PHÚT */
+  .btn-start-reserve {
+    width: 100%;
+    padding: 12px;
+    background: var(--color-navy);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s ease;
+  }
+  .btn-start-reserve:hover:not(:disabled) { background: #034b6e; }
+  .btn-start-reserve:disabled { background: #94a3b8; cursor: not-allowed; }
+
+  /* KHUNG NẠP THÔNG TIN CHO TỪNG VÉ */
+  .attendees-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1.5px dashed var(--card-border);
+  }
+  .attendee-card-item {
+    background: var(--bg-page);
+    border: 1.5px solid var(--card-border);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: all 0.2s ease;
+  }
+  .attendee-card-item.is-owner-card {
+    border-color: var(--color-teal);
+    background: #f4faf8;
+  }
+  .attendee-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .attendee-tier-tag {
+    font-size: 11px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--color-teal);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .attendee-tier-tag.vip { background: var(--color-orange); }
+
+  /* GÁN VÉ CHO CHÍNH MÌNH */
+  .assign-owner-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(7, 159, 160, 0.08);
+    border: 1px solid rgba(7, 159, 160, 0.2);
+    border-radius: 6px;
+    padding: 8px 12px;
+  }
+  .assign-owner-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-navy);
+    cursor: pointer;
+  }
+
+  /* Tab tùy chọn: Tự điền vs Gửi link */
+  .method-switch-tabs {
+    display: flex;
+    gap: 6px;
+    background: #e2e8f0;
+    padding: 3px;
+    border-radius: 6px;
+  }
+  .method-tab-btn {
+    flex: 1;
+    padding: 5px 8px;
+    border: none;
+    border-radius: 4px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .method-tab-btn.active {
+    background: #fff;
+    color: var(--color-navy);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  }
+
+  .attendee-input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .att-control {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 12.5px;
+    font-family: inherit;
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    outline: none;
+    background: #fff;
+  }
+  .att-control:focus { border-color: var(--color-teal); }
+  .att-control[readonly] { background: #f1f5f9; color: #475569; }
+
+  /* Vùng nạp Face ID */
+  .att-face-upload-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    border: 1px dashed var(--color-teal);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .att-face-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: #e2f0ec;
+    border: 1.5px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .att-face-meta {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .btn-upload-single-face {
+    padding: 4px 10px;
+    background: var(--color-navy);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    width: fit-content;
+  }
+  .btn-upload-single-face:hover { background: var(--color-teal); }
+
+  /* Khung Link Claim gửi bạn bè */
+  .claim-link-box {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .link-copy-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .link-input-display {
+    flex: 1;
+    padding: 6px 8px;
+    font-size: 11.5px;
+    font-family: monospace;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    color: #475569;
+    outline: none;
+  }
+  .btn-copy-claim {
+    padding: 6px 10px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-copy-claim:hover { background: var(--color-teal-hover); }
+
+  /* Submit Button */
+  .order-summary-box {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1.5px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .btn-confirm-booking-all {
+    width: 100%;
+    padding: 13px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s ease;
+  }
+  .btn-confirm-booking-all:hover:not(:disabled) { background: var(--color-teal-hover); }
+  .btn-confirm-booking-all:disabled { background: #94a3b8; cursor: not-allowed; }
+
+  /* Modal Giả lập Bạn Bè nạp ảnh qua Link */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 56, 82, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.2s;
+  }
+  .modal-backdrop.show { opacity: 1; visibility: visible; }
+  .modal-box {
+    background: #fff;
+    border-radius: 12px;
+    max-width: 440px;
+    width: 100%;
+    padding: 22px 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  }
+
+  /* Toast Notification */
+  .toast-notification {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--color-navy);
+    color: #fff;
+    border-left: 4px solid var(--color-teal);
+    padding: 14px 20px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(2, 56, 82, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    z-index: 6000;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast-notification.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 960px) {
+    .detail-layout-container { grid-template-columns: 1fr; }
+    .booking-flow-panel { position: static; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SIMULATION TOOLBAR -->
+  <div class="sim-bar">
+    <div><span class="sim-title">EventPass Sandbox:</span> Đặt vé Free & Hoán đổi chủ vé (Self Re-assign)</div>
+    <div class="sim-actions">
+      <button type="button" class="sim-btn" onclick="simQuickPickTickets(1, 1)">Chọn 1 vé Standard + 1 vé VIP</button>
+      <button type="button" class="sim-btn" onclick="simSwapToVip()">Gán bản thân sang vé VIP</button>
+      <button type="button" class="sim-btn" onclick="simFastForwardTimer()">Tua nhanh còn 30s</button>
+      <button type="button" class="sim-btn" onclick="simTriggerFriendSubmit()">Bạn bè nạp qua link</button>
+    </div>
+  </div>
+
+  <!-- 1. TOP UTILITY BAR -->
+  <div class="top-bar">
+    <span>Sự kiện Miễn Phí &bullet; Điểm danh tự động qua cổng Kiosk Face ID &lt; 1 giây</span>
+    <span>Hotline hỗ trợ: <strong>1900 888 234</strong></span>
+  </div>
+
+  <!-- 2. NAVBAR -->
+  <header class="store-header">
+    <div class="navbar-main">
+      <a href="#" class="brand-logo">
+        EventPass<span class="pass-tag">FREE</span><span class="accent-dot"></span>
+      </a>
+
+      <div class="nav-right-cluster">
+        <a href="#" class="nav-action-link">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
+          <span>Vé của tôi</span>
+          <span class="badge-tag-count">2</span>
+        </a>
+
+        <div class="user-menu-wrapper">
+          <div class="user-dropdown-trigger">
+            <img src="https://media.istockphoto.com/id/2149922267/vector/user-icon.jpg?s=612x612&w=0&k=20&c=i6jYPfB1pWjK8pll6YRxAK9fgBmf65-w5wbKH9R1dyQ=" class="user-avatar-tiny" alt="Avatar">
+            <span class="user-name-text">Hà Thái Sơn</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 3. BREADCRUMB -->
+  <div class="breadcrumb-nav">
+    <a href="#" class="breadcrumb-link">Trang chủ</a>
+    <span>&rsaquo;</span>
+    <a href="#" class="breadcrumb-link">Sự kiện công nghệ</a>
+    <span>&rsaquo;</span>
+    <span>SGU TechDay 2026</span>
+  </div>
+
+  <!-- 4. MAIN DETAIL & BOOKING -->
+  <main class="detail-layout-container">
+
+    <!-- CỘT TRÁI: THÔNG TIN SỰ KIỆN -->
+    <div class="event-info-panel">
+      <div class="event-main-card">
+        <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=1200" 
+             class="event-cover-hero" 
+             alt="TechDay Cover">
+        
+        <div class="event-hero-body">
+          <div class="event-status-pill">
+            <span style="width:6px;height:6px;border-radius:50%;background:#0d7a60;"></span>
+            <span>Vé Miễn Phí &bullet; Đăng ký nhận vé ngay</span>
+          </div>
+
+          <h1 class="event-title-h1">Ngày Hội Công Nghệ SGU TechDay 2026</h1>
+
+          <div class="event-meta-grid">
+            <div class="meta-item">
+              <div class="meta-icon-box">
+                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="meta-text-box">
+                <div>Thời gian tổ chức</div>
+                <div>08:00 - 17:30 • 20/09/2026</div>
+              </div>
+            </div>
+
+            <div class="meta-item">
+              <div class="meta-icon-box">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              </div>
+              <div class="meta-text-box">
+                <div>Địa điểm tổ chức</div>
+                <div>Hội trường A - Cơ sở chính SGU</div>
+              </div>
+            </div>
+
+            <div class="meta-item">
+              <div class="meta-icon-box">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div class="meta-text-box">
+                <div>Đơn vị tổ chức</div>
+                <div>Đoàn Trường Đại học Sài Gòn</div>
+              </div>
+            </div>
+
+            <div class="meta-item">
+              <div class="meta-icon-box">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <div class="meta-text-box">
+                <div>Giá vé tham dự</div>
+                <div style="color:var(--color-teal); font-weight:800;">MIỄN PHÍ 100%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-description-card">
+        <div class="section-heading-row">
+          <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Quy định nhận vé & Điểm danh Kiosk Face ID</span>
+        </div>
+        <p class="event-desc-text">
+          Sự kiện mở cửa hoàn toàn miễn phí. Để chống tình trạng đầu cơ hoặc ôm vé ảo, mỗi lượt đăng ký sẽ có <strong>5 phút giữ chỗ tạm thời</strong> để bạn hoàn tất thông tin và nạp ảnh khuôn mặt cho từng vé. Nếu có nhiều hạng vé, bạn có thể tự do gán bản thân vào bất kỳ vé nào bạn muốn.
+        </p>
+      </div>
+    </div>
+
+    <!-- CỘT PHẢI: QUY TRÌNH ĐẶT VÉ FREE & KHÓA GIỮ CHỖ 5 PHÚT -->
+    <div class="booking-flow-panel">
+      <div class="booking-card">
+        
+        <!-- THANH ĐẾM NGƯỢC 5 PHÚT -->
+        <div class="reservation-countdown-bar" id="countdownBar">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-orange);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div style="font-size:12px; color:var(--color-navy); font-weight:700;">
+              Vé đang được khóa tạm giữ:
+            </div>
+          </div>
+          <span class="timer-badge" id="timerBadge">05:00</span>
+        </div>
+
+        <div class="section-heading-row" style="margin-bottom:10px;">
+          <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal);"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+          <span>Chọn Hạng Vé Miễn Phí</span>
+        </div>
+        <p style="font-size:12px; color:var(--text-muted); line-height:1.5;">
+          Chọn số lượng vé bạn muốn nhận (tối đa 5 vé/tài khoản). Bấm bắt đầu để khóa tạm giữ chỗ trong 5 phút.
+        </p>
+
+        <!-- BẢNG TĂNG GIẢM HẠNG VÉ -->
+        <div class="tier-ticket-list" id="tierSelectionSection">
+          <div class="tier-booking-item" id="tierRow_std">
+            <div class="tier-left-info">
+              <h4>Vé Tiêu Chuẩn (Standard Pass)</h4>
+              <p>Tham quan sảnh & gian hàng AI</p>
+              <span class="slots-badge">Miễn phí • Còn 15 chỗ</span>
+            </div>
+            <div class="quantity-stepper">
+              <button type="button" class="btn-step" id="btnMinus_std" onclick="changeTierQty('std', -1)">&minus;</button>
+              <span class="step-value" id="qty_std">0</span>
+              <button type="button" class="btn-step" id="btnPlus_std" onclick="changeTierQty('std', 1)">&plus;</button>
+            </div>
+          </div>
+
+          <div class="tier-booking-item" id="tierRow_vip">
+            <div class="tier-left-info">
+              <h4>Vé VIP Khách Mời (VIP Pass)</h4>
+              <p>Hàng ghế đầu & Teabreak</p>
+              <span class="slots-badge" style="color:var(--color-orange);">Miễn phí • Còn 5 chỗ</span>
+            </div>
+            <div class="quantity-stepper">
+              <button type="button" class="btn-step" id="btnMinus_vip" onclick="changeTierQty('vip', -1)">&minus;</button>
+              <span class="step-value" id="qty_vip">0</span>
+              <button type="button" class="btn-step" id="btnPlus_vip" onclick="changeTierQty('vip', 1)">&plus;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- NÚT KÍCH HOẠT KHÓA 5 PHÚT -->
+        <button type="button" class="btn-start-reserve" id="btnStartReserve" disabled onclick="startReservationLock()">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>Khóa Giữ Chỗ & Điền Thông Tin (5 Phút)</span>
+        </button>
+
+        <!-- DANH SÁCH THẺ ĐIỀN THÔNG TIN & FACE ID -->
+        <div id="attendeesSection" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:18px; margin-bottom:10px;">
+            <div style="font-size:13px; font-weight:800; color:var(--color-navy);">
+              Danh sách vé (<span id="attendeeTotalCount">0</span> vé)
+            </div>
+            <span style="font-size:11.5px; color:var(--color-teal); font-weight:700;">Ghi đè kết quả sau cùng</span>
+          </div>
+
+          <div class="attendees-container" id="attendeesContainer">
+            <!-- Render động bằng JS -->
+          </div>
+
+          <div class="order-summary-box">
+            <button type="button" class="btn-confirm-booking-all" id="btnFinalSubmit" onclick="executeFinalBooking()">
+              <span>Xác Nhận Nhận Vé Chính Thức</span>
+              <svg class="icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL GIẢ LẬP BẠN BÈ MỞ LINK ĐIỀN THÔNG TIN TỪ XA -->
+  <div class="modal-backdrop" id="friendClaimModal">
+    <div class="modal-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="font-size:16px; font-weight:800; color:var(--color-navy);" id="modalClaimTitle">Bạn bè nạp Face ID</h3>
+        <button type="button" style="background:none; border:none; font-size:18px; cursor:pointer;" onclick="closeModal('friendClaimModal')">&times;</button>
+      </div>
+      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:14px;">
+        Giao diện mô phỏng khi người đi cùng mở link claim trên điện thoại để tự nạp thông tin và chụp ảnh selfie.
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <input type="text" class="att-control" id="friendNameInput" placeholder="Họ và tên của bạn...">
+        <input type="text" class="att-control" id="friendPhoneInput" placeholder="Số điện thoại...">
+        
+        <div style="border:1.5px dashed var(--color-teal); border-radius:8px; padding:16px; text-align:center; background:#f8fbfa;">
+          <img id="friendFacePreviewImg" src="" style="width:70px; height:70px; border-radius:8px; object-fit:cover; display:none; margin:0 auto 8px auto;">
+          <input type="file" id="friendFileInput" accept="image/*" style="display:none;" onchange="handleFriendUpload(this.files)">
+          <button type="button" class="btn-upload-single-face" style="margin:0 auto;" onclick="document.getElementById('friendFileInput').click()">
+            <span>Chụp ảnh / Tải ảnh Selfie</span>
+          </button>
+        </div>
+
+        <button type="button" class="btn-confirm-booking-all" style="margin-top:10px;" onclick="submitFriendClaim()">
+          Gửi thông tin (Ghi đè kết quả)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification" class="toast-notification">
+    <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-mint); width:18px; height:18px;"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="toastMessage">Thao tác thành công!</span>
+  </div>
+
+  <script>
+    const tierQuantities = { std: 0, vip: 0 };
+    const tierMeta = {
+      std: { name: "Vé Tiêu Chuẩn", badgeClass: "" },
+      vip: { name: "Vé VIP", badgeClass: "vip" }
+    };
+
+    // Dữ liệu profile chính chủ
+    const currentUserProfile = {
+      name: "Hà Thái Sơn",
+      phone: "0909123456",
+      faceImg: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200"
+    };
+
+    let isReserved = false;
+    let countdownInterval = null;
+    let secondsRemaining = 300; // 5 phút
+    let attendeeRecords = {}; // Lưu trữ: { 1: { name, phone, faceImg, tierKey, isOwner, lastUpdated } }
+    let currentOwnerTicketId = 1; // Mặc định vé #1 là của chính mình
+    let activeClaimIndex = null;
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMessage').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3200);
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    // 1. CHỌN SỐ LƯỢNG VÉ
+    function changeTierQty(key, delta) {
+      if (isReserved) {
+        alert("Bạn đang trong phiên giữ chỗ 5 phút. Vui lòng hoàn tất hoặc đợi hết hạn để chọn lại số lượng!");
+        return;
+      }
+      const next = (tierQuantities[key] || 0) + delta;
+      if (next < 0) return;
+      if (tierQuantities.std + tierQuantities.vip + delta > 5) {
+        alert("Để chống đầu cơ, mỗi tài khoản chỉ được đăng ký tối đa 5 vé miễn phí!");
+        return;
+      }
+      tierQuantities[key] = next;
+      document.getElementById(`qty_${key}`).textContent = next;
+
+      const total = tierQuantities.std + tierQuantities.vip;
+      document.getElementById('btnStartReserve').disabled = (total === 0);
+      document.getElementById(`tierRow_${key}`).classList.toggle('active-selected', next > 0);
+    }
+
+    // 2. KÍCH HOẠT KHÓA 5 PHÚT
+    function startReservationLock() {
+      const total = tierQuantities.std + tierQuantities.vip;
+      if (total === 0) return;
+
+      isReserved = true;
+      document.getElementById('btnStartReserve').style.display = 'none';
+      document.getElementById('btnMinus_std').disabled = true;
+      document.getElementById('btnPlus_std').disabled = true;
+      document.getElementById('btnMinus_vip').disabled = true;
+      document.getElementById('btnPlus_vip').disabled = true;
+
+      document.getElementById('countdownBar').classList.add('active');
+      document.getElementById('attendeesSection').style.display = 'block';
+      document.getElementById('attendeeTotalCount').textContent = total;
+
+      // Mặc định vé đầu tiên tạo ra là của chính mình
+      currentOwnerTicketId = 1;
+      startCountdownTimer(300);
+      buildAttendeeList();
+      showToast("Đã khóa giữ chỗ thành công 5 phút! Vui lòng nạp khuôn mặt.");
+    }
+
+    function startCountdownTimer(duration) {
+      secondsRemaining = duration;
+      clearInterval(countdownInterval);
+      updateTimerDisplay();
+
+      countdownInterval = setInterval(() => {
+        secondsRemaining--;
+        updateTimerDisplay();
+
+        if (secondsRemaining <= 0) {
+          clearInterval(countdownInterval);
+          handleReservationTimeout();
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const mins = String(Math.floor(secondsRemaining / 60)).padStart(2, '0');
+      const secs = String(secondsRemaining % 60).padStart(2, '0');
+      document.getElementById('timerBadge').textContent = `${mins}:${secs}`;
+    }
+
+    function handleReservationTimeout() {
+      alert("HẾT THỜI GIAN GIỮ CHỖ!\n\nPhiên đăng ký 5 phút đã kết thúc. Các suất vé đã được tự động giải phóng lại kho.");
+      window.location.reload();
+    }
+
+    // 3. SINH FORM DANH SÁCH VÉ
+    function buildAttendeeList() {
+      const container = document.getElementById('attendeesContainer');
+      container.innerHTML = '';
+      attendeeRecords = {};
+      let index = 1;
+
+      // Tạo list phẳng từ các hạng vé đã chọn
+      const ticketFlatList = [];
+      for (let i = 0; i < tierQuantities.std; i++) ticketFlatList.push('std');
+      for (let i = 0; i < tierQuantities.vip; i++) ticketFlatList.push('vip');
+
+      // Khởi tạo records
+      ticketFlatList.forEach((tierKey, idx) => {
+        const ticketId = idx + 1;
+        const isOwner = (ticketId === currentOwnerTicketId);
+
+        attendeeRecords[ticketId] = {
+          ticketId,
+          tierKey,
+          isOwner,
+          name: isOwner ? currentUserProfile.name : "",
+          phone: isOwner ? currentUserProfile.phone : "",
+          faceImg: isOwner ? currentUserProfile.faceImg : "",
+          lastUpdated: new Date().toLocaleTimeString()
+        };
+      });
+
+      renderAllAttendeeCards();
+    }
+
+    function renderAllAttendeeCards() {
+      const container = document.getElementById('attendeesContainer');
+      container.innerHTML = '';
+
+      Object.values(attendeeRecords).forEach(item => {
+        container.appendChild(createAttendeeCardNode(item));
+      });
+    }
+
+    function createAttendeeCardNode(item) {
+      const index = item.ticketId;
+      const tier = tierMeta[item.tierKey];
+      const isOwner = item.isOwner;
+
+      const div = document.createElement('div');
+      div.className = `attendee-card-item ${isOwner ? 'is-owner-card' : ''}`;
+      div.id = `attCard_${index}`;
+
+      div.innerHTML = `
+        <div class="attendee-header-row">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <strong style="font-size:13px; color:var(--color-navy);">Vé #${index}</strong>
+            <span class="attendee-tier-tag ${tier.badgeClass}">${tier.name}</span>
+          </div>
+          ${isOwner ? `<span style="font-size:11px; background:#dcfce7; color:#166534; font-weight:800; padding:2px 8px; border-radius:10px;">Chính bạn</span>` : ''}
+        </div>
+
+        <!-- TÙY CHỌN: GÁN VÉ CHO CHÍNH MÌNH (CHO PHÉP CHUYỂN BẢN THÂN SANG VÉ KHÁC) -->
+        <div class="assign-owner-row">
+          <label class="assign-owner-label" for="ownerRadio_${index}">
+            <input type="radio" name="ownerTicketSelector" id="ownerRadio_${index}" ${isOwner ? 'checked' : ''} onchange="setTicketOwner(${index})">
+            <span>Dành vé này cho chính tôi (${tier.name})</span>
+          </label>
+          <span style="font-size:11px; color:var(--text-muted);">${isOwner ? 'Đang kích hoạt' : 'Bấm để đổi vé'}</span>
+        </div>
+
+        ${!isOwner ? `
+          <div class="method-switch-tabs">
+            <button type="button" class="method-tab-btn active" id="tabDirect_${index}" onclick="switchAttendeeMethod(${index}, 'direct')">Tự điền & Nạp ảnh</button>
+            <button type="button" class="method-tab-btn" id="tabLink_${index}" onclick="switchAttendeeMethod(${index}, 'link')">Tạo link gửi bạn bè</button>
+          </div>
+        ` : ''}
+
+        <!-- PHƯƠNG THỨC 1: TỰ NHẬP THÔNG TIN HOẶC CHỦ SỞ HỮU -->
+        <div id="methodDirectBox_${index}">
+          <div class="attendee-input-grid" style="margin-bottom:10px;">
+            <input type="text" class="att-control" id="inputName_${index}" value="${item.name}" placeholder="Họ và tên *" oninput="handleDirectInput(${index})" ${isOwner ? 'readonly' : ''}>
+            <input type="text" class="att-control" id="inputPhone_${index}" value="${item.phone}" placeholder="Số điện thoại *" oninput="handleDirectInput(${index})" ${isOwner ? 'readonly' : ''}>
+          </div>
+
+          <div class="att-face-upload-box">
+            <div class="att-face-thumb" id="thumbBox_${index}">
+              ${item.faceImg 
+                ? `<img src="${item.faceImg}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">` 
+                : `<svg class="icon" style="color:var(--text-muted);" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`}
+            </div>
+            <div class="att-face-meta">
+              <span style="font-size:12px; font-weight:700; color:var(--color-navy);" id="statusLabel_${index}">
+                ${item.faceImg ? `&check; ${isOwner ? 'Đã lấy Face ID của bạn' : 'Đã nạp ảnh Face ID'}` : "Chưa có ảnh khuôn mặt"}
+              </span>
+              <span style="font-size:11px; color:var(--text-muted);" id="lastUpdated_${index}">Cập nhật: ${item.lastUpdated}</span>
+              <input type="file" id="file_${index}" accept="image/*" style="display:none;" onchange="handleDirectFileUpload(${index}, this.files)">
+              <button type="button" class="btn-upload-single-face" onclick="document.getElementById('file_${index}').click()">
+                <span>${isOwner ? 'Đổi ảnh cá nhân' : 'Tải ảnh khuôn mặt'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PHƯƠNG THỨC 2: LINK GỬI BẠN BÈ -->
+        ${!isOwner ? `
+          <div id="methodLinkBox_${index}" style="display:none;">
+            <div class="claim-link-box">
+              <div style="font-size:12px; font-weight:700; color:var(--color-navy);">Link gửi bạn bè tự nạp Face ID trên điện thoại:</div>
+              <div class="link-copy-row">
+                <input type="text" class="link-input-display" readonly value="https://eventpass.vn/claim/pass_${index}_${Math.random().toString(36).substring(2,7)}">
+                <button type="button" class="btn-copy-claim" onclick="copyClaimLink(${index})">Copy Link</button>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                <span style="font-size:11px; color:var(--text-muted);">Hết hạn cùng lúc với đồng hồ đếm ngược 5 phút.</span>
+                <button type="button" style="background:none;border:none;color:var(--color-teal);font-size:11.5px;font-weight:700;cursor:pointer;" onclick="openFriendClaimSim(${index})">
+                  [ Giả lập mở link ]
+                </button>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+      `;
+      return div;
+    }
+
+    // 4. LOGIC HOÁN ĐỔI CHỦ SỞ HỮU (RE-ASSIGN TICKET OWNER)
+    function setTicketOwner(newOwnerIndex) {
+      if (currentOwnerTicketId === newOwnerIndex) return;
+
+      const previousOwnerIndex = currentOwnerTicketId;
+      currentOwnerTicketId = newOwnerIndex;
+
+      // Vé cũ: Trở thành vé bạn bè -> Reset để tránh trùng mặt
+      attendeeRecords[previousOwnerIndex].isOwner = false;
+      attendeeRecords[previousOwnerIndex].name = "";
+      attendeeRecords[previousOwnerIndex].phone = "";
+      attendeeRecords[previousOwnerIndex].faceImg = "";
+      attendeeRecords[previousOwnerIndex].lastUpdated = new Date().toLocaleTimeString();
+
+      // Vé mới: Được gán profile và Face ID của chủ tài khoản
+      attendeeRecords[newOwnerIndex].isOwner = true;
+      attendeeRecords[newOwnerIndex].name = currentUserProfile.name;
+      attendeeRecords[newOwnerIndex].phone = currentUserProfile.phone;
+      attendeeRecords[newOwnerIndex].faceImg = currentUserProfile.faceImg;
+      attendeeRecords[newOwnerIndex].lastUpdated = new Date().toLocaleTimeString();
+
+      renderAllAttendeeCards();
+      showToast(`Đã chuyển bạn sang Vé #${newOwnerIndex} (${tierMeta[attendeeRecords[newOwnerIndex].tierKey].name}) thành công!`);
+    }
+
+    function switchAttendeeMethod(index, method) {
+      document.getElementById(`tabDirect_${index}`).classList.toggle('active', method === 'direct');
+      document.getElementById(`tabLink_${index}`).classList.toggle('active', method === 'link');
+      document.getElementById(`methodDirectBox_${index}`).style.display = (method === 'direct') ? 'block' : 'none';
+      document.getElementById(`methodLinkBox_${index}`).style.display = (method === 'link') ? 'block' : 'none';
+    }
+
+    function handleDirectInput(index) {
+      attendeeRecords[index].name = document.getElementById(`inputName_${index}`).value.trim();
+      attendeeRecords[index].phone = document.getElementById(`inputPhone_${index}`).value.trim();
+      attendeeRecords[index].lastUpdated = new Date().toLocaleTimeString();
+      document.getElementById(`lastUpdated_${index}`).textContent = `Cập nhật: ${attendeeRecords[index].lastUpdated} (Bạn tự gõ)`;
+    }
+
+    function handleDirectFileUpload(index, files) {
+      if (!files || files.length === 0) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        applyFaceDataToTicket(index, e.target.result, "Bạn vừa tự tải lên");
+      };
+      reader.readAsDataURL(files[0]);
+    }
+
+    function copyClaimLink(index) {
+      showToast(`Đã sao chép link nhận vé cho Vé #${index}! Gửi cho bạn bè ngay.`);
+    }
+
+    // 5. LAST WRITE WINS & CHỐNG TRÙNG LẶP KHUÔN MẶT
+    function applyFaceDataToTicket(index, imgSrc, authorNote) {
+      // Kiểm tra trùng lặp khuôn mặt giữa các vé
+      for (const [key, item] of Object.entries(attendeeRecords)) {
+        if (parseInt(key) !== index && item.faceImg && item.faceImg === imgSrc) {
+          alert(`CẢNH BÁO TRÙNG KHUÔN MẶT!\n\nKhuôn mặt này đã được sử dụng cho Vé #${key}. Mỗi vé bắt buộc phải là một người tham dự khác nhau để Kiosk đối soát!`);
+          return;
+        }
+      }
+
+      attendeeRecords[index].faceImg = imgSrc;
+      attendeeRecords[index].lastUpdated = new Date().toLocaleTimeString();
+
+      const thumbBox = document.getElementById(`thumbBox_${index}`);
+      if (thumbBox) {
+        thumbBox.innerHTML = `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">`;
+      }
+      const label = document.getElementById(`statusLabel_${index}`);
+      if (label) {
+        label.innerHTML = `<span style="color:var(--success); font-weight:800;">&check; Đã có Face ID (${authorNote})</span>`;
+      }
+      const updateText = document.getElementById(`lastUpdated_${index}`);
+      if (updateText) {
+        updateText.textContent = `Cập nhật: ${attendeeRecords[index].lastUpdated}`;
+      }
+      showToast(`Vé #${index} đã cập nhật dữ liệu khuôn mặt mới nhất!`);
+    }
+
+    // 6. GIẢ LẬP BẠN BÈ NẠP QUA LINK
+    function openFriendClaimSim(index) {
+      activeClaimIndex = index;
+      document.getElementById('modalClaimTitle').textContent = `Mô phỏng bạn bè nhận Vé #${index}`;
+      document.getElementById('friendNameInput').value = attendeeRecords[index].name || "Trần Mai Anh";
+      document.getElementById('friendPhoneInput').value = attendeeRecords[index].phone || "0912345678";
+      const preview = document.getElementById('friendFacePreviewImg');
+      if (attendeeRecords[index].faceImg) {
+        preview.src = attendeeRecords[index].faceImg;
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+      }
+      openModal('friendClaimModal');
+    }
+
+    function handleFriendUpload(files) {
+      if (!files || files.length === 0) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const preview = document.getElementById('friendFacePreviewImg');
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(files[0]);
+    }
+
+    function submitFriendClaim() {
+      const name = document.getElementById('friendNameInput').value.trim();
+      const phone = document.getElementById('friendPhoneInput').value.trim();
+      const imgSrc = document.getElementById('friendFacePreviewImg').src;
+
+      if (!name) { alert("Vui lòng nhập tên người đi!"); return; }
+      if (!imgSrc || imgSrc.includes('window.location')) { alert("Vui lòng tải ảnh chân dung!"); return; }
+
+      attendeeRecords[activeClaimIndex].name = name;
+      attendeeRecords[activeClaimIndex].phone = phone;
+      document.getElementById(`inputName_${activeClaimIndex}`).value = name;
+      document.getElementById(`inputPhone_${activeClaimIndex}`).value = phone;
+
+      applyFaceDataToTicket(activeClaimIndex, imgSrc, "Bạn bè vừa nạp từ xa");
+      closeModal('friendClaimModal');
+    }
+
+    // 7. XÁC NHẬN CHỐT ĐƠN VÉ
+    function executeFinalBooking() {
+      const total = tierQuantities.std + tierQuantities.vip;
+      for (let i = 1; i <= total; i++) {
+        const item = attendeeRecords[i];
+        if (!item.name) {
+          alert(`Vé #${i} chưa có họ và tên người tham dự!`);
+          return;
+        }
+        if (!item.faceImg) {
+          alert(`Vé #${i} (${item.name}) chưa có ảnh khuôn mặt Face ID! Không thể nhận vé nếu thiếu ảnh.`);
+          return;
+        }
+      }
+
+      clearInterval(countdownInterval);
+      showToast("Đang phát hành thẻ vé và nạp vector vào hệ sinh thái Kiosk...");
+      setTimeout(() => {
+        alert(`🎉 ĐĂNG KÝ VÉ THÀNH CÔNG!\n\nĐã phát hành ${total} vé tương ứng với ${total} khuôn mặt độc lập.\nChủ tài khoản đã gán vào Vé #${currentOwnerTicketId} (${tierMeta[attendeeRecords[currentOwnerTicketId].tierKey].name}).`);
+        window.location.reload();
+      }, 700);
+    }
+
+    // TEST CASES FOR BA
+    function simQuickPickTickets(std, vip) {
+      tierQuantities.std = std;
+      tierQuantities.vip = vip;
+      document.getElementById('qty_std').textContent = std;
+      document.getElementById('qty_vip').textContent = vip;
+      document.getElementById('tierRow_std').classList.toggle('active-selected', std > 0);
+      document.getElementById('tierRow_vip').classList.toggle('active-selected', vip > 0);
+      document.getElementById('btnStartReserve').disabled = false;
+      startReservationLock();
+    }
+
+    function simSwapToVip() {
+      if (!isReserved) {
+        simQuickPickTickets(1, 1);
+      }
+      setTimeout(() => {
+        // Tìm vé VIP đầu tiên và gán chủ tài khoản sang vé đó
+        const vipTicket = Object.values(attendeeRecords).find(item => item.tierKey === 'vip');
+        if (vipTicket) {
+          setTicketOwner(vipTicket.ticketId);
+        }
+      }, 100);
+    }
+
+    function simFastForwardTimer() {
+      if (!isReserved) { alert("Vui lòng bấm khóa giữ chỗ trước!"); return; }
+      secondsRemaining = 30;
+      updateTimerDisplay();
+      showToast("Đã tua nhanh còn 30 giây!");
+    }
+
+    function simTriggerFriendSubmit() {
+      if (!isReserved) { simQuickPickTickets(1, 1); }
+      setTimeout(() => {
+        // Tìm vé không phải của chủ tài khoản
+        const friendTicket = Object.values(attendeeRecords).find(item => !item.isOwner);
+        if (friendTicket) {
+          const mockFriendFace = "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=200";
+          friendTicket.name = "Trần Mai Anh (Bạn đi cùng)";
+          friendTicket.phone = "0912345678";
+          document.getElementById(`inputName_${friendTicket.ticketId}`).value = friendTicket.name;
+          document.getElementById(`inputPhone_${friendTicket.ticketId}`).value = friendTicket.phone;
+          applyFaceDataToTicket(friendTicket.ticketId, mockFriendFace, "Bạn bè vừa nạp từ xa");
+        }
+      }, 100);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass Organizer — Tạo Sự Kiện Mới (UC11)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-navy: #023852;
+    --color-navy-dark: #012435;
+    --color-teal: #079FA0;
+    --color-teal-hover: #058586;
+    --color-mint: #9FD8C5;
+    --color-yellow: #FAC005;
+    --color-orange: #F58B01;
+    --color-red: #DC2E2F;
+
+    --bg-page: #f2f7f5;
+    --card-border: #cfe5dc;
+    --text-primary: #023852;
+    --text-muted: #537583;
+    --hairline: #e3efea;
+    --white: #ffffff;
+    --danger: #dc2626;
+    --danger-bg: #fff5f5;
+    --success: #15803d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .sim-bar {
+    background: var(--color-navy-dark);
+    color: #e2e8f0;
+    padding: 7px 24px;
+    font-size: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 2px solid var(--color-teal);
+    z-index: 1000;
+  }
+  .sim-title { font-weight: 700; color: var(--color-yellow); }
+  .sim-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sim-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .sim-btn:hover { background: var(--color-teal); color: #fff; border-color: var(--color-yellow); }
+
+  .app-layout {
+    display: flex;
+    flex: 1;
+    min-height: calc(100vh - 35px);
+  }
+
+  /* 1. SIDEBAR DỌC */
+  .app-sidebar {
+    width: 270px;
+    background: var(--color-navy);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid #034b6e;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .sidebar-top { display: flex; flex-direction: column; }
+  .sidebar-brand-header {
+    padding: 24px 20px 20px 20px;
+    border-bottom: 1px solid rgba(159, 216, 197, 0.15);
+  }
+  .brand-logo {
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  .brand-logo span.role-tag {
+    font-size: 10.5px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--color-teal);
+    padding: 2px 7px;
+    border-radius: 5px;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+  }
+  .brand-logo .accent-dot {
+    width: 7px;
+    height: 7px;
+    background-color: var(--color-orange);
+    border-radius: 50%;
+    margin-left: 5px;
+    box-shadow: 0 0 7px var(--color-orange);
+  }
+
+  .sidebar-org-profile {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(159, 216, 197, 0.12);
+  }
+  .sidebar-org-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: #fff;
+    padding: 3px;
+    object-fit: contain;
+    border: 1.5px solid var(--color-yellow);
+    flex-shrink: 0;
+  }
+  .sidebar-org-meta { overflow: hidden; }
+  .sidebar-org-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sidebar-org-role {
+    font-size: 11px;
+    color: var(--color-mint);
+    margin-top: 2px;
+  }
+
+  .sidebar-nav-section { padding: 18px 12px; }
+  .sidebar-section-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(159, 216, 197, 0.6);
+    letter-spacing: 1px;
+    padding: 0 12px;
+    margin-bottom: 8px;
+  }
+  .sidebar-nav-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sidebar-nav-item a {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 14px;
+    color: #bad8e5;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .sidebar-nav-item a:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .sidebar-nav-item a.active {
+    color: #ffffff;
+    background: var(--color-teal);
+    font-weight: 700;
+  }
+
+  .sidebar-bottom {
+    padding: 12px;
+    border-top: 1px solid rgba(159, 216, 197, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sidebar-bottom-link {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 14px;
+    color: #bad8e5;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .sidebar-bottom-link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .btn-sidebar-logout {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 14px;
+    color: #fca5a5;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-sidebar-logout:hover {
+    background: rgba(220, 38, 38, 0.15);
+    color: #ffcaca;
+  }
+
+  /* 2. MAIN VIEWPORT */
+  .app-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .main-top-header {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--card-border);
+    padding: 14px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-left-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .btn-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: var(--bg-page);
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-back-link:hover {
+    background: var(--color-teal);
+    color: #fff;
+    border-color: var(--color-teal);
+  }
+  .header-page-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-navy);
+  }
+
+  .main-content-scroll {
+    padding: 26px 36px 60px 36px;
+    max-width: 1100px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  /* Panels */
+  .form-panel {
+    background: var(--white);
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 6px 20px -6px rgba(2, 56, 82, 0.05);
+    padding: 26px 30px;
+  }
+  .panel-header {
+    border-bottom: 1.5px solid var(--hairline);
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .panel-title {
+    font-size: 16.5px;
+    font-weight: 800;
+    color: var(--color-navy);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .panel-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .form-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 20px;
+  }
+  .form-field { display: flex; flex-direction: column; gap: 6px; }
+  .form-field.full { grid-column: span 2; }
+  .field-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--color-navy);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .field-label .req { color: var(--color-red); margin-left: 2px; }
+
+  .form-control {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 13.5px;
+    font-family: inherit;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 7px;
+    outline: none;
+    background: #fff;
+    transition: border-color 0.15s ease;
+  }
+  .form-control:focus {
+    border-color: var(--color-teal);
+    box-shadow: 0 0 0 3px rgba(7, 159, 160, 0.12);
+  }
+  textarea.form-control {
+    resize: vertical;
+    min-height: 85px;
+  }
+
+  /* KHUNG TIMELINE CHUẨN 5 MỐC THỜI GIAN */
+  .timeline-flow-box {
+    background: #f8fbfa;
+    border: 1.5px solid var(--card-border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    overflow-x: auto;
+  }
+  .timeline-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+    min-width: 130px;
+  }
+  .timeline-step-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-navy);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .timeline-step-name {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--color-navy);
+  }
+  .timeline-step-sub {
+    font-size: 10.5px;
+    color: var(--text-muted);
+  }
+  .timeline-arrow {
+    color: var(--color-teal);
+    font-weight: 800;
+    font-size: 16px;
+  }
+
+  /* Box cảnh báo buffer nạp Face Vector */
+  .buffer-notice-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 14px;
+    font-size: 12.5px;
+    color: #166534;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .buffer-pill {
+    background: var(--color-teal);
+    color: #fff;
+    font-weight: 800;
+    font-size: 11.5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Kéo thả ảnh sự kiện */
+  .upload-dropzone {
+    border: 2px dashed var(--card-border);
+    border-radius: 10px;
+    padding: 24px;
+    text-align: center;
+    background: var(--bg-page);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .upload-dropzone:hover, .upload-dropzone.dragover {
+    border-color: var(--color-teal);
+    background: #edf7f4;
+  }
+  .upload-preview-grid {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .upload-thumb {
+    width: 76px;
+    height: 76px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1.5px solid var(--card-border);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .upload-thumb:hover { transform: scale(1.05); }
+
+  /* Bảng phân hạng vé (Hỗ trợ cả Free và Paid) */
+  .ticket-tier-row {
+    background: var(--bg-page);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr 2fr auto;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .btn-remove-tier {
+    background: none;
+    border: none;
+    color: var(--danger);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+  }
+  .btn-remove-tier:hover { background: #fee2e2; }
+
+  .btn-add-tier-outline {
+    padding: 8px 14px;
+    background: #fff;
+    color: var(--color-teal);
+    border: 1.5px dashed var(--color-teal);
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    transition: all 0.15s ease;
+  }
+  .btn-add-tier-outline:hover { background: #eef7f4; }
+
+  /* Row Trạm Kiosk */
+  .station-input-row {
+    background: var(--bg-page);
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Thẻ vé điện tử (Digital Pass Live Preview) */
+  .pass-preview-card {
+    background: linear-gradient(145deg, var(--color-navy) 0%, #034b6e 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 10px 25px rgba(2, 56, 82, 0.18);
+  }
+
+  /* Nút Tạo Sự Kiện & Gửi Duyệt Mới */
+  .submit-event-section {
+    background: var(--white);
+    border-radius: 12px;
+    border: 1.5px solid var(--card-border);
+    padding: 24px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    box-shadow: 0 10px 30px -5px rgba(2, 56, 82, 0.08);
+  }
+  .submit-left-info h3 {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--color-navy);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .submit-left-info p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  .btn-create-submit-hero {
+    padding: 14px 32px;
+    background: linear-gradient(135deg, var(--color-teal) 0%, #057a7b 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 6px 18px rgba(7, 159, 160, 0.35);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  .btn-create-submit-hero:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(7, 159, 160, 0.45);
+    background: linear-gradient(135deg, #09b4b5 0%, #058586 100%);
+  }
+
+  /* Lightbox */
+  .lightbox-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.2s;
+    padding: 20px;
+  }
+  .lightbox-modal.show { opacity: 1; visibility: visible; }
+  .lightbox-content { max-width: 90%; max-height: 85vh; border-radius: 8px; object-fit: contain; }
+
+  /* Toast Notification */
+  .toast-notification {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--color-navy);
+    color: #fff;
+    border-left: 4px solid var(--color-teal);
+    padding: 14px 20px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(2, 56, 82, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    z-index: 4000;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast-notification.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+  @media (max-width: 960px) {
+    .ticket-tier-row { grid-template-columns: 1fr; }
+    .timeline-flow-box { flex-direction: column; align-items: flex-start; }
+    .timeline-arrow { display: none; }
+  }
+  @media (max-width: 860px) {
+    .app-layout { flex-direction: column; }
+    .app-sidebar { width: 100%; height: auto; position: static; }
+    .main-top-header { padding: 12px 20px; }
+    .main-content-scroll { padding: 20px; }
+    .form-grid-layout { grid-template-columns: 1fr; }
+    .form-field.full { grid-column: span 1; }
+    .submit-event-section { flex-direction: column; align-items: stretch; }
+    .btn-create-submit-hero { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SIMULATION TOOLBAR DÀNH CHO TEST NHANH -->
+  <div class="sim-bar">
+    <div><span class="sim-title">EventPass Creator:</span> Khởi tạo Sự kiện & Đồng bộ 5 Mốc Thời Gian (UC11)</div>
+    <div class="sim-actions">
+      <button type="button" class="sim-btn" onclick="simFillTechDay()">Nạp Mẫu TechDay 2026 (Free)</button>
+      <button type="button" class="sim-btn" onclick="simFillMusicGala()">Nạp Mẫu Gala Nhạc Hội (Paid)</button>
+      <button type="button" class="sim-btn" onclick="alert('Đăng xuất an toàn!')">Đăng xuất (UC03)</button>
+    </div>
+  </div>
+
+  <div class="app-layout">
+
+    <!-- 1. SIDEBAR DỌC -->
+    <aside class="app-sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-brand-header">
+          <a href="#" class="brand-logo">
+            EventPass<span class="role-tag">ORGANIZER</span><span class="accent-dot"></span>
+          </a>
+        </div>
+
+        <div class="sidebar-org-profile">
+          <img src="https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png" class="sidebar-org-logo" id="sidebarOrgLogo" alt="Logo đơn vị">
+          <div class="sidebar-org-meta">
+            <div class="sidebar-org-name" id="sidebarOrgName">Đoàn Trường ĐH Sài Gòn</div>
+            <div class="sidebar-org-role">Tài khoản Ban Tổ Chức</div>
+          </div>
+        </div>
+
+        <div class="sidebar-nav-section">
+          <div class="sidebar-section-title">Quản Trị Sự Kiện</div>
+          <ul class="sidebar-nav-list">
+            <li class="sidebar-nav-item">
+              <a href="#" title="UC10: Bảng điều khiển thống kê">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                <span>Tổng quan số liệu</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="#" class="active" title="UC11, UC12: Quản lý sự kiện">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Sự kiện của tôi</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="#" title="UC13: Quản lý người tham dự & Xuất Excel">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Danh sách tham dự</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="#" title="Kiosk điểm danh Face-API">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span>Kiosk điểm danh</span>
+                <span class="badge-live-tag" style="font-size:10px;background:var(--color-yellow);color:var(--color-navy);font-weight:800;padding:2px 6px;border-radius:10px;margin-left:auto;">Webcam</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sidebar-bottom">
+        <a href="#" class="sidebar-bottom-link" title="UC04: Hồ sơ & Đổi mật khẩu">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Hồ sơ & Đổi mật khẩu</span>
+        </a>
+        <button type="button" class="btn-sidebar-logout" onclick="alert('Đã đóng phiên làm việc của Ban tổ chức!')">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          <span>Đăng xuất tài khoản</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 2. MAIN VIEWPORT -->
+    <main class="app-main">
+      <header class="main-top-header">
+        <div class="header-left-group">
+          <a href="#" class="btn-back-link">
+            <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            <span>Quay lại sự kiện</span>
+          </a>
+          <h1 class="header-page-title">Khởi Tạo Sự Kiện Mới</h1>
+        </div>
+        <div style="font-size:12.5px; color:var(--text-muted);">
+          Trạng thái sau tạo: <strong style="color:var(--color-orange);">Chờ Admin Phê Duyệt</strong>
+        </div>
+      </header>
+
+      <div class="main-content-scroll">
+        <form id="createEventForm" onsubmit="handleCreateEventSubmit(event)" style="display:flex; flex-direction:column; gap:22px;">
+          
+          <!-- PANEL 1: THÔNG TIN CHUNG SỰ KIỆN -->
+          <section class="form-panel">
+            <div class="panel-header">
+              <h2 class="panel-title">
+                <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                1. Thông Tin Chung Sự Kiện
+              </h2>
+              <span class="panel-subtitle">Nội dung hiển thị trên trang chủ và thông tin truyền thông</span>
+            </div>
+
+            <div class="form-grid-layout">
+              <div class="form-field full">
+                <label class="field-label">Tên sự kiện phát hành <span class="req">*</span></label>
+                <input type="text" id="eventNameInput" class="form-control" placeholder="Ví dụ: Ngày Hội Công Nghệ SGU TechDay 2026" required oninput="updatePassPreview()">
+              </div>
+
+              <div class="form-field full">
+                <label class="field-label">Mô tả sự kiện & Lịch trình tóm tắt <span class="req">*</span></label>
+                <textarea id="eventDescInput" class="form-control" rows="3" placeholder="Mô tả nội dung chương trình, các hoạt động triển lãm, hội thảo..." required></textarea>
+              </div>
+
+              <div class="form-field full">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <label class="field-label">Hình ảnh minh họa & Poster sự kiện (Tối đa 20 ảnh)</label>
+                  <span style="font-size:12px; color:var(--color-teal); font-weight:700;" id="photoCountBadge">Đã chọn: 0 / 20</span>
+                </div>
+                
+                <div class="upload-dropzone" id="eventDropzone" onclick="document.getElementById('eventPhotoInput').click()">
+                  <svg class="icon" viewBox="0 0 24 24" style="width:30px; height:30px; color:var(--color-teal); margin-bottom:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <div style="font-size:13.5px; font-weight:700; color:var(--color-navy);">Kéo thả ảnh vào đây hoặc bấm để chọn tải lên</div>
+                  <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Hỗ trợ JPG, PNG, WEBP. Chọn nhiều ảnh cùng lúc.</div>
+                  <input type="file" id="eventPhotoInput" multiple accept="image/*" style="display:none;" onchange="handleImageSelect(this.files)">
+                </div>
+
+                <div class="upload-preview-grid" id="previewGrid"></div>
+              </div>
+
+              <div class="form-field">
+                <label class="field-label">Nhân vật nổi bật / Diễn giả</label>
+                <input type="text" id="eventSpeakersInput" class="form-control" placeholder="Ví dụ: TS. Nguyễn Văn A, Khách mời...">
+              </div>
+
+              <div class="form-field">
+                <label class="field-label">Địa điểm tổ chức thực tế <span class="req">*</span></label>
+                <input type="text" id="eventLocationInput" class="form-control" placeholder="Ví dụ: Hội trường A - Cơ sở chính SGU, 280 An Dương Vương, Q5" required oninput="updatePassPreview()">
+              </div>
+            </div>
+          </section>
+
+          <!-- PANEL 2: THIẾT LẬP 5 MỐC THỜI GIAN CHUẨN XÁC CỦA SỰ KIỆN -->
+          <section class="form-panel">
+            <div class="panel-header">
+              <h2 class="panel-title">
+                <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                2. Chu Trình Thời Gian Sự Kiện (5 Mốc Thời Gian)
+              </h2>
+              <span class="panel-subtitle">Thiết lập lộ trình từ lúc công khai, mở bán vé đến mở cổng Kiosk đón khách</span>
+            </div>
+
+            <!-- Sơ đồ trực quan 5 mốc thời gian -->
+            <div class="timeline-flow-box">
+              <div class="timeline-node">
+                <div class="timeline-step-badge">1</div>
+                <div class="timeline-step-name">Công Khai Web</div>
+                <div class="timeline-step-sub">Hiện "Sắp mở bán"</div>
+              </div>
+              <span class="timeline-arrow">&rarr;</span>
+
+              <div class="timeline-node">
+                <div class="timeline-step-badge">2</div>
+                <div class="timeline-step-name">Mở Bán Vé</div>
+                <div class="timeline-step-sub">Khách bắt đầu đăng ký</div>
+              </div>
+              <span class="timeline-arrow">&rarr;</span>
+
+              <div class="timeline-node">
+                <div class="timeline-step-badge">3</div>
+                <div class="timeline-step-name">Đóng Bán Vé</div>
+                <div class="timeline-step-sub">Nạp Face vào Kiosk</div>
+              </div>
+              <span class="timeline-arrow">&rarr;</span>
+
+              <div class="timeline-node">
+                <div class="timeline-step-badge">4</div>
+                <div class="timeline-step-name">Check-in Kiosk</div>
+                <div class="timeline-step-sub">Quét mặt tự động &lt;1s</div>
+              </div>
+              <span class="timeline-arrow">&rarr;</span>
+
+              <div class="timeline-node">
+                <div class="timeline-step-badge">5</div>
+                <div class="timeline-step-name">Chương Trình</div>
+                <div class="timeline-step-sub">Bắt đầu & Bế mạc</div>
+              </div>
+            </div>
+
+            <div class="form-grid-layout">
+              <!-- Mốc 1: Ngày xuất hiện trên Web -->
+              <div class="form-field">
+                <label class="field-label">1. Ngày công khai xuất hiện trên Web <span class="req">*</span></label>
+                <input type="datetime-local" id="eventPublishInput" class="form-control" required oninput="validateTimelineRules()">
+                <span style="font-size:11px; color:var(--text-muted);">Sự kiện sẽ hiển thị trên Storefront với nhãn <strong>[Sắp mở bán]</strong> từ thời điểm này.</span>
+              </div>
+
+              <!-- Mốc 2: Ngày mở bán vé -->
+              <div class="form-field">
+                <label class="field-label">2. Ngày chính thức mở cổng bán/đăng ký vé <span class="req">*</span></label>
+                <input type="datetime-local" id="eventSaleStartInput" class="form-control" required oninput="validateTimelineRules()">
+                <span style="font-size:11px; color:var(--text-muted);">Cổng đăng ký bật, bắt đầu cho khách giữ vé & nạp Face ID.</span>
+              </div>
+
+              <!-- Mốc 3: Ngày đóng bán vé -->
+              <div class="form-field">
+                <label class="field-label">3. Ngày đóng cổng bán/đăng ký vé <span class="req">*</span></label>
+                <input type="datetime-local" id="eventSaleEndInput" class="form-control" required oninput="validateTimelineRules()">
+                <span style="font-size:11px; color:var(--text-muted);">Ngừng nhận khách mới để khóa danh sách và trích xuất vector khuôn mặt.</span>
+              </div>
+
+              <!-- Mốc 4: Giờ bắt đầu Check-in Kiosk -->
+              <div class="form-field">
+                <label class="field-label">4. Thời gian bắt đầu quét Kiosk Check-in <span class="req">*</span></label>
+                <input type="datetime-local" id="eventCheckinStartInput" class="form-control" required oninput="validateTimelineRules()">
+                <span style="font-size:11px; color:var(--text-muted);">Camera Kiosk tại sảnh kích hoạt đón khách (trước giờ khai mạc 60-90p).</span>
+              </div>
+
+              <!-- Mốc 5A: Giờ diễn ra chính thức -->
+              <div class="form-field">
+                <label class="field-label">5A. Thời gian bắt đầu sự kiện chính thức <span class="req">*</span></label>
+                <input type="datetime-local" id="eventStartInput" class="form-control" required oninput="validateTimelineRules()">
+                <span style="font-size:11px; color:var(--text-muted);">Giờ khai mạc chương trình hội thảo / sân khấu.</span>
+              </div>
+
+              <!-- Mốc 5B: Giờ kết thúc sự kiện -->
+              <div class="form-field">
+                <label class="field-label">5B. Thời gian bế mạc sự kiện <span class="req">*</span></label>
+                <input type="datetime-local" id="eventEndInput" class="form-control" required oninput="validateTimelineRules()">
+                <span style="font-size:11px; color:var(--text-muted);">Kết thúc sự kiện và đóng toàn bộ trạm Kiosk.</span>
+              </div>
+            </div>
+
+            <!-- Khoảng đệm kỹ thuật nạp dữ liệu Face Vector -->
+            <div class="buffer-notice-box" id="bufferNoticeBox">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal); width:18px; height:18px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span><strong>Khoảng đệm kỹ thuật Kiosk (Data Buffer):</strong> Thời gian từ lúc đóng cổng vé đến lúc mở Kiosk đón khách là:</span>
+              </div>
+              <span class="buffer-pill" id="bufferTimeDisplay">Chưa xác định</span>
+            </div>
+          </section>
+
+          <!-- PANEL 3: PHÂN HẠNG VÉ & HẠN MỨC SLOT (HỖ TRỢ CẢ FREE & PAID) -->
+          <section class="form-panel">
+            <div class="panel-header">
+              <h2 class="panel-title">
+                <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal);"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+                3. Phân Hạng Vé Phát Hành (Miễn Phí & Có Phí)
+              </h2>
+              <span class="panel-subtitle">Khai báo số lượng slot và đơn giá vé phát hành (Hỗ trợ vé 0đ hoặc vé có phí)</span>
+            </div>
+
+            <div id="ticketTierContainer">
+              <!-- Hạng vé render động bằng JS -->
+            </div>
+
+            <button type="button" class="btn-add-tier-outline" onclick="addTicketTier()">
+              <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>+ Thêm phân hạng vé mới</span>
+            </button>
+          </section>
+
+          <!-- PANEL 4: THIẾT LẬP TRẠM KIOSK SOÁT VÉ DỰ KIẾN -->
+          <section class="form-panel">
+            <div class="panel-header">
+              <h2 class="panel-title">
+                <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal);"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                4. Thiết Lập Trạm Kiosk Soát Vé Dự Kiến
+              </h2>
+              <span class="panel-subtitle">Khai báo số lượng làn kiểm soát camera Face ID tại sảnh</span>
+            </div>
+
+            <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:12px 16px; margin-bottom:14px; font-size:12.5px; color:#0369a1; display:flex; align-items:center; gap:8px;">
+              <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <span><strong>Cơ chế bảo mật phần cứng:</strong> Mã Secret Token định danh camera sẽ được hệ thống cấp phát bảo mật tự động sau khi sự kiện được Admin phê duyệt.</span>
+            </div>
+
+            <div id="stationContainer" style="display:flex; flex-direction:column; gap:10px;">
+              <div class="station-input-row">
+                <div style="flex:1;">
+                  <label class="field-label" style="margin-bottom:4px;display:block;">Tên trạm / Vị trí làn kiểm soát <span class="req">*</span></label>
+                  <input type="text" class="form-control" name="stationName[]" value="Trạm 1 - Cổng chính Hội trường A" placeholder="Ví dụ: Cổng chính, Cổng VIP, Cửa Tầng 2..." required>
+                </div>
+                <div style="font-size:12px; color:var(--text-muted); padding-top:18px; white-space:nowrap;">
+                  <span style="background:#e2e8f0; padding:4px 8px; border-radius:4px; font-family:monospace;">Token sẽ cấp sau khi duyệt</span>
+                </div>
+              </div>
+            </div>
+
+            <button type="button" class="btn-add-tier-outline" style="margin-top:10px;" onclick="addStationRow()">
+              <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>+ Thêm trạm kiểm soát dự kiến</span>
+            </button>
+          </section>
+
+          <!-- PANEL 5: XEM TRƯỚC THẺ VÉ ĐIỆN TỬ (DIGITAL PASS) -->
+          <section class="form-panel">
+            <div class="panel-header">
+              <h2 class="panel-title">
+                <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                5. Xem Trước Thẻ Vé Điện Tử (Digital Pass) & Thiết Kế Email
+              </h2>
+              <span class="panel-subtitle">Nội dung thẻ vé tự động phát hành và gửi email đến người tham dự</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:26px; align-items:start;">
+              <div style="display:flex; flex-direction:column; gap:14px;">
+                <div class="form-field full">
+                  <label class="field-label">Tiêu đề email gửi vé <span class="req">*</span></label>
+                  <input type="text" id="emailSubjectInput" class="form-control" value="[SGU TechDay 2026] Thẻ vé tham dự chính thức của bạn" placeholder="Tiêu đề email gửi đến khách...">
+                </div>
+
+                <div class="form-field full">
+                  <label class="field-label">Ghi chú hướng dẫn check-in trong email <span class="req">*</span></label>
+                  <textarea id="emailCheckinNote" class="form-control" rows="4" placeholder="Nhập lời dặn khách bước vào làn Face ID...">Quý khách vui lòng bước tới làn quét khuôn mặt tại Hội trường A để vào cổng tự động trong 1 giây mà không cần xuất trình giấy tờ.</textarea>
+                </div>
+              </div>
+
+              <!-- Thẻ vé mô phỏng (Live Digital Pass) -->
+              <div>
+                <div class="pass-preview-card">
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:12px; margin-bottom:14px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <img src="https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png" style="width:34px;height:34px;border-radius:6px;background:#fff;padding:2px;" alt="Logo">
+                      <div>
+                        <div style="font-size:9.5px; text-transform:uppercase; color:var(--color-mint); font-weight:800;">Đơn vị phát hành</div>
+                        <div style="font-size:12.5px; font-weight:700;">Đoàn Trường ĐH Sài Gòn</div>
+                      </div>
+                    </div>
+                    <span style="font-size:10.5px; background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:10px; font-weight:800;" id="passPreviewTierBadge">VIP PASS</span>
+                  </div>
+
+                  <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:16px;">
+                    <div style="font-size:15px; font-weight:800;" id="previewEventTitle">Ngày Hội Công Nghệ SGU TechDay 2026</div>
+                    <div style="font-size:12px; color:#d2e9f3;">Khách tham dự: <strong>Hà Thái Sơn</strong></div>
+                    <div style="font-size:12px; color:#d2e9f3;" id="previewEventTime">Khai mạc: 08:00 • 20/09/2026</div>
+                    <div style="font-size:12px; color:#d2e9f3;" id="previewEventLocation">Địa điểm: Hội trường A - Cơ sở chính SGU</div>
+                  </div>
+
+                  <div style="background:#fff; border-radius:8px; padding:12px; display:flex; flex-direction:column; align-items:center; gap:6px;">
+                    <div style="width:100px; height:100px; border:2px dashed #023852; display:flex; align-items:center; justify-content:center; background:#f8fafc;">
+                      <svg class="icon" viewBox="0 0 24 24" style="width:55px; height:55px; color:#023852;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    </div>
+                    <span style="font-size:11px; font-weight:800; color:#023852; font-family:monospace;">PASS-DEMO-2026</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- THANH SUBMIT: NÚT HERO TẠO SỰ KIỆN GỬI DUYỆT ADMIN -->
+          <div class="submit-event-section">
+            <div class="submit-left-info">
+              <h3>
+                <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal); width:20px; height:20px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span>Xác nhận thông tin & Khởi tạo sự kiện</span>
+              </h3>
+              <p>Dữ liệu sự kiện, phân hạng vé, chu trình thời gian và trạm Kiosk sẽ được chuyển trực tiếp đến Admin phê duyệt.</p>
+            </div>
+
+            <button type="submit" class="btn-create-submit-hero">
+              <svg class="icon" viewBox="0 0 24 24" style="width:20px; height:20px;"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+              <span>Tạo sự kiện & Gửi duyệt Admin</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- LIGHTBOX PHÓNG TO ẢNH -->
+  <div class="lightbox-modal" id="lightboxModal" onclick="closeLightbox()">
+    <img id="lightboxImg" class="lightbox-content" src="" alt="Zoom">
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification" class="toast-notification">
+    <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-mint); width:18px; height:18px;"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="toastMessage">Thao tác thành công!</span>
+  </div>
+
+  <script>
+    const toastNotification = document.getElementById('toastNotification');
+    const toastMessage = document.getElementById('toastMessage');
+    let toastTimeout = null;
+
+    function showToast(msg) {
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastMessage.textContent = msg;
+      toastNotification.classList.add('show');
+      toastTimeout = setTimeout(() => {
+        toastNotification.classList.remove('show');
+      }, 3000);
+    }
+
+    /* 1. XỬ LÝ KIỂM TRA RÀNG BUỘC 5 MỐC THỜI GIAN (TIMELINE VALIDATION) */
+    function validateTimelineRules() {
+      const pubVal = document.getElementById('eventPublishInput').value;
+      const saleStartVal = document.getElementById('eventSaleStartInput').value;
+      const saleEndVal = document.getElementById('eventSaleEndInput').value;
+      const checkinVal = document.getElementById('eventCheckinStartInput').value;
+      const startVal = document.getElementById('eventStartInput').value;
+      const endVal = document.getElementById('eventEndInput').value;
+
+      updatePassPreview();
+
+      if (!saleEndVal || !checkinVal) {
+        document.getElementById('bufferTimeDisplay').textContent = "Chưa xác định";
+        return true;
+      }
+
+      const saleEnd = new Date(saleEndVal);
+      const checkin = new Date(checkinVal);
+
+      // Tính toán khoảng đệm (Buffer Time)
+      const diffMs = checkin - saleEnd;
+      if (diffMs < 0) {
+        document.getElementById('bufferTimeDisplay').textContent = "Lỗi: Đóng bán sau giờ check-in!";
+        document.getElementById('bufferTimeDisplay').style.background = "var(--danger)";
+        return false;
+      }
+
+      const diffMins = Math.floor(diffMs / (1000 * 60));
+      const hours = Math.floor(diffMins / 60);
+      const mins = diffMins % 60;
+      let bufferText = "";
+      if (hours > 0) bufferText += `${hours} tiếng `;
+      if (mins > 0 || hours === 0) bufferText += `${mins} phút`;
+
+      const bufferDisplay = document.getElementById('bufferTimeDisplay');
+      bufferDisplay.textContent = bufferText;
+      bufferDisplay.style.background = (diffMins < 60) ? "var(--color-orange)" : "var(--color-teal)";
+
+      return true;
+    }
+
+    /* 2. XỬ LÝ HẠNG VÉ ĐỘNG (HỖ TRỢ CẢ MIỄN PHÍ VÀ CÓ PHÍ) */
+    let tierCount = 0;
+    function addTicketTier(name = '', price = '0', slots = '100', desc = '') {
+      tierCount++;
+      const container = document.getElementById('ticketTierContainer');
+      const div = document.createElement('div');
+      div.className = 'ticket-tier-row';
+      div.id = `tierRow_${tierCount}`;
+      div.innerHTML = `
+        <div>
+          <label class="field-label" style="margin-bottom:4px;display:block;">Tên phân hạng vé <span class="req">*</span></label>
+          <input type="text" class="form-control" name="tierName[]" placeholder="Ví dụ: Vé VIP, Standard" value="${name}" required>
+        </div>
+        <div>
+          <label class="field-label" style="margin-bottom:4px;display:block;">Giá vé (VNĐ) <span class="req">*</span></label>
+          <input type="number" class="form-control" name="tierPrice[]" min="0" step="10000" value="${price}" placeholder="0 = Miễn phí" required>
+        </div>
+        <div>
+          <label class="field-label" style="margin-bottom:4px;display:block;">Số slot <span class="req">*</span></label>
+          <input type="number" class="form-control" name="tierSlot[]" min="1" value="${slots}" required>
+        </div>
+        <div>
+          <label class="field-label" style="margin-bottom:4px;display:block;">Đặc quyền / Quyền lợi</label>
+          <input type="text" class="form-control" name="tierDesc[]" placeholder="Quyền lợi đi kèm..." value="${desc}">
+        </div>
+        <div>
+          <button type="button" class="btn-remove-tier" onclick="removeTicketTier(${tierCount})" title="Xóa hạng vé này">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+
+    function removeTicketTier(id) {
+      const rows = document.querySelectorAll('.ticket-tier-row');
+      if (rows.length <= 1) {
+        alert('Sự kiện phải có ít nhất một phân hạng vé phát hành!');
+        return;
+      }
+      const el = document.getElementById(`tierRow_${id}`);
+      if (el) el.remove();
+    }
+
+    /* 3. XỬ LÝ THÊM TRẠM KIOSK DỰ KIẾN */
+    function addStationRow() {
+      const container = document.getElementById('stationContainer');
+      const count = container.querySelectorAll('.station-input-row').length + 1;
+      const div = document.createElement('div');
+      div.className = 'station-input-row';
+      div.innerHTML = `
+        <div style="flex:1;">
+          <label class="field-label" style="margin-bottom:4px;display:block;">Tên trạm / Vị trí làn kiểm soát <span class="req">*</span></label>
+          <input type="text" class="form-control" name="stationName[]" placeholder="Trạm ${count} - Ví dụ: Cổng VIP, Lối Diễn Giả, Cửa Tầng 2..." required>
+        </div>
+        <div style="font-size:12px; color:var(--text-muted); padding-top:18px; white-space:nowrap;">
+          <span style="background:#e2e8f0; padding:4px 8px; border-radius:4px; font-family:monospace;">Token sẽ cấp sau khi duyệt</span>
+        </div>
+        <div style="padding-top:16px;">
+          <button type="button" class="btn-remove-tier" onclick="this.closest('.station-input-row').remove()" title="Xóa trạm này">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+
+    /* 4. ĐỒNG BỘ DỮ LIỆU XEM TRƯỚC THẺ VÉ */
+    function updatePassPreview() {
+      const titleVal = document.getElementById('eventNameInput').value.trim();
+      const locVal = document.getElementById('eventLocationInput').value.trim();
+      const startVal = document.getElementById('eventStartInput').value;
+
+      document.getElementById('previewEventTitle').textContent = titleVal || "Tên sự kiện của bạn";
+      document.getElementById('previewEventLocation').textContent = locVal ? `Địa điểm: ${locVal}` : "Địa điểm: Chưa cập nhật";
+
+      if (startVal) {
+        const d = new Date(startVal);
+        const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} • ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        document.getElementById('previewEventTime').textContent = `Khai mạc: ${timeStr}`;
+      } else {
+        document.getElementById('previewEventTime').textContent = "Khai mạc: Chưa thiết lập";
+      }
+    }
+
+    /* 5. XỬ LÝ TẢI ẢNH & LIGHTBOX */
+    const selectedImages = [];
+    function handleImageSelect(files) {
+      if (!files || files.length === 0) return;
+      if (selectedImages.length + files.length > 20) {
+        alert('Chỉ được phép chọn tối đa 20 hình ảnh!');
+        return;
+      }
+
+      const grid = document.getElementById('previewGrid');
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.match('image.*')) continue;
+        selectedImages.push(file);
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = 'upload-thumb';
+          img.onclick = () => openLightbox(e.target.result);
+          grid.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      }
+      document.getElementById('photoCountBadge').textContent = `Đã chọn: ${selectedImages.length} / 20`;
+      showToast(`Đã thêm ${files.length} ảnh minh họa.`);
+    }
+
+    function openLightbox(src) {
+      document.getElementById('lightboxImg').src = src;
+      document.getElementById('lightboxModal').classList.add('show');
+    }
+    function closeLightbox() {
+      document.getElementById('lightboxModal').classList.remove('show');
+    }
+
+    const dropzone = document.getElementById('eventDropzone');
+    ['dragenter', 'dragover'].forEach(name => {
+      dropzone.addEventListener(name, (e) => { e.preventDefault(); dropzone.classList.add('dragover'); }, false);
+    });
+    ['dragleave', 'drop'].forEach(name => {
+      dropzone.addEventListener(name, (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); }, false);
+    });
+    dropzone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      handleImageSelect(dt.files);
+    }, false);
+
+    /* 6. KIỂM TRA RÀNG BUỘC KHI SUBMIT FORM TẠO SỰ KIỆN */
+    function handleCreateEventSubmit(e) {
+      e.preventDefault();
+
+      const pub = new Date(document.getElementById('eventPublishInput').value);
+      const saleStart = new Date(document.getElementById('eventSaleStartInput').value);
+      const saleEnd = new Date(document.getElementById('eventSaleEndInput').value);
+      const checkin = new Date(document.getElementById('eventCheckinStartInput').value);
+      const start = new Date(document.getElementById('eventStartInput').value);
+      const end = new Date(document.getElementById('eventEndInput').value);
+
+      // Kiểm tra chuỗi thứ tự logic
+      if (saleStart < pub) {
+        alert('Lỗi: Ngày mở bán vé không thể diễn ra trước ngày công khai sự kiện lên web!');
+        return;
+      }
+      if (saleEnd <= saleStart) {
+        alert('Lỗi: Ngày đóng cổng bán vé phải diễn ra sau ngày mở bán vé!');
+        return;
+      }
+      if (checkin < saleEnd) {
+        alert('Lỗi: Thời gian mở check-in Kiosk phải diễn ra sau khi đã đóng cổng bán vé (cần khoảng đệm nạp Face Vector)!');
+        return;
+      }
+      if (start < checkin) {
+        alert('Lỗi: Thời gian bắt đầu sự kiện phải diễn ra sau khi đã mở cửa check-in đón khách!');
+        return;
+      }
+      if (end <= start) {
+        alert('Lỗi: Thời gian bế mạc sự kiện phải diễn ra sau thời gian bắt đầu khai mạc!');
+        return;
+      }
+
+      showToast('Đang khởi tạo sự kiện và gửi yêu cầu phê duyệt lên Admin...');
+      setTimeout(() => {
+        alert('🎉 TẠO SỰ KIỆN THÀNH CÔNG!\n\nSự kiện đã được gửi lên Admin phê duyệt.\nKhoảng đệm nạp Face ID Kiosk và các trạm kiểm soát đã được cấu hình tự động.');
+      }, 700);
+    }
+
+    /* MOCK DATA DEMO */
+    function simFillTechDay() {
+      document.getElementById('eventNameInput').value = "Ngày Hội Công Nghệ SGU TechDay 2026";
+      document.getElementById('eventDescInput').value = "Triển lãm các giải pháp AI, nhận diện khuôn mặt sinh trắc học và ngày hội tuyển dụng kỹ sư công nghệ thông tin Đại học Sài Gòn.";
+      document.getElementById('eventSpeakersInput').value = "TS. Nguyễn Văn A (Trưởng khoa CNTT), Mr. John Doe (Google Developer)";
+      document.getElementById('eventLocationInput').value = "Hội trường A - Cơ sở chính SGU, 280 An Dương Vương, Q5";
+      
+      // 5 mốc thời gian chuẩn
+      document.getElementById('eventPublishInput').value = "2026-09-01T08:00";
+      document.getElementById('eventSaleStartInput').value = "2026-09-05T08:00";
+      document.getElementById('eventSaleEndInput').value = "2026-09-20T05:00";
+      document.getElementById('eventCheckinStartInput').value = "2026-09-20T07:00";
+      document.getElementById('eventStartInput').value = "2026-09-20T08:00";
+      document.getElementById('eventEndInput').value = "2026-09-20T17:30";
+
+      document.getElementById('emailSubjectInput').value = "[SGU TechDay 2026] Thẻ vé tham dự chính thức của bạn";
+
+      document.getElementById('ticketTierContainer').innerHTML = '';
+      addTicketTier('Vé Tiêu Chuẩn (Standard Pass)', '0', '600', 'Tham quan chung các gian hàng triển lãm AI');
+      addTicketTier('Vé VIP Khách Mời (VIP Pass)', '0', '200', 'Ghế hàng đầu & Teabreak networking');
+
+      validateTimelineRules();
+      showToast('Đã nạp mẫu: SGU TechDay 2026 (Vé Miễn Phí)');
+    }
+
+    function simFillMusicGala() {
+      document.getElementById('eventNameInput').value = "Đại Nhạc Hội Chào Tân Sinh Viên Khóa 2026";
+      document.getElementById('eventDescInput').value = "Đêm hội âm nhạc hoành tráng kết hợp biểu diễn nghệ thuật sinh viên và các ca sĩ khách mời nổi tiếng.";
+      document.getElementById('eventSpeakersInput').value = "Ban Giám hiệu nhà trường, Ca sĩ khách mời";
+      document.getElementById('eventLocationInput').value = "Sân vận động Cơ sở chính SGU";
+      
+      // 5 mốc thời gian chuẩn
+      document.getElementById('eventPublishInput').value = "2026-09-10T08:00";
+      document.getElementById('eventSaleStartInput').value = "2026-09-15T09:00";
+      document.getElementById('eventSaleEndInput').value = "2026-10-10T14:00";
+      document.getElementById('eventCheckinStartInput').value = "2026-10-10T16:30";
+      document.getElementById('eventStartInput').value = "2026-10-10T18:00";
+      document.getElementById('eventEndInput').value = "2026-10-10T22:30";
+
+      document.getElementById('emailSubjectInput').value = "[Gala 2026] Thẻ vé điện tử vào cổng Đại nhạc hội";
+
+      document.getElementById('ticketTierContainer').innerHTML = '';
+      addTicketTier('Vé Khán Đài B (Zone B)', '250000', '1200', 'Khán đài ngồi tự do');
+      addTicketTier('Vé VIP Khán Đài A (Zone A)', '600000', '800', 'Khu vực gần sân khấu chính');
+
+      validateTimelineRules();
+      showToast('Đã nạp mẫu: Gala Nhạc Hội 2026 (Vé Có Phí)');
+    }
+
+    // Khởi tạo mặc định
+    document.addEventListener('DOMContentLoaded', () => {
+      addTicketTier('Vé Tiêu Chuẩn (Standard Pass)', '0', '500', 'Quyền vào cổng tham gia sự kiện');
+      addTicketTier('Vé VIP (VIP Pass)', '0', '100', 'Chỗ ngồi ưu tiên & quà lưu niệm');
+      validateTimelineRules();
+    });
+  </script>
+</body>
+</html>

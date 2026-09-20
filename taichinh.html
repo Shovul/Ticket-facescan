@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass SuperAdmin — Tài Chính & Đối Soát Thanh Toán Toàn Diện</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-navy: #023852;
+    --color-navy-dark: #012435;
+    --color-teal: #079FA0;
+    --color-teal-hover: #058586;
+    --color-mint: #9FD8C5;
+    --color-yellow: #FAC005;
+    --color-orange: #F58B01;
+    --color-red: #DC2E2F;
+
+    --bg-page: #f2f7f5;
+    --card-border: #cfe5dc;
+    --text-primary: #023852;
+    --text-muted: #537583;
+    --hairline: #e3efea;
+    --white: #ffffff;
+    --danger: #dc2626;
+    --danger-bg: #fff5f5;
+    --success: #15803d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Sandbox Toolbar */
+  .sim-bar {
+    background: var(--color-navy-dark);
+    color: #e2e8f0;
+    padding: 7px 24px;
+    font-size: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 2px solid var(--color-teal);
+    z-index: 1000;
+  }
+  .sim-title { font-weight: 700; color: var(--color-yellow); }
+  .sim-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sim-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .sim-btn:hover { background: var(--color-teal); color: #fff; border-color: var(--color-yellow); }
+
+  /* BỐ CỤC KHUNG TOÀN HỆ THỐNG */
+  .app-layout {
+    display: flex;
+    flex: 1;
+    min-height: calc(100vh - 35px);
+  }
+
+  /* 1. SIDEBAR DỌC ADMIN */
+  .app-sidebar {
+    width: 270px;
+    background: var(--color-navy);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid #034b6e;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  .sidebar-top { display: flex; flex-direction: column; }
+
+  .sidebar-brand-header {
+    padding: 24px 20px 20px 20px;
+    border-bottom: 1px solid rgba(159, 216, 197, 0.15);
+  }
+  .brand-logo {
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  .brand-logo span.role-tag {
+    font-size: 10.5px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--color-red);
+    padding: 2px 7px;
+    border-radius: 5px;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+  }
+  .brand-logo .accent-dot {
+    width: 7px;
+    height: 7px;
+    background-color: var(--color-orange);
+    border-radius: 50%;
+    margin-left: 5px;
+    box-shadow: 0 0 7px var(--color-orange);
+  }
+
+  .sidebar-org-profile {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(159, 216, 197, 0.12);
+  }
+  .sidebar-org-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: #fff;
+    padding: 3px;
+    object-fit: contain;
+    border: 1.5px solid var(--color-yellow);
+    flex-shrink: 0;
+  }
+  .sidebar-org-meta { overflow: hidden; }
+  .sidebar-org-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sidebar-org-role {
+    font-size: 11px;
+    color: var(--color-mint);
+    margin-top: 2px;
+  }
+
+  .sidebar-nav-section { padding: 18px 12px; }
+  .sidebar-section-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(159, 216, 197, 0.6);
+    letter-spacing: 1px;
+    padding: 0 12px;
+    margin-bottom: 8px;
+  }
+  .sidebar-nav-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sidebar-nav-item a {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 14px;
+    color: #bad8e5;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .sidebar-nav-item a:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .sidebar-nav-item a.active {
+    color: #ffffff;
+    background: var(--color-teal);
+    font-weight: 700;
+  }
+
+  .sidebar-bottom {
+    padding: 12px;
+    border-top: 1px solid rgba(159, 216, 197, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .btn-sidebar-logout {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 14px;
+    color: #fca5a5;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-sidebar-logout:hover { background: rgba(220, 38, 38, 0.15); color: #ffcaca; }
+
+  /* 2. MAIN CONTENT VIEWPORT */
+  .app-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .main-top-header {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--card-border);
+    padding: 14px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .header-page-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-navy);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-system-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-teal);
+    background: #e6f7f3;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #bcf0e2;
+  }
+  .status-dot-pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--color-teal);
+  }
+
+  .main-content-scroll {
+    padding: 26px 36px 60px 36px;
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* 3 THẺ KPI TÀI CHÍNH */
+  .financial-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .fin-kpi-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    box-shadow: 0 4px 12px rgba(2, 56, 82, 0.04);
+  }
+  .fin-kpi-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 6px;
+  }
+  .fin-kpi-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--color-navy);
+    line-height: 1.1;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* TOOLBAR TÌM KIẾM & LỌC */
+  .management-toolbar {
+    background: #fff;
+    border: 1.5px solid var(--card-border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    box-shadow: 0 4px 14px rgba(2, 56, 82, 0.04);
+    flex-wrap: wrap;
+  }
+  .search-input-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-page);
+    border: 1.5px solid var(--card-border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    width: 300px;
+  }
+  .search-input-box input {
+    border: none;
+    background: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--color-navy);
+    width: 100%;
+  }
+
+  .status-filters { display: flex; gap: 8px; }
+  .filter-pill-btn {
+    padding: 6px 14px;
+    background: var(--bg-page);
+    border: 1.5px solid var(--card-border);
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .filter-pill-btn.active {
+    background: var(--color-teal);
+    border-color: var(--color-teal);
+    color: #fff;
+  }
+
+  /* BẢNG GIAO DỊCH & ĐỐI SOÁT */
+  .admin-table-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(2, 56, 82, 0.04);
+    overflow: hidden;
+  }
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 13px;
+  }
+  .data-table th {
+    background: #f8fbfa;
+    color: var(--color-navy);
+    font-weight: 800;
+    padding: 14px 18px;
+    border-bottom: 1.5px solid var(--card-border);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .data-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--hairline);
+    vertical-align: middle;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover { background: #fafdfc; }
+
+  /* Badges trạng thái */
+  .badge-settlement {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .badge-settlement.pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  .badge-settlement.settled { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+  .badge-settlement.advanced { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+
+  /* Nhóm nút hành động */
+  .action-group-cell {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+  .btn-config-fee {
+    padding: 6px 10px;
+    background: var(--bg-page);
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn-config-fee:hover { border-color: var(--color-teal); color: var(--color-teal); }
+
+  .btn-settle-action {
+    padding: 6px 12px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .btn-settle-action:hover { background: var(--color-teal-hover); }
+  .btn-settle-action.done { background: #f1f5f9; color: #64748b; cursor: default; }
+
+  /* MODAL CHUNG */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 56, 82, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .modal-backdrop.show { opacity: 1; visibility: visible; }
+  .modal-box {
+    background: #fff;
+    width: 100%;
+    max-width: 520px;
+    border-radius: 12px;
+    box-shadow: 0 20px 45px rgba(2, 56, 82, 0.28);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .modal-header {
+    padding: 16px 20px;
+    background: var(--color-navy);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; font-size: 13.5px; line-height: 1.5; color: var(--text-primary); }
+  .modal-footer {
+    padding: 14px 20px;
+    background: var(--bg-page);
+    border-top: 1.5px solid var(--hairline);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .form-control { width: 100%; padding: 9px 12px; font-size: 13px; font-family: inherit; border: 1.5px solid var(--card-border); border-radius: 6px; outline: none; }
+
+  /* Toast */
+  .toast-notification {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--color-navy);
+    color: #fff;
+    border-left: 4px solid var(--color-teal);
+    padding: 14px 20px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(2, 56, 82, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    z-index: 6000;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast-notification.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+  @media (max-width: 960px) {
+    .financial-kpi-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 860px) {
+    .app-layout { flex-direction: column; }
+    .app-sidebar { width: 100%; height: auto; position: static; }
+    .main-top-header { padding: 12px 20px; }
+    .main-content-scroll { padding: 20px; }
+    .management-toolbar { flex-direction: column; align-items: stretch; }
+    .search-input-box { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SIMULATION TOOLBAR -->
+  <div class="sim-bar">
+    <div><span class="sim-title">EventPass Admin Sandbox:</span> Quản lý Tài chính, Phí sàn & Đối soát đa mô hình</div>
+    <div class="sim-actions">
+      <button type="button" class="sim-btn" onclick="showToast('Webhook PayOS/SePay: Đã đồng bộ vé mới vào sự kiện Đại Nhạc Hội!')">Giả lập Mua vé (+1)</button>
+    </div>
+  </div>
+
+  <div class="app-layout">
+
+    <!-- SIDEBAR ADMIN -->
+    <aside class="app-sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-brand-header">
+          <a href="#" class="brand-logo">
+            EventPass<span class="role-tag">SUPER ADMIN</span><span class="accent-dot"></span>
+          </a>
+        </div>
+
+        <div class="sidebar-org-profile">
+          <img src="https://media.istockphoto.com/id/2149922267/vector/user-icon.jpg?s=612x612&w=0&k=20&c=i6jYPfB1pWjK8pll6YRxAK9fgBmf65-w5wbKH9R1dyQ=" class="sidebar-org-logo" alt="Admin">
+          <div class="sidebar-org-meta">
+            <div class="sidebar-org-name">Ban Quản Trị Hệ Thống</div>
+            <div class="sidebar-org-role">Root Administrator</div>
+          </div>
+        </div>
+
+        <div class="sidebar-nav-section">
+          <div class="sidebar-section-title">Trung Tâm Giám Sát Sàn</div>
+          <ul class="sidebar-nav-list">
+            <li class="sidebar-nav-item"><a href="#"><span>Hàng đợi xét duyệt</span></a></li>
+            <li class="sidebar-nav-item"><a href="#"><span>Sự kiện & Trạm Kiosk</span></a></li>
+            <li class="sidebar-nav-item"><a href="#"><span>Người dùng & Face ID</span></a></li>
+            <li class="sidebar-nav-item"><a href="#" class="active"><span>Tài chính & Giao dịch QR</span></a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sidebar-bottom">
+        <button type="button" class="btn-sidebar-logout" onclick="alert('Đã đăng xuất!')">Đăng xuất Admin</button>
+      </div>
+    </aside>
+
+    <!-- MAIN VIEWPORT -->
+    <main class="app-main">
+      <header class="main-top-header">
+        <h1 class="header-page-title">
+          <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal); width:22px; height:22px;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <span>Tài Chính & Đối Soát Thanh Toán Đa Mô Hình (Escrow & Settlement)</span>
+        </h1>
+        <div class="header-system-status">
+          <span class="status-dot-pulse"></span>
+          <span>T+3 tự động chốt sổ</span>
+        </div>
+      </header>
+
+      <div class="main-content-scroll">
+        
+        <!-- 3 THẺ KPI TÀI CHÍNH -->
+        <div class="financial-kpi-grid">
+          <div class="fin-kpi-card">
+            <div class="fin-kpi-title">Tổng GMV giao dịch toàn sàn</div>
+            <div class="fin-kpi-value" id="totalGmvVal">37,050,000 đ</div>
+          </div>
+          <div class="fin-kpi-card">
+            <div class="fin-kpi-title">Phí dịch vụ nền tảng thu được</div>
+            <div class="fin-kpi-value" style="color:var(--color-teal);" id="platformFeeVal">1,852,500 đ</div>
+          </div>
+          <div class="fin-kpi-card">
+            <div class="fin-kpi-title">Số dư chờ quyết toán cho BTC</div>
+            <div class="fin-kpi-value" style="color:var(--color-orange);" id="pendingSettlementVal">14,200,000 đ</div>
+          </div>
+        </div>
+
+        <!-- TOOLBAR TÌM KIẾM & LỌC -->
+        <div class="management-toolbar">
+          <div class="search-input-box">
+            <svg class="icon" viewBox="0 0 24 24" style="width:16px;height:16px;color:var(--text-muted);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="searchInput" placeholder="Tìm theo mã sự kiện hoặc tên BTC..." oninput="renderFinanceTable()">
+          </div>
+
+          <div class="status-filters">
+            <button type="button" class="filter-pill-btn active" onclick="filterTable('all', this)">Tất cả</button>
+            <button type="button" class="filter-pill-btn" onclick="filterTable('pending', this)">Chờ quyết toán</button>
+            <button type="button" class="filter-pill-btn" onclick="filterTable('advanced', this)">Đã tạm ứng (Đợt 1)</button>
+            <button type="button" class="filter-pill-btn" onclick="filterTable('settled', this)">Đã quyết toán xong</button>
+          </div>
+        </div>
+
+        <!-- BẢNG ĐỐI SOÁT & QUYẾT TOÁN -->
+        <div class="admin-table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mã & Sự Kiện</th>
+                <th>Ban Tổ Chức</th>
+                <th>GMV / Phí Sàn</th>
+                <th>Hình Thức Quyết Toán</th>
+                <th>Trạng Thái Dòng Tiền</th>
+                <th style="text-align: right;">Hành Động</th>
+              </tr>
+            </thead>
+            <tbody id="financeTableBody">
+              <!-- Render động bằng JS -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- MODAL XÁC NHẬN QUYẾT TOÁN / TẠM ỨNG -->
+  <div class="modal-backdrop" id="settleModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-yellow);"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span id="modalSettleTitle">Đối Soát & Xác Nhận Giải Ngân</span>
+        </h3>
+        <button type="button" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;" onclick="closeModal('settleModal')">&times;</button>
+      </div>
+
+      <div class="modal-body" id="modalSettleContent">
+        <!-- Render chi tiết bảng kê -->
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="filter-pill-btn" onclick="closeModal('settleModal')">Hủy bỏ</button>
+        <button type="button" id="modalSettleSubmitBtn" class="sim-btn" style="background:var(--color-teal); border-color:var(--color-teal); padding:8px 16px;" onclick="executeSettlement()">Xác nhận Chuyển Khoản</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CẤU HÌNH PHÍ & HẠN MỨC QUYẾT TOÁN -->
+  <div class="modal-backdrop" id="configModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-yellow);"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Cấu Hình Phí Sàn & Mô Hình Quyết Toán</span>
+        </h3>
+        <button type="button" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;" onclick="closeModal('configModal')">&times;</button>
+      </div>
+
+      <div class="modal-body" id="modalConfigContent">
+        <!-- Render form cấu hình -->
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="filter-pill-btn" onclick="closeModal('configModal')">Hủy</button>
+        <button type="button" class="sim-btn" style="background:var(--color-teal); border-color:var(--color-teal); padding:8px 16px;" onclick="saveEventConfig()">Lưu Cấu Hình</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toastNotification" class="toast-notification">
+    <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-mint); width:18px; height:18px;"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="toastMessage">Thao tác thành công!</span>
+  </div>
+
+  <script>
+    let financeData = [
+      {
+        id: "TXN-88291",
+        eventTitle: "Đại Nhạc Hội Chào Tân Sinh Viên 2026",
+        orgName: "Hội Sinh Viên SGU",
+        gmvRaw: 13050000,
+        feePercent: 5, // 5% phí sàn
+        settleModel: "multi", // 'single' (1 đợt) hoặc 'multi' (chia 2 đợt tạm ứng)
+        advancedPaid: 0, // số tiền đã tạm ứng đợt 1
+        status: "pending", // pending, advanced, settled
+        settleDate: "Chưa chốt sổ"
+      },
+      {
+        id: "TXN-88292",
+        eventTitle: "Đêm Nhạc Rock Sinh Viên Mùa Hè",
+        orgName: "Đoàn Thanh Niên SGU",
+        gmvRaw: 16000000,
+        feePercent: 5,
+        settleModel: "multi",
+        advancedPaid: 2400000, // đã ứng trước 40% của lúc đầu
+        status: "advanced",
+        settleDate: "Tạm ứng đợt 1 (17/09)"
+      },
+      {
+        id: "TXN-88285",
+        eventTitle: "Workshop Tối Ưu Hóa Backend",
+        orgName: "CLB Tin Học SGU",
+        gmvRaw: 8000000,
+        feePercent: 0, // Miễn phí cho sự kiện nội bộ
+        settleModel: "single",
+        advancedPaid: 0,
+        status: "settled",
+        settleDate: "15/09/2026"
+      }
+    ];
+
+    let currentStatusFilter = 'all';
+    let targetTxnId = null;
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMessage').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    function formatCurrency(num) {
+      return num.toLocaleString('vi-VN') + ' đ';
+    }
+
+    function renderFinanceTable() {
+      const tbody = document.getElementById('financeTableBody');
+      tbody.innerHTML = '';
+      const keyword = document.getElementById('searchInput').value.toLowerCase();
+
+      const filtered = financeData.filter(item => {
+        const match = item.id.toLowerCase().includes(keyword) || item.eventTitle.toLowerCase().includes(keyword) || item.orgName.toLowerCase().includes(keyword);
+        if (!match) return false;
+        if (currentStatusFilter === 'pending') return item.status === 'pending';
+        if (currentStatusFilter === 'advanced') return item.status === 'advanced';
+        if (currentStatusFilter === 'settled') return item.status === 'settled';
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">Không tìm thấy dữ liệu phù hợp.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const feeAmount = item.gmvRaw * (item.feePercent / 100);
+        const netTotal = item.gmvRaw - feeAmount;
+        const remainingAmount = netTotal - item.advancedPaid;
+
+        let badgeHtml = '';
+        if (item.status === 'pending') badgeHtml = '<span class="badge-settlement pending">Chờ quyết toán</span>';
+        else if (item.status === 'advanced') badgeHtml = '<span class="badge-settlement advanced">Đã tạm ứng (Đợt 1)</span>';
+        else badgeHtml = '<span class="badge-settlement settled">Đã quyết toán xong</span>';
+
+        let actionBtnText = "Quyết toán";
+        if (item.settleModel === 'multi' && item.status === 'pending') {
+          actionBtnText = "Tạm ứng 40%";
+        } else if (item.settleModel === 'multi' && item.status === 'advanced') {
+          actionBtnText = "Tất toán (T+3)";
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div style="font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--color-navy);">${item.id}</div>
+            <div style="font-size:11.5px; color:var(--text-muted);">${item.eventTitle}</div>
+          </td>
+          <td><strong style="color:var(--color-navy);">${item.orgName}</strong></td>
+          <td>
+            <div style="font-family:'JetBrains Mono',monospace; font-weight:800; color:var(--color-navy);">${formatCurrency(item.gmvRaw)}</div>
+            <div style="font-size:11px; color:var(--text-muted);">Phí sàn (${item.feePercent}%): -${formatCurrency(feeAmount)}</div>
+          </td>
+          <td>
+            <div style="font-size:12px; font-weight:700; color:var(--color-teal);">${item.settleModel === 'single' ? '1 đợt sau T+3' : 'Chia đợt (Tạm ứng 40% + T+3)'}</div>
+            <div style="font-size:11px; color:var(--text-muted);">Đã ứng: ${formatCurrency(item.advancedPaid)}</div>
+          </td>
+          <td>
+            ${badgeHtml}
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${item.settleDate}</div>
+          </td>
+          <td style="text-align: right;">
+            <div class="action-group-cell">
+              <button type="button" class="btn-config-fee" onclick="openConfigModal('${item.id}')">Cấu hình</button>
+              ${item.status !== 'settled' ? `
+                <button type="button" class="btn-settle-action" onclick="promptSettle('${item.id}')">${actionBtnText}</button>
+              ` : `
+                <button type="button" class="btn-settle-action done" disabled>Xong</button>
+              `}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterTable(status, btn) {
+      currentStatusFilter = status;
+      document.querySelectorAll('.status-filters .filter-pill-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderFinanceTable();
+    }
+
+    // Modal Quyết toán / Tạm ứng với bảng kê minh bạch
+    function promptSettle(id) {
+      targetTxnId = id;
+      const item = financeData.find(i => i.id === id);
+      if (!item) return;
+
+      const feeAmount = item.gmvRaw * (item.feePercent / 100);
+      const netTotal = item.gmvRaw - feeAmount;
+      const modalContent = document.getElementById('modalSettleContent');
+      const submitBtn = document.getElementById('modalSettleSubmitBtn');
+
+      if (item.settleModel === 'multi' && item.status === 'pending') {
+        // Trường hợp tạm ứng đợt 1 (ví dụ 40% số tiền thực nhận hiện tại)
+        const advanceAmount = Math.round(netTotal * 0.4);
+        document.getElementById('modalSettleTitle').textContent = "Xác Nhận Tạm Ứng Đợt 1 (40%)";
+        submitBtn.textContent = "Xác nhận Chuyển Khoản Tạm Ứng";
+        modalContent.innerHTML = `
+          <div>Đang xử lý khoản tạm ứng trước sự kiện cho Ban tổ chức:</div>
+          <div style="background:var(--bg-page); padding:12px 16px; border-radius:8px; border:1.5px solid var(--card-border); margin:4px 0; display:flex; flex-direction:column; gap:6px;">
+            <div>Sự kiện: <strong>${item.eventTitle}</strong></div>
+            <div>Ban tổ chức: <strong>${item.orgName}</strong></div>
+            <hr style="border:none; border-top:1px dashed var(--card-border); margin:4px 0;">
+            <div style="display:flex; justify-content:space-between;"><span>Doanh thu hiện tại (GMV):</span> <strong>${formatCurrency(item.gmvRaw)}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span>Thực nhận sau phí (${item.feePercent}%):</span> <strong>${formatCurrency(netTotal)}</strong></div>
+            <div style="display:flex; justify-content:space-between; color:var(--color-orange); font-size:14px; font-weight:800;"><span>Đề xuất tạm ứng 40%:</span> <span>${formatCurrency(advanceAmount)}</span></div>
+          </div>
+          <div style="font-size:12.5px; color:var(--text-muted);">* Lưu ý: Khoản tạm ứng này sẽ được tự động trừ lại vào kỳ quyết toán toàn bộ (T+3) sau khi sự kiện kết thúc.</div>
+        `;
+      } else {
+        // Trường hợp quyết toán 1 đợt hoặc tất toán đợt cuối sau T+3
+        const remainingAmount = netTotal - item.advancedPaid;
+        document.getElementById('modalSettleTitle').textContent = "Đối Soát & Tất Toán Cuối Cùng (T+3)";
+        submitBtn.textContent = "Xác nhận Chuyển Khoản Tất Toán";
+        modalContent.innerHTML = `
+          <div>Bảng kê đối soát tài chính tổng kết sự kiện:</div>
+          <div style="background:var(--bg-page); padding:12px 16px; border-radius:8px; border:1.5px solid var(--card-border); margin:4px 0; display:flex; flex-direction:column; gap:6px;">
+            <div>Sự kiện: <strong>${item.eventTitle}</strong></div>
+            <div>Ban tổ chức: <strong>${item.orgName}</strong></div>
+            <hr style="border:none; border-top:1px dashed var(--card-border); margin:4px 0;">
+            <div style="display:flex; justify-content:space-between;"><span>Tổng GMV cuối cùng:</span> <strong>${formatCurrency(item.gmvRaw)}</strong></div>
+            <div style="display:flex; justify-content:space-between; color:var(--danger);"><span>Phí sàn (${item.feePercent}%):</span> <strong>-${formatCurrency(feeAmount)}</strong></div>
+            <div style="display:flex; justify-content:space-between;"><span>Tổng thực nhận của BTC:</span> <strong>${formatCurrency(netTotal)}</strong></div>
+            ${item.advancedPaid > 0 ? `<div style="display:flex; justify-content:space-between; color:var(--color-orange);"><span>Đã trừ tạm ứng Đợt 1:</span> <strong>-${formatCurrency(item.advancedPaid)}</strong></div>` : ''}
+            <hr style="border:none; border-top:1px solid var(--card-border); margin:4px 0;">
+            <div style="display:flex; justify-content:space-between; font-size:15px; font-weight:800; color:var(--color-teal);"><span>Thực chuyển tất toán:</span> <span>${formatCurrency(remainingAmount)}</span></div>
+          </div>
+          <div style="font-size:12.5px; color:var(--text-muted);">* Hệ thống đã kiểm tra an toàn dòng tiền: Mức tạm ứng hoàn toàn nằm trong biên độ doanh thu thực tế.</div>
+        `;
+      }
+
+      openModal('settleModal');
+    }
+
+    function executeSettlement() {
+      const item = financeData.find(i => i.id === targetTxnId);
+      if (!item) return;
+
+      const feeAmount = item.gmvRaw * (item.feePercent / 100);
+      const netTotal = item.gmvRaw - feeAmount;
+
+      if (item.settleModel === 'multi' && item.status === 'pending') {
+        item.advancedPaid = Math.round(netTotal * 0.4);
+        item.status = 'advanced';
+        item.settleDate = `Tạm ứng đợt 1 (${new Date().toLocaleDateString('vi-VN')})`;
+        showToast(`Đã giải ngân tạm ứng 40% cho [${item.orgName}] thành công!`);
+      } else {
+        item.status = 'settled';
+        item.settleDate = `Tất toán xong (${new Date().toLocaleDateString('vi-VN')})`;
+        showToast(`Đã quyết toán và tất toán hoàn tất cho [${item.orgName}]!`);
+      }
+
+      closeModal('settleModal');
+      renderFinanceTable();
+    }
+
+    // Modal Cấu hình
+    function openConfigModal(id) {
+      targetTxnId = id;
+      const item = financeData.find(i => i.id === id);
+      if (!item) return;
+
+      const content = document.getElementById('modalConfigContent');
+      content.innerHTML = `
+        <div>Cấu hình sự kiện: <strong>${item.eventTitle}</strong></div>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
+          <label style="font-size:11.5px; font-weight:700; color:var(--color-navy); text-transform:uppercase;">Tỷ lệ phí dịch vụ sàn (%)</label>
+          <input type="number" id="cfgFeePercent" class="form-control" value="${item.feePercent}" min="0" max="30" step="0.5">
+          <span style="font-size:11px; color:var(--text-muted);">Nhập 0% nếu là sự kiện nội bộ sinh viên trường.</span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
+          <label style="font-size:11.5px; font-weight:700; color:var(--color-navy); text-transform:uppercase;">Mô hình giải ngân dòng tiền</label>
+          <select id="cfgSettleModel" class="form-control">
+            <option value="single" ${item.settleModel === 'single' ? 'selected' : ''}>Quyết toán 1 đợt duy nhất (Sau sự kiện 3 ngày)</option>
+            <option value="multi" ${item.settleModel === 'multi' ? 'selected' : ''}>Chia đợt: Tạm ứng 40% trước, quyết toán phần còn lại sau T+3</option>
+          </select>
+        </div>
+      `;
+      openModal('configModal');
+    }
+
+    function saveEventConfig() {
+      const item = financeData.find(i => i.id === targetTxnId);
+      if (!item) return;
+
+      const newFee = parseFloat(document.getElementById('cfgFeePercent').value);
+      const newModel = document.getElementById('cfgSettleModel').value;
+
+      if (isNaN(newFee) || newFee < 0) {
+        alert("Vui lòng nhập tỷ lệ phí hợp lệ!");
+        return;
+      }
+
+      item.feePercent = newFee;
+      item.settleModel = newModel;
+
+      closeModal('configModal');
+      renderFinanceTable();
+      showToast(`Đã lưu cấu hình tài chính mới thành công!`);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderFinanceTable();
+    });
+  </script>
+</body>
+</html>

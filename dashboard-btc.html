@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass Organizer — Live Dashboard Thống Kê Điểm Danh (UC10)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-navy: #023852;
+    --color-navy-dark: #012435;
+    --color-teal: #079FA0;
+    --color-teal-hover: #058586;
+    --color-mint: #9FD8C5;
+    --color-yellow: #FAC005;
+    --color-orange: #F58B01;
+    --color-red: #DC2E2F;
+
+    --bg-page: #f2f7f5;
+    --card-border: #cfe5dc;
+    --text-primary: #023852;
+    --text-muted: #537583;
+    --hairline: #e3efea;
+    --white: #ffffff;
+    --danger: #dc2626;
+    --danger-bg: #fff5f5;
+    --success: #15803d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .sim-bar {
+    background: var(--color-navy-dark);
+    color: #e2e8f0;
+    padding: 7px 24px;
+    font-size: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 2px solid var(--color-teal);
+    z-index: 1000;
+  }
+  .sim-title { font-weight: 700; color: var(--color-yellow); }
+  .sim-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sim-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .sim-btn:hover { background: var(--color-teal); color: #fff; border-color: var(--color-yellow); }
+
+  .app-layout {
+    display: flex;
+    flex: 1;
+    min-height: calc(100vh - 35px);
+  }
+
+  /* SIDEBAR */
+  .app-sidebar {
+    width: 270px;
+    background: var(--color-navy);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid #034b6e;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .sidebar-top { display: flex; flex-direction: column; }
+  .sidebar-brand-header {
+    padding: 24px 20px 20px 20px;
+    border-bottom: 1px solid rgba(159, 216, 197, 0.15);
+  }
+  .brand-logo {
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  .brand-logo span.role-tag {
+    font-size: 10.5px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--color-teal);
+    padding: 2px 7px;
+    border-radius: 5px;
+    margin-left: 6px;
+  }
+  .brand-logo .accent-dot {
+    width: 7px;
+    height: 7px;
+    background-color: var(--color-orange);
+    border-radius: 50%;
+    margin-left: 5px;
+    box-shadow: 0 0 7px var(--color-orange);
+  }
+
+  .sidebar-org-profile {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(159, 216, 197, 0.12);
+  }
+  .sidebar-org-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: #fff;
+    padding: 3px;
+    object-fit: contain;
+    border: 1.5px solid var(--color-yellow);
+    flex-shrink: 0;
+  }
+  .sidebar-org-meta { overflow: hidden; }
+  .sidebar-org-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sidebar-org-role { font-size: 11px; color: var(--color-mint); margin-top: 2px; }
+
+  .sidebar-nav-section { padding: 18px 12px; }
+  .sidebar-section-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(159, 216, 197, 0.6);
+    letter-spacing: 1px;
+    padding: 0 12px;
+    margin-bottom: 8px;
+  }
+  .sidebar-nav-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .sidebar-nav-item a {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 14px;
+    color: #bad8e5;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .sidebar-nav-item a:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+  .sidebar-nav-item a.active { color: #ffffff; background: var(--color-teal); font-weight: 700; }
+  .badge-live-tag {
+    font-size: 10px;
+    background: var(--color-yellow);
+    color: var(--color-navy);
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: auto;
+  }
+
+  .sidebar-bottom {
+    padding: 12px;
+    border-top: 1px solid rgba(159, 216, 197, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sidebar-bottom-link {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 14px;
+    color: #bad8e5;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+  }
+  .sidebar-bottom-link:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+  .btn-sidebar-logout {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 14px;
+    color: #fca5a5;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-sidebar-logout:hover { background: rgba(220, 38, 38, 0.15); color: #ffcaca; }
+
+  /* MAIN VIEWPORT */
+  .app-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .main-top-header {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--card-border);
+    padding: 14px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .btn-back-programs {
+    padding: 6px 12px;
+    background: var(--bg-page);
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-back-programs:hover { background: var(--color-teal); color: #fff; }
+  .header-page-title { font-size: 18px; font-weight: 800; color: var(--color-navy); }
+
+  .main-content-scroll {
+    padding: 26px 36px 50px 36px;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .view-container { display: flex; flex-direction: column; gap: 20px; }
+
+  /* BANNER SỰ KIỆN */
+  .event-banner-card {
+    background: linear-gradient(135deg, var(--color-navy) 0%, #034f75 100%);
+    color: #fff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 6px 20px rgba(2, 56, 82, 0.14);
+  }
+  .banner-info h2 { font-size: 19px; font-weight: 800; margin-bottom: 4px; }
+  .banner-submeta { font-size: 12.5px; color: var(--color-mint); display: flex; gap: 16px; }
+
+  /* 4 THẺ KPI */
+  .kpi-event-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .kpi-event-card {
+    background: var(--white);
+    border-radius: 12px;
+    border: 1.5px solid var(--card-border);
+    padding: 16px 18px;
+    box-shadow: 0 4px 12px rgba(2, 56, 82, 0.04);
+  }
+  .kpi-event-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 6px;
+  }
+  .kpi-event-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--color-navy);
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  .kpi-event-desc { font-size: 12px; color: var(--text-muted); }
+
+  /* KHU VỰC TIẾN ĐỘ LẤP ĐẦY HỘI TRƯỜNG TRỰC QUAN */
+  .occupancy-card {
+    background: #fff;
+    border: 1.5px solid var(--card-border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    box-shadow: 0 4px 14px rgba(2, 56, 82, 0.04);
+  }
+  .occupancy-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .occupancy-title { font-size: 13.5px; font-weight: 800; color: var(--color-navy); }
+  .occupancy-percent { font-size: 16px; font-weight: 800; color: var(--color-teal); }
+  .occupancy-bar-bg {
+    width: 100%;
+    height: 10px;
+    background: #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .occupancy-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-teal) 0%, var(--color-orange) 100%);
+    border-radius: 8px;
+    transition: width 0.4s ease;
+  }
+
+  /* BỐ CỤC BIỂU ĐỒ KHUNG GIỜ + FEED */
+  .metrics-content-grid {
+    display: grid;
+    grid-template-columns: 1.45fr 1fr;
+    gap: 20px;
+  }
+
+  .panel-box {
+    background: var(--white);
+    border-radius: 12px;
+    border: 1.5px solid var(--card-border);
+    padding: 20px;
+    box-shadow: 0 4px 14px rgba(2, 56, 82, 0.04);
+  }
+  .panel-header-sub {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .panel-header-sub h3 { font-size: 14.5px; font-weight: 800; color: var(--color-navy); }
+  .live-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--color-teal);
+    background: #e6f7f3;
+    padding: 3px 8px;
+    border-radius: 12px;
+  }
+
+  /* BIỂU ĐỒ CỘT THEO TỪNG KHUNG GIỜ PHỤC VỤ BTC */
+  .hourly-chart-box {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    height: 170px;
+    padding-top: 20px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .hourly-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+    justify-content: flex-end;
+  }
+  .hourly-bar-fill {
+    width: 100%;
+    max-width: 38px;
+    background: var(--color-teal);
+    border-radius: 6px 6px 0 0;
+    transition: height 0.4s ease;
+    position: relative;
+  }
+  .hourly-bar-fill.peak {
+    background: var(--color-orange);
+  }
+  .hourly-bar-val {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--color-navy);
+    margin-bottom: 2px;
+  }
+  .hourly-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* REALTIME FEED */
+  .live-feed-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+  }
+  .feed-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--bg-page);
+    border-radius: 8px;
+    border: 1px solid var(--hairline);
+    font-size: 12px;
+  }
+  .feed-user-meta { display: flex; align-items: center; gap: 8px; }
+  .feed-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--color-teal);
+  }
+  .feed-name { font-weight: 700; color: var(--color-navy); }
+  .feed-sub { font-size: 11px; color: var(--text-muted); }
+  .feed-match-badge {
+    font-size: 10.5px;
+    font-weight: 800;
+    background: #dcfce7;
+    color: #15803d;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+
+  /* BẢNG TỶ LỆ THEO HẠNG VÉ & TRẠM SOÁT VÉ */
+  .secondary-metrics-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .data-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 12.5px;
+  }
+  .data-stat-row:last-child { border-bottom: none; }
+  .stat-progress-line {
+    width: 100px;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .stat-progress-fill { height: 100%; background: var(--color-teal); }
+
+  /* Toast Notification */
+  .toast-notification {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--color-navy);
+    color: #fff;
+    border-left: 4px solid var(--color-teal);
+    padding: 12px 18px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(2, 56, 82, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    z-index: 2000;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+  .toast-notification.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+  @media (max-width: 960px) {
+    .kpi-event-grid { grid-template-columns: repeat(2, 1fr); }
+    .metrics-content-grid { grid-template-columns: 1fr; }
+    .secondary-metrics-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SIMULATION TOOLBAR CHO TEST NHANH -->
+  <div class="sim-bar">
+    <div><span class="sim-title">EventPass Live Dashboard:</span> Biểu đồ lưu lượng theo giờ & Tỷ lệ lấp đầy</div>
+    <div class="sim-actions">
+      <button type="button" class="sim-btn" onclick="simTriggerSocketCheckin()">Mô phỏng 1 khách check-in Face ID (+1)</button>
+      <button type="button" class="sim-btn" onclick="window.history.back()">Quay lại</button>
+    </div>
+  </div>
+
+  <div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="app-sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-brand-header">
+          <a href="#" class="brand-logo">
+            EventPass<span class="role-tag">ORGANIZER</span><span class="accent-dot"></span>
+          </a>
+        </div>
+        <div class="sidebar-org-profile">
+          <img src="https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png" class="sidebar-org-logo" alt="Logo">
+          <div class="sidebar-org-meta">
+            <div class="sidebar-org-name">Đoàn Trường ĐH Sài Gòn</div>
+            <div class="sidebar-org-role">Tài khoản Ban Tổ Chức</div>
+          </div>
+        </div>
+
+        <div class="sidebar-nav-section">
+          <div class="sidebar-section-title">Quản Trị Sự Kiện</div>
+          <ul class="sidebar-nav-list">
+            <li class="sidebar-nav-item">
+              <a href="#" class="active">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                <span>Tổng quan số liệu</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="#">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Sự kiện của tôi</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="#">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Danh sách tham dự</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="app-main">
+      <header class="main-top-header">
+        <h1 class="header-page-title">Live Dashboard Thống Kê Điểm Danh</h1>
+      </header>
+
+      <div class="main-content-scroll">
+        
+        <!-- BANNER SỰ KIỆN -->
+        <div class="event-banner-card">
+          <div class="banner-info">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+              <span style="font-size:11px; font-weight:800; background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:12px;">Đang diễn ra</span>
+              <span style="font-size:12px; color:var(--color-mint); font-weight:700;">Hệ thống Kiosk Face ID đang mở cổng</span>
+            </div>
+            <h2>Ngày Hội Công Nghệ SGU TechDay 2026</h2>
+            <div class="banner-submeta">
+              <span>Hôm nay • 08:00 - 17:30</span>
+              <span>Hội trường A - Cơ sở chính SGU</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 THẺ KPI CHÍNH -->
+        <div class="kpi-event-grid">
+          <div class="kpi-event-card">
+            <div class="kpi-event-title">Khách đã check-in Face ID</div>
+            <div class="kpi-event-value" id="kpiCheckedIn">785 / 800</div>
+            <div class="kpi-event-desc">Còn lại: <strong id="kpiRemaining">15</strong> khách</div>
+          </div>
+
+          <div class="kpi-event-card">
+            <div class="kpi-event-title">Tỷ lệ lấp đầy hội trường</div>
+            <div class="kpi-event-value" style="color:var(--color-teal);" id="kpiFillRate">98.1%</div>
+            <div class="kpi-event-desc">Trạng thái: <strong style="color:var(--color-orange);">Gần kín chỗ</strong></div>
+          </div>
+
+          <div class="kpi-event-card">
+            <div class="kpi-event-title">Tốc độ quét trung bình</div>
+            <div class="kpi-event-value" style="color:var(--color-teal);">0.28s</div>
+            <div class="kpi-event-desc">Độ trễ Kiosk: <strong>&lt; 1 giây</strong></div>
+          </div>
+
+          <div class="kpi-event-card">
+            <div class="kpi-event-title">Lưu lượng hiện tại</div>
+            <div class="kpi-event-value" style="color:var(--color-orange);">24 / phút</div>
+            <div class="kpi-event-desc">Tại 2 trạm camera sảnh</div>
+          </div>
+        </div>
+
+        <!-- THANH TIẾN ĐỘ LẤP ĐẦY TRỰC QUAN -->
+        <div class="occupancy-card">
+          <div class="occupancy-header">
+            <span class="occupancy-title">Mức độ lấp đầy thực tế tại Hội trường A (Sức chứa 800 ghế)</span>
+            <span class="occupancy-percent" id="barFillRateText">785 / 800 (98.1%)</span>
+          </div>
+          <div class="occupancy-bar-bg">
+            <div class="occupancy-bar-fill" id="occupancyBarFill" style="width: 98.1%;"></div>
+          </div>
+        </div>
+
+        <!-- BIỂU ĐỒ LƯU LƯỢNG THEO KHUNG GIỜ & FEED REALTIME -->
+        <div class="metrics-content-grid">
+          
+          <!-- Biểu đồ cột theo từng khung giờ -->
+          <div class="panel-box">
+            <div class="panel-header-sub">
+              <h3>Lưu lượng khách qua cổng theo từng khung giờ</h3>
+              <span class="live-pill">Cập nhật theo giờ</span>
+            </div>
+
+            <div class="hourly-chart-box">
+              <div class="hourly-col">
+                <span class="hourly-bar-val">120</span>
+                <div class="hourly-bar-fill" style="height: 35%;"></div>
+                <span class="hourly-label">07:00 - 08:00</span>
+              </div>
+              <div class="hourly-col">
+                <span class="hourly-bar-val">340</span>
+                <div class="hourly-bar-fill peak" style="height: 95%;"></div>
+                <span class="hourly-label">08:00 - 09:00</span>
+              </div>
+              <div class="hourly-col">
+                <span class="hourly-bar-val">180</span>
+                <div class="hourly-bar-fill" style="height: 52%;"></div>
+                <span class="hourly-label">09:00 - 10:00</span>
+              </div>
+              <div class="hourly-col">
+                <span class="hourly-bar-val">95</span>
+                <div class="hourly-bar-fill" style="height: 28%;"></div>
+                <span class="hourly-label">10:00 - 11:00</span>
+              </div>
+              <div class="hourly-col">
+                <span class="hourly-bar-val" id="currentHourVal">50</span>
+                <div class="hourly-bar-fill" id="currentHourBar" style="height: 18%;"></div>
+                <span class="hourly-label">11:00 - Hiện tại</span>
+              </div>
+            </div>
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px;">
+              * Khung giờ cao điểm: <strong>08:00 - 09:00</strong> (Đạt 340 lượt check-in qua Kiosk).
+            </div>
+          </div>
+
+          <!-- Nhật ký Face ID trực tiếp -->
+          <div class="panel-box">
+            <div class="panel-header-sub">
+              <h3>Nhật ký Face ID vừa qua cổng</h3>
+              <span class="live-pill">Live Feed</span>
+            </div>
+
+            <ul class="live-feed-list" id="liveFeedList">
+              <li class="feed-item">
+                <div class="feed-user-meta">
+                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100" class="feed-avatar" alt="Avatar">
+                  <div>
+                    <div class="feed-name">Hà Thái Sơn</div>
+                    <div class="feed-sub">Vé VIP • Trạm 1 • 0.24s</div>
+                  </div>
+                </div>
+                <span class="feed-match-badge">Hợp lệ</span>
+              </li>
+              <li class="feed-item">
+                <div class="feed-user-meta">
+                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100" class="feed-avatar" alt="Avatar">
+                  <div>
+                    <div class="feed-name">Trần Minh Hoàng</div>
+                    <div class="feed-sub">Vé Chuẩn • Trạm 2 • 0.31s</div>
+                  </div>
+                </div>
+                <span class="feed-match-badge">Hợp lệ</span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- HẠNG VÉ & TRẠM KIOSK -->
+        <div class="secondary-metrics-row">
+          
+          <div class="panel-box">
+            <div class="panel-header-sub">
+              <h3>Tỷ lệ điểm danh theo hạng vé</h3>
+            </div>
+            <div class="data-stat-row">
+              <span>Vé Tiêu Chuẩn (Standard Pass)</span>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="stat-progress-line"><div class="stat-progress-fill" style="width: 98%;"></div></div>
+                <strong id="stdCheckinText">590 / 600</strong>
+              </div>
+            </div>
+            <div class="data-stat-row">
+              <span>Vé Khách Mời / VIP (VIP Pass)</span>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="stat-progress-line"><div class="stat-progress-fill" style="width: 97.5%;"></div></div>
+                <strong id="vipCheckinText">195 / 200</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-box">
+            <div class="panel-header-sub">
+              <h3>Tải lưu lượng tại các trạm Kiosk</h3>
+            </div>
+            <div class="data-stat-row">
+              <span>Trạm 1 - Cổng chính Hội trường A</span>
+              <span style="font-weight:700; color:var(--color-navy);">512 lượt (65%)</span>
+            </div>
+            <div class="data-stat-row">
+              <span>Trạm 2 - Lối vào VIP & Diễn giả</span>
+              <span style="font-weight:700; color:var(--color-navy);">273 lượt (35%)</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- TOAST -->
+  <div id="toastNotification" class="toast-notification">
+    <span id="toastMessage">Thao tác thành công!</span>
+  </div>
+
+  <script>
+    let currentCheckedIn = 785;
+    const totalCapacity = 800;
+    let currentHourCount = 50;
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMessage').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // Mô phỏng bắn Socket.io khi Kiosk nhận diện thành công 1 khách
+    function simTriggerSocketCheckin() {
+      if (currentCheckedIn >= totalCapacity) {
+        alert("Hội trường đã đạt công suất tối đa 100%!");
+        return;
+      }
+
+      currentCheckedIn++;
+      currentHourCount++;
+
+      // Cập nhật thẻ KPI
+      document.getElementById('kpiCheckedIn').textContent = `${currentCheckedIn} / ${totalCapacity}`;
+      document.getElementById('kpiRemaining').textContent = totalCapacity - currentCheckedIn;
+
+      const rate = ((currentCheckedIn / totalCapacity) * 100).toFixed(1);
+      document.getElementById('kpiFillRate').textContent = `${rate}%`;
+      document.getElementById('barFillRateText').textContent = `${currentCheckedIn} / ${totalCapacity} (${rate}%)`;
+      document.getElementById('occupancyBarFill').style.width = `${rate}%`;
+
+      // Cập nhật biểu đồ cột giờ hiện tại
+      document.getElementById('currentHourVal').textContent = currentHourCount;
+      document.getElementById('currentHourBar').style.height = `${Math.min(currentHourCount * 0.35, 100)}%`;
+
+      // Thêm vào feed realtime
+      const feed = document.getElementById('liveFeedList');
+      const li = document.createElement('li');
+      li.className = 'feed-item';
+      li.innerHTML = `
+        <div class="feed-user-meta">
+          <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100" class="feed-avatar" alt="Avatar">
+          <div>
+            <div class="feed-name">Khách Kiosk vừa quét (${new Date().toLocaleTimeString()})</div>
+            <div class="feed-sub">Vé Standard • Trạm 1 • 0.22s</div>
+          </div>
+        </div>
+        <span class="feed-match-badge">Hợp lệ</span>
+      `;
+      feed.insertBefore(li, feed.firstChild);
+
+      showToast("Socket.io: +1 lượt check-in Face ID thời gian thực thành công!");
+    }
+  </script>
+</body>
+</html>

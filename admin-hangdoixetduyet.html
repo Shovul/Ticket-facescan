@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass SuperAdmin — Hàng Đợi Xét Duyệt (Pending Approvals)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-navy: #023852;
+    --color-navy-dark: #012435;
+    --color-teal: #079FA0;
+    --color-teal-hover: #058586;
+    --color-mint: #9FD8C5;
+    --color-yellow: #FAC005;
+    --color-orange: #F58B01;
+    --color-red: #DC2E2F;
+
+    --bg-page: #f2f7f5;
+    --card-border: #cfe5dc;
+    --text-primary: #023852;
+    --text-muted: #537583;
+    --hairline: #e3efea;
+    --white: #ffffff;
+    --danger: #dc2626;
+    --danger-bg: #fff5f5;
+    --success: #15803d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Sandbox Toolbar */
+  .sim-bar {
+    background: var(--color-navy-dark);
+    color: #e2e8f0;
+    padding: 7px 24px;
+    font-size: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 2px solid var(--color-teal);
+    z-index: 1000;
+  }
+  .sim-title { font-weight: 700; color: var(--color-yellow); }
+  .sim-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sim-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .sim-btn:hover { background: var(--color-teal); color: #fff; border-color: var(--color-yellow); }
+
+  /* BỐ CỤC KHUNG TOÀN HỆ THỐNG: SIDEBAR + MAIN VIEW */
+  .app-layout {
+    display: flex;
+    flex: 1;
+    min-height: calc(100vh - 35px);
+  }
+
+  /* ========================================================
+     1. SIDEBAR DỌC (CỐ ĐỊNH BÊN TRÁI CHO ADMIN)
+     ======================================================== */
+  .app-sidebar {
+    width: 270px;
+    background: var(--color-navy);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid #034b6e;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+
+  .sidebar-top { display: flex; flex-direction: column; }
+
+  .sidebar-brand-header {
+    padding: 24px 20px 20px 20px;
+    border-bottom: 1px solid rgba(159, 216, 197, 0.15);
+  }
+  .brand-logo {
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  .brand-logo span.role-tag {
+    font-size: 10.5px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--color-red);
+    padding: 2px 7px;
+    border-radius: 5px;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+  }
+  .brand-logo .accent-dot {
+    width: 7px;
+    height: 7px;
+    background-color: var(--color-orange);
+    border-radius: 50%;
+    margin-left: 5px;
+    box-shadow: 0 0 7px var(--color-orange);
+  }
+
+  .sidebar-org-profile {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(159, 216, 197, 0.12);
+  }
+  .sidebar-org-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: #fff;
+    padding: 3px;
+    object-fit: contain;
+    border: 1.5px solid var(--color-yellow);
+    flex-shrink: 0;
+  }
+  .sidebar-org-meta { overflow: hidden; }
+  .sidebar-org-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sidebar-org-role {
+    font-size: 11px;
+    color: var(--color-mint);
+    margin-top: 2px;
+  }
+
+  .sidebar-nav-section { padding: 18px 12px; }
+  .sidebar-section-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(159, 216, 197, 0.6);
+    letter-spacing: 1px;
+    padding: 0 12px;
+    margin-bottom: 8px;
+  }
+  .sidebar-nav-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sidebar-nav-item a {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 14px;
+    color: #bad8e5;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .sidebar-nav-item a:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .sidebar-nav-item a.active {
+    color: #ffffff;
+    background: var(--color-teal);
+    font-weight: 700;
+  }
+
+  /* Badge số đếm đỏ cảnh báo */
+  .badge-counter-red {
+    font-size: 11px;
+    font-weight: 800;
+    background: var(--color-red);
+    color: #fff;
+    padding: 2px 7px;
+    border-radius: 12px;
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    box-shadow: 0 0 6px rgba(220, 46, 47, 0.5);
+  }
+
+  .sidebar-bottom {
+    padding: 12px;
+    border-top: 1px solid rgba(159, 216, 197, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .sidebar-bottom-link {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 14px;
+    color: #bad8e5;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .sidebar-bottom-link:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+
+  .btn-sidebar-logout {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 14px;
+    color: #fca5a5;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-sidebar-logout:hover { background: rgba(220, 38, 38, 0.15); color: #ffcaca; }
+
+  /* ========================================================
+     2. MAIN CONTENT VIEWPORT
+     ======================================================== */
+  .app-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .main-top-header {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--card-border);
+    padding: 14px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .header-page-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--color-navy);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-system-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-teal);
+    background: #e6f7f3;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #bcf0e2;
+  }
+  .status-dot-pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--color-teal);
+  }
+
+  .main-content-scroll {
+    padding: 26px 36px 60px 36px;
+    max-width: 1180px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* THANH ĐIỀU HƯỚNG TAB LỌC CÓ BADGE SỐ ĐỎ */
+  .filter-tabs-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: #fff;
+    border: 1.5px solid var(--card-border);
+    border-radius: 12px;
+    padding: 10px 16px;
+    box-shadow: 0 4px 14px rgba(2, 56, 82, 0.04);
+    flex-wrap: wrap;
+  }
+  .filter-tabs-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .tab-item-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--bg-page);
+    border: 1.5px solid var(--card-border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .tab-item-btn:hover {
+    border-color: var(--color-teal);
+    color: var(--color-teal);
+  }
+  .tab-item-btn.active {
+    background: var(--color-teal);
+    border-color: var(--color-teal);
+    color: #fff;
+  }
+  .tab-item-btn.active .tab-pill-count {
+    background: #fff;
+    color: var(--color-navy);
+  }
+  .tab-pill-count {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 10px;
+    background: var(--color-red);
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* DANH SÁCH THẺ HÀNG ĐỢI XÉT DUYỆT */
+  .queue-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .queue-item-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 6px 18px rgba(2, 56, 82, 0.04);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .queue-item-card:hover {
+    border-color: var(--color-teal);
+    box-shadow: 0 10px 24px rgba(7, 159, 160, 0.1);
+  }
+  .queue-item-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--color-yellow);
+  }
+  .queue-item-card.type-new::before { background: var(--color-teal); }
+  .queue-item-card.type-change::before { background: var(--color-orange); }
+  .queue-item-card.type-station::before { background: #6366f1; }
+  .queue-item-card.type-cancel::before { background: var(--color-red); }
+
+  .queue-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .queue-type-badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  .queue-type-badge.new { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+  .queue-type-badge.change { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
+  .queue-type-badge.station { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+  .queue-type-badge.cancel { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+  .queue-event-title {
+    font-size: 16.5px;
+    font-weight: 800;
+    color: var(--color-navy);
+    line-height: 1.35;
+    margin-top: 4px;
+  }
+
+  .queue-meta-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 14px;
+    background: var(--bg-page);
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12px;
+  }
+  .meta-node div:first-child {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+  .meta-node div:last-child {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--color-navy);
+    margin-top: 2px;
+  }
+
+  /* Khung so sánh thay đổi (Diff View) */
+  .diff-comparison-box {
+    background: #f8fafc;
+    border: 1px dashed var(--card-border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .diff-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .diff-old {
+    color: var(--danger);
+    text-decoration: line-through;
+    background: #fee2e2;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .diff-new {
+    color: var(--success);
+    font-weight: 700;
+    background: #dcfce7;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .queue-footer-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--hairline);
+  }
+  .submitter-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .submitter-logo-mini {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    object-fit: contain;
+    background: #fff;
+    border: 1px solid var(--card-border);
+  }
+
+  .action-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-approve {
+    padding: 7px 16px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s ease;
+  }
+  .btn-approve:hover { background: var(--color-teal-hover); }
+
+  .btn-reject {
+    padding: 7px 14px;
+    background: #fff;
+    color: var(--danger);
+    border: 1.5px solid #fecaca;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+  }
+  .btn-reject:hover { background: #fee2e2; }
+
+  .btn-view-details {
+    padding: 7px 12px;
+    background: var(--bg-page);
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn-view-details:hover { border-color: var(--color-navy); }
+
+  /* MODAL THẨM ĐỊNH CHI TIẾT */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 56, 82, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .modal-backdrop.show { opacity: 1; visibility: visible; }
+  .modal-box {
+    background: #fff;
+    width: 100%;
+    max-width: 650px;
+    border-radius: 12px;
+    box-shadow: 0 20px 45px rgba(2, 56, 82, 0.28);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .modal-header {
+    padding: 16px 22px;
+    background: var(--color-navy);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title { font-size: 15.5px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .modal-body {
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 75vh;
+    overflow-y: auto;
+  }
+  .modal-footer {
+    padding: 14px 22px;
+    background: var(--bg-page);
+    border-top: 1.5px solid var(--hairline);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  /* Toast Notification */
+  .toast-notification {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--color-navy);
+    color: #fff;
+    border-left: 4px solid var(--color-teal);
+    padding: 14px 20px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(2, 56, 82, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    z-index: 6000;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast-notification.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+  @media (max-width: 860px) {
+    .app-layout { flex-direction: column; }
+    .app-sidebar { width: 100%; height: auto; position: static; }
+    .main-top-header { padding: 12px 20px; }
+    .main-content-scroll { padding: 20px; }
+    .queue-meta-grid { grid-template-columns: 1fr; }
+    .queue-card-header { flex-direction: column; }
+    .queue-footer-actions { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .action-btn-group { width: 100%; justify-content: flex-end; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SIMULATION TOOLBAR CHO TEST NHANH -->
+  <div class="sim-bar">
+    <div><span class="sim-title">EventPass Admin Sandbox:</span> Thẩm định Hàng đợi xét duyệt (Pending Approvals) đúng phân định</div>
+    <div class="sim-actions">
+      <button type="button" class="sim-btn" onclick="simAddMockRequest()">Giả lập thêm yêu cầu (+1)</button>
+      <button type="button" class="sim-btn" onclick="window.history.back()">Quay lại</button>
+    </div>
+  </div>
+
+  <div class="app-layout">
+
+    <!-- ========================================================
+         1. SIDEBAR DỌC ADMIN
+         ======================================================== -->
+    <aside class="app-sidebar">
+      <div class="sidebar-top">
+        
+        <div class="sidebar-brand-header">
+          <a href="#" class="brand-logo">
+            EventPass<span class="role-tag">SUPER ADMIN</span><span class="accent-dot"></span>
+          </a>
+        </div>
+
+        <div class="sidebar-org-profile">
+          <img src="https://media.istockphoto.com/id/2149922267/vector/user-icon.jpg?s=612x612&w=0&k=20&c=i6jYPfB1pWjK8pll6YRxAK9fgBmf65-w5wbKH9R1dyQ=" class="sidebar-org-logo" alt="Admin">
+          <div class="sidebar-org-meta">
+            <div class="sidebar-org-name">Ban Quản Trị Hệ Thống</div>
+            <div class="sidebar-org-role">Root Administrator</div>
+          </div>
+        </div>
+
+        <div class="sidebar-nav-section">
+          <div class="sidebar-section-title">Trung Tâm Giám Sát Sàn</div>
+          <ul class="sidebar-nav-list">
+            <li class="sidebar-nav-item">
+              <a href="#" class="active">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                <span>Hàng đợi xét duyệt</span>
+                <span class="badge-counter-red" id="sidebarTotalPendingBadge">4</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="#">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Sự kiện & Trạm Kiosk</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="#">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Người dùng & Face ID</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="#">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                <span>Lịch sử giao dịch VietQR</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="sidebar-bottom">
+        <a href="#" class="sidebar-bottom-link">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Hồ sơ Quản trị viên</span>
+        </a>
+        <button type="button" class="btn-sidebar-logout" onclick="alert('Đã đăng xuất tài khoản Super Admin!')">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          <span>Đăng xuất Admin</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ========================================================
+         2. MAIN VIEWPORT: HÀNG ĐỢI XÉT DUYỆT ĐÚNG PHÂN ĐỊNH
+         ======================================================== -->
+    <main class="app-main">
+      <header class="main-top-header">
+        <h1 class="header-page-title">
+          <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal); width:22px; height:22px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><polyline points="9 15 11 17 15 13"/></svg>
+          <span>Hàng Đợi Xét Duyệt Phát Hành (Pending Approvals)</span>
+        </h1>
+        <div class="header-system-status">
+          <span class="status-dot-pulse"></span>
+          <span>Máy chủ Kiosk Sync: Sẵn sàng nạp vector</span>
+        </div>
+      </header>
+
+      <div class="main-content-scroll">
+        
+        <!-- THANH LỌC TAB KÈM BADGE SỐ ĐỎ (ĐÚNG 4 NHÓM NGHIỆP VỤ BẮT BUỘC DUYỆT) -->
+        <div class="filter-tabs-bar">
+          <div class="filter-tabs-group">
+            <button type="button" class="tab-item-btn active" id="tabAll" onclick="switchFilterTab('all', this)">
+              <span>Tất cả yêu cầu</span>
+              <span class="tab-pill-count" id="countBadgeAll">4</span>
+            </button>
+            <button type="button" class="tab-item-btn" id="tabNew" onclick="switchFilterTab('new', this)">
+              <span>Tạo sự kiện mới / Sửa chu trình</span>
+              <span class="tab-pill-count" id="countBadgeNew">1</span>
+            </button>
+            <button type="button" class="tab-item-btn" id="tabStation" onclick="switchFilterTab('station', this)">
+              <span>Thêm trạm Kiosk (Cấp Token)</span>
+              <span class="tab-pill-count" id="countBadgeStation">1</span>
+            </button>
+            <button type="button" class="tab-item-btn" id="tabChange" onclick="switchFilterTab('change', this)">
+              <span>Tăng hạn mức slot vé</span>
+              <span class="tab-pill-count" id="countBadgeChange">1</span>
+            </button>
+            <button type="button" class="tab-item-btn" id="tabCancel" onclick="switchFilterTab('cancel', this)">
+              <span>Yêu cầu hủy sự kiện</span>
+              <span class="tab-pill-count" id="countBadgeCancel">1</span>
+            </button>
+          </div>
+
+          <div style="font-size:12px; color:var(--text-muted);">
+            Các thay đổi mô tả/email được BTC tự thực hiện (Auto-applied)
+          </div>
+        </div>
+
+        <!-- DANH SÁCH CÁC YÊU CẦU ĐANG CHỜ PHÊ DUYỆT -->
+        <div class="queue-list-container" id="queueListContainer">
+          <!-- Render tự động bằng JavaScript -->
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- MODAL THẨM ĐỊNH CHI TIẾT -->
+  <div class="modal-backdrop" id="approvalDetailModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-yellow);"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span id="modalHeaderTitle">Thẩm định yêu cầu</span>
+        </h3>
+        <button type="button" style="background:none; border:none; color:#fff; font-size:20px; cursor:pointer;" onclick="closeModal('approvalDetailModal')">&times;</button>
+      </div>
+
+      <div class="modal-body" id="modalDetailBody">
+        <!-- Render nội dung thẩm định -->
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-reject" onclick="executeRejectFromModal()">
+          <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <span>Từ chối yêu cầu</span>
+        </button>
+        <button type="button" class="btn-approve" onclick="executeApproveFromModal()">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Phê duyệt & Kích hoạt</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification" class="toast-notification">
+    <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-mint); width:18px; height:18px;"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="toastMessage">Thao tác thành công!</span>
+  </div>
+
+  <script>
+    // Dữ liệu mẫu hàng đợi xét duyệt bám sát đúng quy định phân định
+    let pendingQueueData = [
+      {
+        id: 101,
+        type: "new",
+        typeLabel: "Tạo mới & Chu trình thời gian",
+        eventTitle: "Ngày Hội Công Nghệ SGU TechDay 2026",
+        orgName: "Đoàn Trường Đại học Sài Gòn",
+        orgLogo: "https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png",
+        submittedAt: "10 phút trước",
+        location: "Hội trường A - CS An Dương Vương",
+        changeDetails: {
+          field: "Phê duyệt phát hành sự kiện mới",
+          oldVal: "Chưa có trên hệ thống",
+          newVal: "Đóng vé 05:00 &rarr; Mở Kiosk 07:00 (Buffer: 2h)"
+        },
+        reason: "Xin mở cổng đăng ký miễn phí 800 slot cho sinh viên toàn trường."
+      },
+      {
+        id: 102,
+        type: "station",
+        typeLabel: "Thêm Trạm Kiosk",
+        eventTitle: "Đại Nhạc Hội SGU Music Festival 2026",
+        orgName: "Đoàn Trường Đại học Sài Gòn",
+        orgLogo: "https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png",
+        submittedAt: "25 phút trước",
+        location: "Sân vận động SGU",
+        changeDetails: {
+          field: "Cấp phát Secret Token phần cứng camera",
+          oldVal: "Đã cấp 2 trạm (Cổng chính)",
+          newVal: "Xin thêm Trạm số 3 & Trạm số 4 (Lối Khán Đài VIP)"
+        },
+        reason: "Lượng khách VIP dự kiến đông, xin kết nối thêm 2 máy tính bảng làm trạm camera dự phòng."
+      },
+      {
+        id: 103,
+        type: "change",
+        typeLabel: "Sửa Slot & Địa điểm",
+        eventTitle: "Workshop: Tối Ưu Hóa Hệ Thống Backend",
+        orgName: "CLB Tin Học SGU",
+        orgLogo: "https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png",
+        submittedAt: "1 giờ trước",
+        location: "Phòng máy Lab 4 & Cập nhật Slot",
+        changeDetails: {
+          field: "Tăng hạn mức slot vé",
+          oldVal: "100 slot (Lab 4)",
+          newVal: "150 slot (+50 slot bổ sung)"
+        },
+        reason: "Phòng Lab vừa được trang bị thêm 50 máy tính, xin mở thêm 50 vé cho sinh viên."
+      },
+      {
+        id: 104,
+        type: "cancel",
+        typeLabel: "Yêu cầu hủy sự kiện",
+        eventTitle: "Gặp mặt cựu sinh viên Khoa CNTT Khóa 2020",
+        orgName: "Ban Cán Sự Khoa CNTT",
+        orgLogo: "https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png",
+        submittedAt: "3 giờ trước",
+        location: "Hội trường C",
+        changeDetails: {
+          field: "Hủy toàn bộ sự kiện đột xuất",
+          oldVal: "Đang mở bán 300 vé",
+          newVal: "Đình chỉ và đóng vĩnh viễn sự kiện"
+        },
+        reason: "Giảng viên chủ trì bận công tác đột xuất toàn quốc, xin hủy sự kiện và hoàn lại tiền vé cho 45 người đã đăng ký."
+      }
+    ];
+
+    let currentFilter = 'all';
+    let currentReviewingItem = null;
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMessage').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    // CẬP NHẬT BADGE SỐ ĐỎ
+    function updateBadges() {
+      const countNew = pendingQueueData.filter(item => item.type === 'new').length;
+      const countStation = pendingQueueData.filter(item => item.type === 'station').length;
+      const countChange = pendingQueueData.filter(item => item.type === 'change').length;
+      const countCancel = pendingQueueData.filter(item => item.type === 'cancel').length;
+      const countTotal = pendingQueueData.length;
+
+      document.getElementById('countBadgeAll').textContent = countTotal;
+      document.getElementById('countBadgeNew').textContent = countNew;
+      document.getElementById('countBadgeStation').textContent = countStation;
+      document.getElementById('countBadgeChange').textContent = countChange;
+      document.getElementById('countBadgeCancel').textContent = countCancel;
+      document.getElementById('sidebarTotalPendingBadge').textContent = countTotal;
+
+      if (countTotal === 0) {
+        document.getElementById('sidebarTotalPendingBadge').style.background = "var(--color-teal)";
+      } else {
+        document.getElementById('sidebarTotalPendingBadge').style.background = "var(--color-red)";
+      }
+    }
+
+    // RENDER HÀNG ĐỢI
+    function renderQueue() {
+      const container = document.getElementById('queueListContainer');
+      container.innerHTML = '';
+
+      const filtered = pendingQueueData.filter(item => {
+        if (currentFilter === 'all') return true;
+        return item.type === currentFilter;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:50px 20px; background:#fff; border-radius:12px; border:1.5px dashed var(--card-border); color:var(--text-muted);">
+            <svg class="icon" viewBox="0 0 24 24" style="width:40px; height:40px; color:var(--color-teal); margin-bottom:8px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+            <div style="font-size:15px; font-weight:800; color:var(--color-navy);">Hàng đợi trống!</div>
+            <div style="font-size:12.5px; margin-top:3px;">Không còn yêu cầu nào cần xét duyệt trong mục này.</div>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const div = document.createElement('div');
+        div.className = `queue-item-card type-${item.type}`;
+
+        div.innerHTML = `
+          <div class="queue-card-header">
+            <div>
+              <span class="queue-type-badge ${item.type}">${item.typeLabel}</span>
+              <h3 class="queue-event-title">${item.eventTitle}</h3>
+            </div>
+            <span style="font-size:11.5px; color:var(--text-muted); font-weight:600; white-space:nowrap;">
+              Gửi yêu cầu: <strong>${item.submittedAt}</strong>
+            </span>
+          </div>
+
+          <div class="diff-comparison-box">
+            <div style="font-weight:700; color:var(--color-navy);">Nội dung yêu cầu thẩm định (${item.changeDetails.field}):</div>
+            <div class="diff-row">
+              <span>Trạng thái cũ:</span>
+              <span class="diff-old">${item.changeDetails.oldVal}</span>
+              <span>&rarr; Đề xuất mới:</span>
+              <span class="diff-new">${item.changeDetails.newVal}</span>
+            </div>
+            <div style="color:var(--text-muted); margin-top:2px;">Lý do từ Ban tổ chức: <em>"${item.reason}"</em></div>
+          </div>
+
+          <div class="queue-footer-actions">
+            <div class="submitter-info">
+              <img src="${item.orgLogo}" class="submitter-logo-mini" alt="Logo">
+              <span>Đơn vị gửi: <strong style="color:var(--color-navy);">${item.orgName}</strong></span>
+            </div>
+
+            <div class="action-btn-group">
+              <button type="button" class="btn-view-details" onclick="openApprovalModal(${item.id})">
+                <span>Soi chi tiết</span>
+              </button>
+              <button type="button" class="btn-reject" onclick="quickReject(${item.id})">
+                <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <span>Từ chối</span>
+              </button>
+              <button type="button" class="btn-approve" onclick="quickApprove(${item.id})">
+                <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Phê duyệt ngay</span>
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function switchFilterTab(type, btn) {
+      currentFilter = type;
+      document.querySelectorAll('.tab-item-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderQueue();
+    }
+
+    function openApprovalModal(id) {
+      const item = pendingQueueData.find(q => q.id === id);
+      if (!item) return;
+      currentReviewingItem = item;
+
+      document.getElementById('modalHeaderTitle').textContent = `Thẩm định: ${item.eventTitle}`;
+      const body = document.getElementById('modalDetailBody');
+
+      body.innerHTML = `
+        <div style="background:var(--bg-page); border:1px solid var(--card-border); border-radius:8px; padding:12px 16px;">
+          <div>Đơn vị tổ chức: <strong>${item.orgName}</strong></div>
+          <div>Loại yêu cầu: <strong style="color:var(--color-teal);">${item.typeLabel}</strong></div>
+          <div>Thời điểm gửi: <strong>${item.submittedAt}</strong></div>
+        </div>
+
+        <div style="font-size:13px; color:var(--text-muted); line-height:1.6;">
+          <strong>Chi tiết thay đổi:</strong> ${item.changeDetails.field}<br>
+          <strong>Lý do:</strong> "${item.reason}"
+        </div>
+
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:10px 14px; border-radius:6px; color:#166534; font-size:12.5px;">
+          &check; Đã kiểm tra tính hợp lệ của hệ thống phân phối Token Kiosk và giới hạn dung lượng lưu trữ vector khuôn mặt.
+        </div>
+      `;
+      openModal('approvalDetailModal');
+    }
+
+    function quickApprove(id) {
+      const item = pendingQueueData.find(q => q.id === id);
+      if (!item) return;
+      pendingQueueData = pendingQueueData.filter(q => q.id !== id);
+      updateBadges();
+      renderQueue();
+      showToast(`Đã phê duyệt [${item.eventTitle}] thành công!`);
+    }
+
+    function quickReject(id) {
+      const item = pendingQueueData.find(q => q.id === id);
+      if (!item) return;
+      const reason = prompt(`Nhập lý do từ chối yêu cầu của [${item.eventTitle}]:`, "Chưa đáp ứng đủ tiêu chuẩn vận hành");
+      if (reason) {
+        pendingQueueData = pendingQueueData.filter(q => q.id !== id);
+        updateBadges();
+        renderQueue();
+        showToast(`Đã từ chối yêu cầu của [${item.orgName}].`);
+      }
+    }
+
+    function executeApproveFromModal() {
+      if (!currentReviewingItem) return;
+      quickApprove(currentReviewingItem.id);
+      closeModal('approvalDetailModal');
+    }
+
+    function executeRejectFromModal() {
+      if (!currentReviewingItem) return;
+      closeModal('approvalDetailModal');
+      quickReject(currentReviewingItem.id);
+    }
+
+    function simAddMockRequest() {
+      pendingQueueData.unshift({
+        id: Math.floor(Math.random() * 900) + 100,
+        type: "station",
+        typeLabel: "Thêm Trạm Kiosk",
+        eventTitle: "Lễ Khởi Công Dự Án Sinh Viên 2026",
+        orgName: "Đoàn Thanh Niên SGU",
+        orgLogo: "https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png",
+        submittedAt: "Vừa xong",
+        location: "Sảnh lớn",
+        changeDetails: { field: "Cấp phát thêm 1 trạm Kiosk camera", oldVal: "1 trạm", newVal: "2 trạm" },
+        reason: "Xin thêm máy quét camera phụ."
+      });
+      updateBadges();
+      renderQueue();
+      showToast("Đã mô phỏng 1 yêu cầu thêm trạm Kiosk mới (+1)!");
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateBadges();
+      renderQueue();
+    });
+  </script>
+</body>
+</html>

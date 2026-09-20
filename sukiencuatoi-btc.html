@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass Organizer — Sự kiện của tôi (UC11, UC12)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&display=swap&subset=vietnamese" rel="stylesheet">
+<style>
+  :root {
+    --color-navy: #023852;
+    --color-navy-dark: #012435;
+    --color-teal: #079FA0;
+    --color-teal-hover: #058586;
+    --color-mint: #9FD8C5;
+    --color-yellow: #FAC005;
+    --color-orange: #F58B01;
+    --color-red: #DC2E2F;
+    --color-red-hover: #B91C1C;
+
+    --bg-page: #f2f7f5;
+    --card-border: #cfe5dc;
+    --text-primary: #023852;
+    --text-muted: #537583;
+    --hairline: #e3efea;
+    --white: #ffffff;
+    --danger: #dc2626;
+    --danger-bg: #fff5f5;
+    --success: #15803d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .sim-bar {
+    background: var(--color-navy-dark);
+    color: #e2e8f0;
+    padding: 7px 24px;
+    font-size: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 2px solid var(--color-teal);
+    z-index: 1000;
+  }
+  .sim-title { font-weight: 700; color: var(--color-yellow); }
+  .sim-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sim-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    padding: 3px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .sim-btn:hover { background: var(--color-teal); color: #fff; border-color: var(--color-yellow); }
+
+  .app-layout { display: flex; flex: 1; min-height: calc(100vh - 35px); }
+
+  /* SIDEBAR */
+  .app-sidebar {
+    width: 270px;
+    background: var(--color-navy);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid #034b6e;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .sidebar-top { display: flex; flex-direction: column; }
+  .sidebar-brand-header { padding: 24px 20px 20px 20px; border-bottom: 1px solid rgba(159, 216, 197, 0.15); }
+  .brand-logo { font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; display: inline-flex; align-items: center; text-decoration: none; }
+  .brand-logo span.role-tag { font-size: 10.5px; font-weight: 800; color: #fff; background: var(--color-teal); padding: 2px 7px; border-radius: 5px; margin-left: 6px; }
+  .brand-logo .accent-dot { width: 7px; height: 7px; background-color: var(--color-orange); border-radius: 50%; margin-left: 5px; box-shadow: 0 0 7px var(--color-orange); }
+
+  .sidebar-org-profile { padding: 16px 20px; display: flex; align-items: center; gap: 12px; background: rgba(255, 255, 255, 0.04); border-bottom: 1px solid rgba(159, 216, 197, 0.12); }
+  .sidebar-org-logo { width: 38px; height: 38px; border-radius: 8px; background: #fff; padding: 3px; object-fit: contain; border: 1.5px solid var(--color-yellow); flex-shrink: 0; }
+  .sidebar-org-meta { overflow: hidden; }
+  .sidebar-org-name { font-size: 13px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sidebar-org-role { font-size: 11px; color: var(--color-mint); margin-top: 2px; }
+
+  .sidebar-nav-section { padding: 18px 12px; }
+  .sidebar-section-title { font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: rgba(159, 216, 197, 0.6); letter-spacing: 1px; padding: 0 12px; margin-bottom: 8px; }
+  .sidebar-nav-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .sidebar-nav-item a { display: flex; align-items: center; gap: 11px; padding: 10px 14px; color: #bad8e5; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 8px; transition: all 0.15s ease; }
+  .sidebar-nav-item a:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+  .sidebar-nav-item a.active { color: #ffffff; background: var(--color-teal); font-weight: 700; }
+  .badge-live-tag { font-size: 10px; background: var(--color-yellow); color: var(--color-navy); font-weight: 800; padding: 2px 6px; border-radius: 10px; margin-left: auto; }
+
+  .sidebar-bottom { padding: 12px; border-top: 1px solid rgba(159, 216, 197, 0.15); display: flex; flex-direction: column; gap: 4px; }
+  .sidebar-bottom-link { display: flex; align-items: center; gap: 11px; padding: 10px 14px; color: #bad8e5; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 8px; transition: all 0.15s ease; }
+  .sidebar-bottom-link:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
+  .btn-sidebar-logout { width: 100%; display: flex; align-items: center; gap: 11px; padding: 10px 14px; color: #fca5a5; background: none; border: none; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; }
+  .btn-sidebar-logout:hover { background: rgba(220, 38, 38, 0.15); color: #ffcaca; }
+
+  /* MAIN VIEWPORT */
+  .app-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  .main-top-header { background: var(--white); border-bottom: 1.5px solid var(--card-border); padding: 14px 36px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .btn-back-events { padding: 6px 12px; background: var(--bg-page); color: var(--color-navy); border: 1.5px solid var(--card-border); border-radius: 6px; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s ease; }
+  .btn-back-events:hover { background: var(--color-teal); color: #fff; border-color: var(--color-teal); }
+  .header-page-title { font-size: 18px; font-weight: 800; color: var(--color-navy); }
+  .btn-create-event-top { padding: 8px 16px; background: var(--color-teal); color: #fff; border: none; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s ease; }
+  .btn-create-event-top:hover { background: var(--color-teal-hover); }
+
+  .main-content-scroll { padding: 26px 36px 50px 36px; max-width: 1200px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+  .view-container { display: flex; flex-direction: column; gap: 20px; }
+
+  .toolbar-filter-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .search-event-input-box { position: relative; width: 320px; display: flex; align-items: center; }
+  .search-event-input { width: 100%; padding: 8px 36px 8px 12px; font-size: 13px; font-family: inherit; border: 1.5px solid var(--card-border); border-radius: 8px; outline: none; background: #fff; transition: border-color 0.15s ease; }
+  .search-event-input:focus { border-color: var(--color-teal); box-shadow: 0 0 0 3px rgba(7, 159, 160, 0.1); }
+  .search-event-icon { position: absolute; right: 10px; color: var(--text-muted); }
+
+  .filter-tabs { display: flex; gap: 8px; }
+  .tab-btn { padding: 8px 14px; background: #fff; border: 1.5px solid var(--card-border); border-radius: 8px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: var(--text-muted); cursor: pointer; transition: all 0.15s ease; }
+  .tab-btn.active { background: var(--color-teal); color: #fff; border-color: var(--color-teal); }
+
+  .events-grid-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .event-item-card { background: #fff; border: 1.5px solid var(--card-border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 4px 14px rgba(2, 56, 82, 0.04); transition: all 0.2s ease; }
+  .event-item-card:hover { border-color: var(--color-teal); box-shadow: 0 8px 24px rgba(7, 159, 160, 0.12); }
+  .event-cover-box { width: 100%; height: 130px; position: relative; background: #023852; }
+  .event-cover-img { width: 100%; height: 100%; object-fit: cover; }
+  .event-status-tag { position: absolute; top: 12px; left: 12px; font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .event-status-tag.open { background: #e6f7f3; color: #0d7a60; border: 1px solid #bcf0e2; }
+  .event-status-tag.upcoming { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  .event-status-tag.ended { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+  .event-card-body { padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between; flex: 1; gap: 12px; }
+  .event-title { font-size: 16px; font-weight: 800; color: var(--color-navy); line-height: 1.35; }
+  .event-meta-list { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--text-muted); }
+  .event-meta-row { display: flex; align-items: center; gap: 7px; }
+  .event-progress-container { background: var(--bg-page); border-radius: 8px; padding: 10px 14px; border: 1px solid var(--hairline); }
+  .event-progress-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: var(--color-navy); margin-bottom: 6px; }
+  .event-progress-bar { width: 100%; height: 6px; background: var(--card-border); border-radius: 4px; overflow: hidden; }
+  .event-progress-fill { height: 100%; background: var(--color-teal); border-radius: 4px; }
+  .btn-manage-event { padding: 9px; background: var(--color-navy); color: #fff; border: none; border-radius: 7px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: background 0.15s ease; }
+  .btn-manage-event:hover { background: var(--color-teal); }
+
+  /* CHI TIẾT SỰ KIỆN - 4 TABS */
+  .event-detail-header-card { background: var(--white); border: 1.5px solid var(--card-border); border-radius: 12px; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 14px rgba(2, 56, 82, 0.04); }
+  .detail-title-group h2 { font-size: 19px; font-weight: 800; color: var(--color-navy); margin-bottom: 6px; }
+  .detail-subline { display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--text-muted); }
+
+  .detail-sub-tabs { display: flex; border-bottom: 1.5px solid var(--card-border); gap: 24px; }
+  .sub-tab-item { padding: 12px 4px; font-size: 13.5px; font-weight: 700; color: var(--text-muted); text-decoration: none; cursor: pointer; border-bottom: 3px solid transparent; display: flex; align-items: center; gap: 8px; transition: all 0.15s ease; }
+  .sub-tab-item:hover { color: var(--color-teal); }
+  .sub-tab-item.active { color: var(--color-navy); border-bottom-color: var(--color-teal); }
+
+  .detail-tab-content { background: var(--white); border-radius: 12px; border: 1px solid var(--card-border); padding: 26px 30px; box-shadow: 0 6px 20px rgba(2, 56, 82, 0.04); display: none; }
+  .detail-tab-content.active { display: block; }
+
+  .form-grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
+  .form-field { display: flex; flex-direction: column; gap: 6px; }
+  .form-field.full { grid-column: span 2; }
+  .field-label { font-size: 11.5px; font-weight: 700; color: var(--color-navy); text-transform: uppercase; letter-spacing: 0.3px; }
+  .field-label .req { color: var(--color-red); margin-left: 2px; }
+
+  .form-control { width: 100%; padding: 10px 12px; font-size: 13.5px; font-family: inherit; color: var(--color-navy); border: 1.5px solid var(--card-border); border-radius: 7px; outline: none; background: #fff; transition: border-color 0.15s ease; }
+  .form-control:disabled { background: #f8fafc; color: #475569; border-color: #e2e8f0; cursor: not-allowed; }
+  .form-control:focus:not(:disabled) { border-color: var(--color-teal); box-shadow: 0 0 0 3px rgba(7, 159, 160, 0.1); }
+  textarea.form-control { resize: vertical; min-height: 80px; }
+
+  /* Drag & Drop Upload ảnh */
+  .upload-dropzone {
+    border: 2px dashed var(--card-border);
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+    background: var(--bg-page);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: none;
+  }
+  .upload-dropzone.dragover { border-color: var(--color-teal); background: #eef7f4; }
+  .upload-preview-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .upload-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1.5px solid var(--card-border);
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .upload-thumb:hover { transform: scale(1.05); border-color: var(--color-teal); }
+
+  /* Lightbox */
+  .lightbox-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: 0.2s; padding: 20px; }
+  .lightbox-modal.show { opacity: 1; visibility: visible; }
+  .lightbox-content { max-width: 90%; max-height: 85vh; border-radius: 8px; object-fit: contain; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+  .lightbox-close-btn { position: absolute; top: 20px; right: 25px; color: #fff; background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .lightbox-close-btn:hover { background: rgba(255,255,255,0.4); }
+
+  /* Hạng vé */
+  .ticket-tier-row { background: var(--bg-page); border: 1px solid var(--hairline); border-radius: 8px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .ticket-tier-info h4 { font-size: 13.5px; font-weight: 800; color: var(--color-navy); display: flex; align-items: center; gap: 8px; }
+  .ticket-tier-info p { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+  .tier-badge-status { font-size: 10.5px; padding: 2px 7px; border-radius: 4px; font-weight: 700; }
+  .tier-badge-status.active { background: #dcfce7; color: #166534; }
+  .tier-badge-status.locked { background: #fee2e2; color: #991b1b; }
+  .tier-badge-status.pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  .pending-slot-tag { color: var(--color-orange); font-weight: 700; font-size: 11.5px; }
+
+  /* Trạm soát vé */
+  .station-list-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+  .station-list-table th { text-align: left; padding: 10px 12px; background: var(--bg-page); color: var(--color-navy); font-size: 11.5px; font-weight: 700; text-transform: uppercase; border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border); }
+  .station-list-table td { padding: 12px; border-bottom: 1px solid var(--hairline); vertical-align: middle; }
+  .token-secret-box { display: flex; align-items: center; gap: 8px; }
+  .token-masked { font-family: monospace; font-size: 12px; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; color: #475569; border: 1px solid #e2e8f0; }
+  .btn-reveal-token { background: none; border: none; color: var(--color-teal); font-size: 12px; font-weight: 700; cursor: pointer; padding: 2px 4px; }
+  .btn-reveal-token:hover { text-decoration: underline; }
+
+  /* Cài đặt nâng cao */
+  .danger-zone-box { border: 1.5px solid var(--card-border); background: #fff; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 16px; margin-top: 14px; }
+  .danger-action-row { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid var(--hairline); }
+  .danger-action-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .state-badge { font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-left: 8px; }
+  .state-badge.active { background: #e6f7f3; color: #0d7a60; }
+  .state-badge.locked { background: #fee2e2; color: #b91c1c; }
+
+  /* Buttons */
+  .btn-action-primary { padding: 9px 18px; background: var(--color-teal); color: #fff; border: none; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
+  .btn-action-primary:hover { background: var(--color-teal-hover); }
+  
+  /* Trạng thái đổi sang màu ĐỎ khi phát hiện có chỉnh sửa */
+  .btn-action-primary.dirty {
+    background: var(--color-red) !important;
+    box-shadow: 0 4px 14px rgba(220, 46, 47, 0.35);
+    animation: pulseNotice 2s infinite ease-in-out;
+  }
+  .btn-action-primary.dirty:hover {
+    background: var(--color-red-hover) !important;
+  }
+
+  @keyframes pulseNotice {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+
+  .btn-action-secondary { padding: 8px 16px; background: #fff; color: var(--color-navy); border: 1.5px solid var(--card-border); border-radius: 6px; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s ease; }
+  .btn-action-secondary:hover { border-color: var(--color-teal); color: var(--color-teal); }
+  .btn-action-danger { padding: 8px 16px; background: #fff; color: var(--danger); border: 1.5px solid var(--danger); border-radius: 6px; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s ease; }
+  .btn-action-danger:hover { background: var(--danger); color: #fff; }
+  .btn-action-danger.filled { background: var(--danger); color: #fff; }
+  .btn-action-danger.filled:hover { background: #b91c1c; }
+
+  /* Modals */
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(2, 56, 82, 0.45); backdrop-filter: blur(2px); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease; }
+  .modal-backdrop.show { opacity: 1; visibility: visible; }
+  .modal-box { background: #fff; width: 100%; max-width: 460px; border-radius: 12px; padding: 24px 26px; box-shadow: 0 20px 40px -10px rgba(2, 56, 82, 0.28); }
+  .modal-title { font-size: 18px; font-weight: 800; color: var(--color-navy); margin-bottom: 8px; }
+  .modal-body { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
+  .btn-modal-cancel { padding: 9px 16px; background: #fff; border: 1.5px solid var(--card-border); border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .btn-modal-confirm { padding: 9px 18px; background: var(--color-teal); color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .btn-modal-confirm.danger { background: var(--danger); }
+
+  /* Toast Notification */
+  .toast-notification { position: fixed; bottom: 24px; left: 24px; background: var(--color-navy); color: #fff; border-left: 4px solid var(--color-teal); padding: 14px 20px; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(2, 56, 82, 0.4); display: flex; align-items: center; gap: 12px; font-size: 13.5px; font-weight: 500; z-index: 4000; opacity: 0; transform: translateY(20px); pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+  .toast-notification.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .toast-icon { width: 22px; height: 22px; border-radius: 50%; background: var(--color-teal); display: inline-flex; align-items: center; justify-content: center; }
+
+  @media (max-width: 960px) {
+    .events-grid-list { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 860px) {
+    .app-layout { flex-direction: column; }
+    .app-sidebar { width: 100%; height: auto; position: static; }
+    .main-top-header { padding: 14px 20px; }
+    .main-content-scroll { padding: 20px; }
+    .form-grid-layout { grid-template-columns: 1fr; }
+    .form-field.full { grid-column: span 1; }
+    .detail-sub-tabs { overflow-x: auto; white-space: nowrap; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SIMULATION TOOLBAR -->
+  <div class="sim-bar">
+    <div><span class="sim-title">EventPass UC11-UC12 Sandbox:</span> Phân quyền & Phát hiện thay đổi dữ liệu</div>
+    <div class="sim-actions">
+      <button type="button" class="sim-btn" onclick="simOpenDetail(1)">Mở Sự kiện SGU TechDay</button>
+      <button type="button" class="sim-btn" onclick="simSwitchSubTab(2)">Mở Tab Trạm Soát Vé</button>
+      <button type="button" class="sim-btn" onclick="simSwitchSubTab(4)">Mở Tab Cài Đặt Nâng Cao</button>
+      <button type="button" class="sim-btn" onclick="openLogoutModal()">Đăng xuất (UC03)</button>
+    </div>
+  </div>
+
+  <div class="app-layout">
+
+    <!-- 1. SIDEBAR -->
+    <aside class="app-sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-brand-header">
+          <a href="#" class="brand-logo">
+            EventPass<span class="role-tag">ORGANIZER</span><span class="accent-dot"></span>
+          </a>
+        </div>
+
+        <div class="sidebar-org-profile">
+          <img src="https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png" class="sidebar-org-logo" alt="Logo đơn vị">
+          <div class="sidebar-org-meta">
+            <div class="sidebar-org-name">Đoàn Trường ĐH Sài Gòn</div>
+            <div class="sidebar-org-role">Tài khoản Ban Tổ Chức</div>
+          </div>
+        </div>
+
+        <div class="sidebar-nav-section">
+          <div class="sidebar-section-title">Quản Trị Sự Kiện</div>
+          <ul class="sidebar-nav-list">
+            <li class="sidebar-nav-item">
+              <a href="#" title="UC10">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                <span>Tổng quan số liệu</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="javascript:void(0)" class="active" onclick="backToEventsList()" title="UC11, UC12">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Sự kiện của tôi</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="#" title="UC13">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Danh sách tham dự</span>
+              </a>
+            </li>
+            <li class="sidebar-nav-item">
+              <a href="#" title="Kiosk">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span>Kiosk điểm danh</span>
+                <span class="badge-live-tag">Webcam</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sidebar-bottom">
+        <a href="#" class="sidebar-bottom-link" title="UC04">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Hồ sơ & Đổi mật khẩu</span>
+        </a>
+        <button type="button" class="btn-sidebar-logout" onclick="openLogoutModal()">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          <span>Đăng xuất tài khoản</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 2. MAIN VIEWPORT -->
+    <main class="app-main">
+      <header class="main-top-header">
+        <div class="header-left">
+          <button type="button" class="btn-back-events" id="btnBackToEventsList" style="display: none;" onclick="backToEventsList()">
+            <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            <span>Quay lại danh sách</span>
+          </button>
+          <h1 class="header-page-title" id="pageMainHeaderTitle">Quản Lý Sự Kiện</h1>
+        </div>
+
+        <button type="button" class="btn-create-event-top" id="btnCreateNewEvent" onclick="handleCreateNewEvent()">
+          <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Tạo sự kiện mới</span>
+        </button>
+      </header>
+
+      <div class="main-content-scroll">
+
+        <!-- MÀN HÌNH A: DANH SÁCH SỰ KIỆN CẤP NGOÀI -->
+        <div id="viewEventList" class="view-container">
+          <div class="toolbar-filter-row">
+            <div class="search-event-input-box">
+              <input type="text" class="search-event-input" id="searchEventInput" placeholder="Tìm kiếm tên sự kiện, địa điểm..." oninput="handleSearchEvents()">
+              <svg class="icon search-event-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            </div>
+
+            <div class="filter-tabs">
+              <button type="button" class="tab-btn active" onclick="filterEvents('all', this)">Tất cả (4)</button>
+              <button type="button" class="tab-btn" onclick="filterEvents('open', this)">Đang mở (2)</button>
+              <button type="button" class="tab-btn" onclick="filterEvents('upcoming', this)">Sắp tới (1)</button>
+              <button type="button" class="tab-btn" onclick="filterEvents('ended', this)">Đã qua (1)</button>
+            </div>
+          </div>
+
+          <div class="events-grid-list" id="eventsGridList"></div>
+        </div>
+
+        <!-- MÀN HÌNH B: CHI TIẾT SỰ KIỆN CẤP TRONG (4 TABS) -->
+        <div id="viewEventDetail" class="view-container" style="display: none;">
+          <div class="event-detail-header-card">
+            <div class="detail-title-group">
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                <span class="event-status-tag open" id="detailStatusBadge" style="position:static;">Đang mở đăng ký</span>
+                <span style="font-size:12px; color:var(--text-muted); font-weight:700;">ID: EVT-2026-SGU01</span>
+              </div>
+              <h2 id="detailEventHeading">Ngày Hội Công Nghệ SGU TechDay 2026</h2>
+              <div class="detail-subline">
+                <span id="detailEventDate">Hôm nay • 08:00 - 17:30</span>
+                <span id="detailEventPlace">Hội trường A - Cơ sở chính SGU</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4 TABS CON -->
+          <div class="detail-sub-tabs">
+            <div class="sub-tab-item active" onclick="switchSubTab(1, this)">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <span>1. Thông tin chung & Hạng vé</span>
+            </div>
+            <div class="sub-tab-item" onclick="switchSubTab(2, this)">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span>2. Cấu hình trạm soát vé</span>
+            </div>
+            <div class="sub-tab-item" onclick="switchSubTab(3, this)">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+              <span>3. Mẫu vé & Thiết kế email</span>
+            </div>
+            <div class="sub-tab-item" onclick="switchSubTab(4, this)">
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span>4. Cài đặt nâng cao / Đóng mở cổng</span>
+            </div>
+          </div>
+
+          <!-- TAB 1: THÔNG TIN CHUNG & HẠNG VÉ -->
+          <div id="tabContent1" class="detail-tab-content active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--hairline);">
+              <div>
+                <h3 style="font-size:15px; font-weight:800; color:var(--color-navy);">Thông tin chi tiết sự kiện</h3>
+                <p style="font-size:12.5px; color:var(--text-muted);" id="approvalStatusNotice">
+                  Trạng thái: <strong style="color:var(--success);">Đã duyệt (Dữ liệu công khai)</strong>
+                </p>
+              </div>
+              <button type="button" id="btnToggleEdit" class="btn-action-secondary" onclick="toggleEventEditing()">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <span id="btnEditText">Chỉnh sửa thông tin</span>
+              </button>
+            </div>
+
+            <form id="eventMainForm" onsubmit="handleRequestAdminApproval(event)">
+              <fieldset id="eventFormFieldSet" disabled style="border:none; padding:0; margin:0; display:flex; flex-direction:column; gap:16px;">
+                <div class="form-grid-layout">
+                  <div class="form-field full">
+                    <label class="field-label">Tên sự kiện <span class="req">*</span></label>
+                    <input type="text" class="form-control check-dirty" id="formEventName" value="Ngày Hội Công Nghệ SGU TechDay 2026" required oninput="evaluateFormDirtyState()">
+                  </div>
+
+                  <div class="form-field full">
+                    <label class="field-label">Mô tả sự kiện & Lịch trình</label>
+                    <textarea class="form-control check-dirty" id="formEventDesc" rows="3" oninput="evaluateFormDirtyState()">Ngày hội triển lãm công nghệ, tuyển dụng kỹ sư và trình diễn các giải pháp trí tuệ nhân tạo, thị giác máy tính hàng đầu năm 2026.</textarea>
+                  </div>
+
+                  <!-- KÉO THẢ ẢNH & CLICK CHỌN NHIỀU ẢNH (CHỈ HIỆN KHI BẤM CHỈNH SỬA THÔNG TIN) -->
+                  <div class="form-field full">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <label class="field-label">Hình ảnh minh họa sự kiện (Tối đa 20 ảnh — Bấm vào ảnh để phóng to)</label>
+                      <span style="font-size:12px; color:var(--color-teal); font-weight:700;" id="photoCountBadge">Đã chọn: 3 / 20</span>
+                    </div>
+                    
+                    <!-- VÙNG KÉO THẢ: MẶC ĐỊNH DISPLAY: NONE -->
+                    <div class="upload-dropzone" id="uploadDropzoneBox">
+                      <svg class="icon" viewBox="0 0 24 24" style="width:28px; height:28px; color:var(--color-teal); margin-bottom:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      <div style="font-size:13px; font-weight:700; color:var(--color-navy);">Kéo thả ảnh vào đây hoặc bấm để chọn tải lên</div>
+                      <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">Hỗ trợ định dạng JPG, PNG, WEBP. Chọn cùng lúc nhiều ảnh.</div>
+                      <input type="file" id="eventImageInput" multiple accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="handleImageFiles(this.files)">
+                    </div>
+
+                    <div class="upload-preview-grid" id="uploadPreviewGrid">
+                      <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=600" class="upload-thumb" alt="Preview 1" onclick="openLightbox(this.src)">
+                      <img src="https://images.unsplash.com/photo-1591115765373-5207764f72e7?auto=format&fit=crop&q=80&w=600" class="upload-thumb" alt="Preview 2" onclick="openLightbox(this.src)">
+                      <img src="https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&q=80&w=600" class="upload-thumb" alt="Preview 3" onclick="openLightbox(this.src)">
+                    </div>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">Nhân vật nổi bật</label>
+                    <input type="text" class="form-control check-dirty" id="formEventSpeakers" value="TS. Nguyễn Văn A (Trưởng khoa CNTT), Mr. John Doe (Google Developer)" oninput="evaluateFormDirtyState()">
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">Địa điểm tổ chức <span class="req">*</span></label>
+                    <input type="text" class="form-control check-dirty" id="formEventLocation" value="Hội trường A - Cơ sở chính, 280 An Dương Vương, Q5" required oninput="evaluateFormDirtyState()">
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">Thời gian bắt đầu check-in</label>
+                    <input type="datetime-local" class="form-control check-dirty" id="formEventStart" value="2026-09-20T08:00" oninput="evaluateFormDirtyState()">
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">Thời gian đóng cửa vào cổng</label>
+                    <input type="datetime-local" class="form-control check-dirty" id="formEventEnd" value="2026-09-20T17:30" oninput="evaluateFormDirtyState()">
+                  </div>
+
+                  <!-- QUẢN LÝ HẠNG VÉ -->
+                  <div class="form-field full" style="margin-top: 10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                      <div>
+                        <label class="field-label" style="margin:0;">Danh sách hạng vé phát hành & Hạn mức slot</label>
+                        <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Bổ sung hạng vé, thêm slot linh hoạt hoặc bật/tắt ngừng bán an toàn.</p>
+                      </div>
+                      <button type="button" id="btnAddTierTopBtn" class="btn-action-primary" style="padding:6px 12px; font-size:12px; display:none;" onclick="openAddTierModal()">+ Thêm hạng vé mới</button>
+                    </div>
+
+                    <div id="ticketTierContainer"></div>
+                  </div>
+                </div>
+
+                <div id="submitApprovalContainer" style="display:none; margin-top: 14px; padding-top:14px; border-top:1px solid var(--hairline);">
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <!-- NÚT GỬI REQUEST: TỰ ĐỘNG CHUYỂN SANG ĐỎ KHI CÓ THAY ĐỔI -->
+                    <button type="submit" id="btnSubmitApproval" class="btn-action-primary">
+                      <svg class="icon" viewBox="0 0 24 24" style="width:15px;height:15px;"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                      <span>Hoàn thành & Gửi request đến Admin chờ duyệt</span>
+                    </button>
+                    <span style="font-size:12.5px; color:var(--text-muted);" id="dirtyStateHint">Chưa có thay đổi mới nào.</span>
+                  </div>
+                </div>
+              </fieldset>
+            </form>
+          </div>
+
+          <!-- TAB 2: CẤU HÌNH TRẠM SOÁT VÉ -->
+          <div id="tabContent2" class="detail-tab-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div>
+                <h3 style="font-size:15px; font-weight:800; color:var(--color-navy);">Trạm Soát Vé Tự Động (Làn Kiosk Điểm Danh)</h3>
+                <p style="font-size:12.5px; color:var(--text-muted);">Quản lý định danh các thiết bị Kiosk camera tại cổng vào sự kiện</p>
+              </div>
+              <button type="button" class="btn-action-primary" onclick="openAddStationModal()">
+                <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Thêm trạm mới</span>
+              </button>
+            </div>
+
+            <table class="station-list-table">
+              <thead>
+                <tr>
+                  <th style="width: 45%;">Tên trạm / Làn kiểm soát</th>
+                  <th style="width: 35%;">Secret Token (Định danh trạm)</th>
+                  <th style="text-align:right; width: 20%;">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="stationTableBody"></tbody>
+            </table>
+          </div>
+
+          <!-- TAB 3: MẪU VÉ SỐ & THIẾT KẾ EMAIL -->
+          <div id="tabContent3" class="detail-tab-content">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;">
+              <div>
+                <h3 style="font-size:15px; font-weight:800; color:var(--color-navy); margin-bottom:6px;">Xem trước Thẻ Vé Điện Tử (Digital Pass)</h3>
+                <p style="font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-bottom:18px;">
+                  Vé điện tử được tự động sinh sau khi khách đăng ký thành công, tích hợp mã QR động định danh và thông báo làn vào cửa.
+                </p>
+
+                <div class="form-field full" style="margin-bottom:14px;">
+                  <label class="field-label">Tiêu đề email xác nhận</label>
+                  <input type="text" class="form-control" value="[SGU TechDay 2026] Thẻ vé tham dự chính thức của bạn">
+                </div>
+
+                <div class="form-field full" style="margin-bottom:14px;">
+                  <label class="field-label">Ghi chú hướng dẫn check-in trong email</label>
+                  <textarea class="form-control" rows="3">Quý khách vui lòng bước tới làn quét khuôn mặt tại Hội trường A để vào cổng tự động trong 1 giây mà không cần xuất trình giấy tờ.</textarea>
+                </div>
+
+                <button type="button" class="btn-action-primary" onclick="showToast('Đã lưu mẫu vé và nội dung email gửi vé!')">Cập nhật thiết kế vé</button>
+              </div>
+
+              <!-- Thẻ vé mô phỏng -->
+              <div style="background: linear-gradient(145deg, var(--color-navy) 0%, #034b6e 100%); color: #fff; border-radius: 14px; padding: 24px; box-shadow: 0 12px 30px rgba(2, 56, 82, 0.2);">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:14px; margin-bottom:16px;">
+                  <div style="display:flex; align-items:center; gap:10px;">
+                    <img src="https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png" style="width:38px;height:38px;border-radius:6px;background:#fff;padding:2px;" alt="Logo">
+                    <div>
+                      <div style="font-size:10px; text-transform:uppercase; color:var(--color-mint); font-weight:800;">Đơn vị tổ chức</div>
+                      <div style="font-size:13px; font-weight:700;">Đoàn Trường ĐH Sài Gòn</div>
+                    </div>
+                  </div>
+                  <span style="font-size:11px; background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:10px; font-weight:800;">VIP PASS</span>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:18px;">
+                  <div style="font-size:16px; font-weight:800;">SGU TechDay 2026</div>
+                  <div style="font-size:12px; color:#d2e9f3;">Người tham dự: <strong>Hà Thái Sơn</strong></div>
+                  <div style="font-size:12px; color:#d2e9f3;">Thời gian: 08:00 • 20/09/2026</div>
+                  <div style="font-size:12px; color:#d2e9f3;">Cổng vào: Hội trường A (Làn Face ID)</div>
+                </div>
+
+                <div style="background:#fff; border-radius:8px; padding:14px; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                  <div style="width:110px; height:110px; border:2px dashed #023852; display:flex; align-items:center; justify-content:center; background:#f8fafc;">
+                    <svg class="icon" viewBox="0 0 24 24" style="width:60px; height:60px; color:#023852;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                  </div>
+                  <span style="font-size:11px; font-weight:800; color:#023852; font-family:monospace;">PASS-789-VIP-SGU</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 4: CÀI ĐẶT NÂNG CAO -->
+          <div id="tabContent4" class="detail-tab-content">
+            <h3 style="font-size:15px; font-weight:800; color:var(--color-navy); margin-bottom:4px;">Điều Phối Cổng & Giới Hạn Sự Kiện</h3>
+            <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:16px;">Các thao tác can thiệp trực tiếp vào chu trình phát hành vé và mở cổng soát vé</p>
+
+            <div class="danger-zone-box">
+              <div class="danger-action-row">
+                <div>
+                  <div style="display:flex; align-items:center;">
+                    <h4 style="font-size:13.5px; font-weight:800; color:var(--color-navy);">Đóng đăng ký vé sớm</h4>
+                    <span class="state-badge active" id="badgeCloseReg">Đang mở đăng ký</span>
+                  </div>
+                  <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Khóa cổng đăng ký của người dùng dù vẫn còn số lượng vé trống.</p>
+                </div>
+                <button type="button" id="btnActionCloseReg" class="btn-action-danger" onclick="confirmStateToggle('close_reg')">Đóng đăng ký</button>
+              </div>
+
+              <div class="danger-action-row">
+                <div>
+                  <div style="display:flex; align-items:center;">
+                    <h4 style="font-size:13.5px; font-weight:800; color:var(--color-navy);">Khóa quyền chuyển nhượng vé</h4>
+                    <span class="state-badge active" id="badgeLockTransfer">Cho phép chuyển</span>
+                  </div>
+                  <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Không cho phép người tham dự thay đổi thông tin khuôn mặt hoặc chuyển vé cho người khác.</p>
+                </div>
+                <button type="button" id="btnActionLockTransfer" class="btn-action-danger" onclick="confirmStateToggle('lock_transfer')">Khóa chuyển nhượng</button>
+              </div>
+
+              <div class="danger-action-row">
+                <div>
+                  <div style="display:flex; align-items:center;">
+                    <h4 style="font-size:13.5px; font-weight:800; color:var(--danger);">Hủy sự kiện</h4>
+                    <span class="state-badge active" id="badgeCancelEvent">Sự kiện hoạt động</span>
+                  </div>
+                  <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Yêu cầu Admin hủy sự kiện, vô hiệu hóa mã vé và gửi thông báo khẩn cấp đến khách tham dự.</p>
+                </div>
+                <button type="button" id="btnActionCancelEvent" class="btn-action-danger filled" onclick="openCancelEventModal()">Yêu cầu hủy sự kiện này</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- LIGHTBOX MODAL -->
+  <div class="lightbox-modal" id="lightboxModal" onclick="closeLightbox()">
+    <button type="button" class="lightbox-close-btn" onclick="closeLightbox()">&times;</button>
+    <img id="lightboxImg" class="lightbox-content" src="" alt="Phóng to ảnh">
+  </div>
+
+  <!-- MODAL: THÊM HẠNG VÉ MỚI (GỬI ADMIN DUYỆT) -->
+  <div class="modal-backdrop" id="addTierModal">
+    <div class="modal-box">
+      <h3 class="modal-title">+ Thêm Hạng Vé Mới (Chờ Admin Duyệt)</h3>
+      <p class="modal-body">Khai báo phân hạng vé mới. Hạng vé sẽ ở trạng thái <strong>Chờ duyệt</strong> và chỉ mở bán sau khi được Admin phê duyệt.</p>
+      <form onsubmit="handleAddNewTier(event)">
+        <div class="form-field" style="margin-bottom: 12px;">
+          <label class="field-label">Tên hạng vé <span class="req">*</span></label>
+          <input type="text" id="newTierName" class="form-control" placeholder="Ví dụ: Vé Sinh Viên Khóa Mới" required>
+        </div>
+        <div class="form-field" style="margin-bottom: 12px;">
+          <label class="field-label">Số lượng slot đề xuất <span class="req">*</span></label>
+          <input type="number" id="newTierCapacity" class="form-control" value="50" min="1" required>
+        </div>
+        <div class="form-field" style="margin-bottom: 20px;">
+          <label class="field-label">Mô tả đặc quyền / Quyền lợi</label>
+          <input type="text" id="newTierDesc" class="form-control" placeholder="Ví dụ: Quyền vào cổng tham quan & nhận quà lưu niệm">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('addTierModal')">Hủy</button>
+          <button type="submit" class="btn-modal-confirm">Gửi yêu cầu tạo vé lên Admin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: THÊM SLOT CHO HẠNG VÉ (GỬI ADMIN DUYỆT) -->
+  <div class="modal-backdrop" id="addSlotModal">
+    <div class="modal-box">
+      <h3 class="modal-title">+ Đề Xuất Tăng Slot Vé Phát Hành</h3>
+      <p class="modal-body" id="addSlotModalDesc">Đề xuất gia tăng thêm số lượng vé phát hành. Slot mới sẽ ở trạng thái <strong>Chờ duyệt</strong> và chưa cộng vào Tổng slot chính thức.</p>
+      <form onsubmit="handleSaveAddSlot(event)">
+        <div class="form-field" style="margin-bottom: 20px;">
+          <label class="field-label">Số lượng slot muốn bổ sung thêm <span class="req">*</span></label>
+          <input type="number" id="additionalSlotCount" class="form-control" value="50" min="1" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('addSlotModal')">Hủy</button>
+          <button type="submit" class="btn-modal-confirm">Gửi báo cáo tăng slot lên Admin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRM BẬT / TẮT KHÓA HẠNG VÉ -->
+  <div class="modal-backdrop" id="toggleTierLockModal">
+    <div class="modal-box">
+      <h3 class="modal-title" id="toggleTierModalTitle">Xác nhận chuyển đổi trạng thái bán vé?</h3>
+      <p class="modal-body" id="toggleTierModalDesc"></p>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" onclick="closeModal('toggleTierLockModal')">Hủy bỏ</button>
+        <button type="button" class="btn-modal-confirm" id="btnConfirmToggleTier" onclick="executeToggleTierLock()">Đồng ý</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: HỦY SỰ KIỆN GỬI ADMIN DUYỆT (TAB 4) -->
+  <div class="modal-backdrop" id="cancelEventModal">
+    <div class="modal-box" style="max-width: 480px;">
+      <h3 class="modal-title" style="color:var(--danger);">Yêu Cầu Hủy Sự Kiện Lên Admin</h3>
+      <p class="modal-body">
+        Hành động này mang tính chất nghiêm trọng. Khi được Admin duyệt, toàn bộ vé sẽ bị vô hiệu hóa và email thông báo hủy sẽ được phát đi. <strong>Thao tác không thể khôi phục!</strong>
+      </p>
+      <form onsubmit="handleRequestCancelEvent(event)">
+        <div class="form-field" style="margin-bottom: 14px;">
+          <label class="field-label">Lý do hủy sự kiện <span class="req">*</span></label>
+          <textarea id="cancelReasonInput" class="form-control" rows="3" placeholder="Nhập chi tiết lý do hủy sự kiện..." required minlength="10"></textarea>
+        </div>
+        <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom: 20px;">
+          <input type="checkbox" id="confirmIrreversibleCheck" style="margin-top:3px;" required>
+          <label for="confirmIrreversibleCheck" style="font-size:12.5px; color:var(--color-navy); font-weight:600; cursor:pointer;">
+            Tôi xác nhận lý do trên là chính xác và hiểu rằng sự kiện không thể khôi phục sau khi được Admin duyệt hủy.
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('cancelEventModal')">Hủy bỏ</button>
+          <button type="submit" class="btn-modal-confirm danger">Gửi yêu cầu hủy lên Admin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL XÁC THỰC MẬT KHẨU ĐỂ XEM SECRET TOKEN -->
+  <div class="modal-backdrop" id="passwordModal">
+    <div class="modal-box">
+      <h3 class="modal-title">Xác thực Mật khẩu Quản trị</h3>
+      <p class="modal-body">Mã Secret Token là khóa định danh phần cứng bảo mật. Vui lòng nhập mật khẩu tài khoản Ban tổ chức để hiển thị chuỗi kết nối Kiosk.</p>
+      <div class="form-field" style="margin-bottom: 20px;">
+        <label class="field-label">Mật khẩu tài khoản <span class="req">*</span></label>
+        <input type="password" id="adminPasswordInput" class="form-control" placeholder="Nhập mật khẩu quản trị...">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" onclick="closeModal('passwordModal')">Hủy</button>
+        <button type="button" class="btn-modal-confirm" onclick="verifyAndRevealToken()">Xác nhận xem Token</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CÀI ĐẶT / ĐỔI TÊN TRẠM & REFRESH TOKEN -->
+  <div class="modal-backdrop" id="stationSettingsModal">
+    <div class="modal-box">
+      <h3 class="modal-title" id="stationModalTitle">Cài đặt trạm soát vé</h3>
+      <p class="modal-body">Thay đổi tên làn kiểm soát hoặc cấp lại mã Secret Token mới cho Kiosk phần cứng.</p>
+      
+      <div class="form-field" style="margin-bottom: 14px;">
+        <label class="field-label">Tên trạm / Làn kiểm soát mới <span class="req">*</span></label>
+        <input type="text" id="editStationNameInput" class="form-control">
+      </div>
+
+      <div class="form-field" style="margin-bottom: 20px;">
+        <label class="field-label">Thao tác phần cứng</label>
+        <button type="button" class="btn-action-secondary" style="width:100%; justify-content:center; color:var(--danger); border-color:#fecaca;" onclick="executeRefreshToken()">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          <span>Refresh Token (Cấp lại Secret Token mới)</span>
+        </button>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" onclick="closeModal('stationSettingsModal')">Hủy</button>
+        <button type="button" class="btn-modal-confirm" onclick="saveStationSettings()">Lưu thay đổi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL THÊM TRẠM MỚI -->
+  <div class="modal-backdrop" id="addStationModal">
+    <div class="modal-box">
+      <h3 class="modal-title">Thêm Trạm Soát Vé Mới</h3>
+      <p class="modal-body">Khai báo làn kiểm soát mới tại cổng vào. Hệ thống sẽ tự động cấp một Secret Token bảo mật riêng.</p>
+      <form onsubmit="handleAddNewStation(event)">
+        <div class="form-field" style="margin-bottom: 20px;">
+          <label class="field-label">Tên trạm / Làn kiểm soát <span class="req">*</span></label>
+          <input type="text" id="newStationNameInput" class="form-control" placeholder="Ví dụ: Làn Cổng Phụ Số 2" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('addStationModal')">Hủy</button>
+          <button type="submit" class="btn-modal-confirm">Tạo trạm & Cấp Token</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL XÁC NHẬN CHUYỂN ĐỔI TRẠNG THÁI TAB 4 -->
+  <div class="modal-backdrop" id="confirmToggleModal">
+    <div class="modal-box">
+      <h3 class="modal-title" id="confirmModalTitle">Xác nhận chuyển đổi trạng thái</h3>
+      <p class="modal-body" id="confirmModalBody">Bạn có chắc chắn muốn thay đổi trạng thái cài đặt này không?</p>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" onclick="closeModal('confirmToggleModal')">Hủy bỏ</button>
+        <button type="button" class="btn-modal-confirm" id="confirmToggleBtn" onclick="executeConfirmedStateToggle()">Đồng ý thay đổi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL ĐĂNG XUẤT -->
+  <div class="modal-backdrop" id="logoutModal">
+    <div class="modal-box">
+      <h3 class="modal-title">Xác nhận Đăng xuất Quản trị</h3>
+      <p class="modal-body">Bạn có chắc chắn muốn kết thúc phiên làm việc của Ban tổ chức? Mọi kết nối điều hành sẽ được đóng lại an toàn.</p>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" onclick="closeModal('logoutModal')">Hủy</button>
+        <button type="button" class="btn-modal-confirm danger" onclick="executeLogout()">Đăng xuất ngay</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification" class="toast-notification">
+    <span class="toast-icon">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M3.5 8.5L6.5 11.5L12.5 4.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span id="toastMessage">Thao tác thành công!</span>
+  </div>
+
+  <script>
+    const eventsMockData = [
+      {
+        id: 1,
+        title: "Ngày Hội Công Nghệ SGU TechDay 2026",
+        status: "open",
+        statusText: "Đang mở",
+        date: "Hôm nay • 08:00 - 17:30",
+        location: "Hội trường A - Cơ sở chính SGU",
+        cover: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=600",
+        sold: 785,
+        total: 800
+      },
+      {
+        id: 2,
+        title: "Hội thảo Khoa học Quốc tế AI & DeepFace Vision",
+        status: "open",
+        statusText: "Đang mở",
+        date: "25/09/2026 • 13:30 - 16:30",
+        location: "Phòng Hội thảo B302",
+        cover: "https://images.unsplash.com/photo-1591115765373-5207764f72e7?auto=format&fit=crop&q=80&w=600",
+        sold: 240,
+        total: 250
+      },
+      {
+        id: 3,
+        title: "Đại nhạc hội Chào Tân Sinh viên Khóa 2026",
+        status: "upcoming",
+        statusText: "Sắp tới",
+        date: "10/10/2026 • 18:00 - 22:00",
+        location: "Sân vận động trường ĐH Sài Gòn",
+        cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=600",
+        sold: 1200,
+        total: 2000
+      },
+      {
+        id: 4,
+        title: "Tọa đàm Hướng nghiệp Kỹ sư AI & Phần mềm",
+        status: "ended",
+        statusText: "Đã qua",
+        date: "15/08/2026 • 08:30 - 11:30",
+        location: "Hội trường C",
+        cover: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&q=80&w=600",
+        sold: 292,
+        total: 300
+      }
+    ];
+
+    let ticketTiers = [
+      { id: 1, name: "Vé Tiêu chuẩn (Standard Pass)", sold: 580, capacity: 600, pendingSlots: 0, desc: "Quyền vào cổng tham quan chung", disabled: false, isPendingApproval: false },
+      { id: 2, name: "Vé Khách mời / VIP (VIP Pass)", sold: 185, capacity: 200, pendingSlots: 0, desc: "Ngồi hàng đầu & Tiệc trà networking", disabled: false, isPendingApproval: false }
+    ];
+
+    let kioskStations = [
+      { id: 1, name: "Trạm 1 - Cổng chính Hội trường A", token: "stk_live_98a7c2" },
+      { id: 2, name: "Trạm 2 - Lối vào VIP & Diễn giả", token: "stk_live_41d8e0" }
+    ];
+
+    let advancedStates = {
+      isRegistrationClosed: false,
+      isTransferLocked: false
+    };
+
+    let isEditingEvent = false;
+    let pendingTokenId = null;
+    let pendingTokenValue = '';
+    let currentEditingStationId = null;
+    let pendingToggleType = '';
+    let targetTierActionId = null;
+
+    // Lưu trữ snapshot dữ liệu gốc để so sánh phát hiện chỉnh sửa (Dirty State)
+    let initialFormSnapshot = {};
+    let hasDirtyChanges = false;
+
+    const toastNotification = document.getElementById('toastNotification');
+    const toastMessage = document.getElementById('toastMessage');
+    let toastTimeout = null;
+
+    function showToast(msg) {
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastMessage.textContent = msg;
+      toastNotification.classList.add('show');
+      toastTimeout = setTimeout(() => {
+        toastNotification.classList.remove('show');
+      }, 3200);
+    }
+
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    /* ========================================================
+       CƠ CHẾ PHÁT HIỆN THAY ĐỔI DỮ LIỆU (DIRTY DETECTION)
+       ======================================================== */
+    function takeFormSnapshot() {
+      initialFormSnapshot = {
+        name: document.getElementById('formEventName').value.trim(),
+        desc: document.getElementById('formEventDesc').value.trim(),
+        speakers: document.getElementById('formEventSpeakers').value.trim(),
+        location: document.getElementById('formEventLocation').value.trim(),
+        start: document.getElementById('formEventStart').value,
+        end: document.getElementById('formEventEnd').value,
+        tierCount: ticketTiers.length,
+        tiersState: JSON.stringify(ticketTiers.map(t => ({ id: t.id, cap: t.capacity, pending: t.pendingSlots, name: t.name })))
+      };
+    }
+
+    function evaluateFormDirtyState() {
+      if (!isEditingEvent) return;
+
+      const current = {
+        name: document.getElementById('formEventName').value.trim(),
+        desc: document.getElementById('formEventDesc').value.trim(),
+        speakers: document.getElementById('formEventSpeakers').value.trim(),
+        location: document.getElementById('formEventLocation').value.trim(),
+        start: document.getElementById('formEventStart').value,
+        end: document.getElementById('formEventEnd').value,
+        tierCount: ticketTiers.length,
+        tiersState: JSON.stringify(ticketTiers.map(t => ({ id: t.id, cap: t.capacity, pending: t.pendingSlots, name: t.name })))
+      };
+
+      const isChanged = (
+        current.name !== initialFormSnapshot.name ||
+        current.desc !== initialFormSnapshot.desc ||
+        current.speakers !== initialFormSnapshot.speakers ||
+        current.location !== initialFormSnapshot.location ||
+        current.start !== initialFormSnapshot.start ||
+        current.end !== initialFormSnapshot.end ||
+        current.tierCount !== initialFormSnapshot.tierCount ||
+        current.tiersState !== initialFormSnapshot.tiersState
+      );
+
+      hasDirtyChanges = isChanged;
+      const btn = document.getElementById('btnSubmitApproval');
+      const hint = document.getElementById('dirtyStateHint');
+
+      if (isChanged) {
+        btn.classList.add('dirty');
+        hint.innerHTML = '<strong style="color:var(--danger);">* Đã phát hiện thay đổi mới chưa gửi duyệt!</strong>';
+      } else {
+        btn.classList.remove('dirty');
+        hint.innerHTML = 'Chưa có thay đổi mới nào.';
+      }
+    }
+
+    /* ========================================================
+       TAB 1 LOGIC: PHÂN QUYỀN, KÉO THẢ ẢNH, HẠNG VÉ
+       ======================================================== */
+    function toggleEventEditing() {
+      isEditingEvent = !isEditingEvent;
+      const fieldset = document.getElementById('eventFormFieldSet');
+      const btnText = document.getElementById('btnEditText');
+      const submitContainer = document.getElementById('submitApprovalContainer');
+      const addTierTopBtn = document.getElementById('btnAddTierTopBtn');
+      const uploadDropzoneBox = document.getElementById('uploadDropzoneBox');
+
+      if (isEditingEvent) {
+        fieldset.removeAttribute('disabled');
+        btnText.textContent = "Hủy chỉnh sửa";
+        submitContainer.style.display = "block";
+        addTierTopBtn.style.display = "inline-flex";
+        uploadDropzoneBox.style.display = "block"; // CHỈ HIỆN KHI BẤM CHỈNH SỬA
+        takeFormSnapshot();
+        evaluateFormDirtyState();
+        showToast('Đã mở khóa các trường thông tin & khu vực tải ảnh.');
+      } else {
+        fieldset.setAttribute('disabled', 'true');
+        btnText.textContent = "Chỉnh sửa thông tin";
+        submitContainer.style.display = "none";
+        addTierTopBtn.style.display = "none";
+        uploadDropzoneBox.style.display = "none"; // ẨN ĐI KHI Ở CHẾ ĐỘ XEM
+        hasDirtyChanges = false;
+        document.getElementById('btnSubmitApproval').classList.remove('dirty');
+      }
+      renderTicketTiers();
+    }
+
+    function handleRequestAdminApproval(e) {
+      e.preventDefault();
+      toggleEventEditing();
+      const notice = document.getElementById('approvalStatusNotice');
+      notice.innerHTML = 'Trạng thái: <strong style="color:var(--color-orange);">Đang chờ Admin phê duyệt thay đổi (Request Pending)</strong>';
+      showToast('Đã gửi yêu cầu chỉnh sửa đến Admin! Thay đổi sẽ hiển thị sau khi được phê duyệt.');
+    }
+
+    function openLightbox(src) {
+      document.getElementById('lightboxImg').src = src;
+      document.getElementById('lightboxModal').classList.add('show');
+    }
+    function closeLightbox() {
+      document.getElementById('lightboxModal').classList.remove('show');
+    }
+
+    // Kéo thả & Upload ảnh
+    const dropzone = document.getElementById('uploadDropzoneBox');
+    dropzone.addEventListener('click', () => {
+      document.getElementById('eventImageInput').click();
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add('dragover');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropzone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove('dragover');
+      }, false);
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      handleImageFiles(files);
+    }, false);
+
+    function handleImageFiles(files) {
+      if (!files || files.length === 0) return;
+      if (files.length > 20) {
+        alert('Hệ thống chỉ cho phép tải lên tối đa 20 hình ảnh!');
+        return;
+      }
+      const grid = document.getElementById('uploadPreviewGrid');
+      grid.innerHTML = '';
+      for (let i = 0; i < Math.min(files.length, 20); i++) {
+        const file = files[i];
+        if (!file.type.match('image.*')) continue;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          const img = document.createElement('img');
+          img.src = evt.target.result;
+          img.className = 'upload-thumb';
+          img.onclick = () => openLightbox(evt.target.result);
+          grid.appendChild(img);
+        }
+        reader.readAsDataURL(file);
+      }
+      document.getElementById('photoCountBadge').textContent = `Đã chọn: ${files.length} / 20`;
+      evaluateFormDirtyState();
+      showToast(`Đã tải lên ${files.length} ảnh minh họa.`);
+    }
+
+    // Render danh sách Hạng vé
+    function renderTicketTiers() {
+      const container = document.getElementById('ticketTierContainer');
+      container.innerHTML = '';
+
+      ticketTiers.forEach(tier => {
+        const available = Math.max(0, tier.capacity - tier.sold);
+        const div = document.createElement('div');
+        div.className = 'ticket-tier-row';
+
+        let badgeHtml = '';
+        if (tier.isPendingApproval) {
+          badgeHtml = '<span class="tier-badge-status pending">Chờ Admin duyệt</span>';
+        } else if (tier.disabled) {
+          badgeHtml = '<span class="tier-badge-status locked">Đã ngừng phát hành</span>';
+        } else {
+          badgeHtml = '<span class="tier-badge-status active">Đang mở bán</span>';
+        }
+
+        // Tổng slot: Chưa cộng slot chờ duyệt vào số chính thức
+        let slotDisplayHtml = `Tổng slot: <strong>${tier.capacity}</strong>`;
+        if (tier.pendingSlots > 0) {
+          slotDisplayHtml += ` <span class="pending-slot-tag">(+${tier.pendingSlots} slot chờ duyệt)</span>`;
+        }
+
+        div.innerHTML = `
+          <div class="ticket-tier-info">
+            <h4>
+              <span>${tier.name}</span>
+              ${badgeHtml}
+            </h4>
+            <p>Đã đăng ký: <strong>${tier.sold}</strong> / ${slotDisplayHtml} • Còn ${available} chỗ • ${tier.desc}</p>
+          </div>
+          <!-- CÁC NÚT THAO TÁC NÀY CHỈ HIỆN KHI Ở CHẾ ĐỘ CHỈNH SỬA THÔNG TIN -->
+          <div style="display: ${isEditingEvent ? 'flex' : 'none'}; align-items:center; gap:8px;">
+            ${!tier.isPendingApproval ? `
+              <button type="button" class="btn-action-secondary" style="padding:5px 12px; font-size:12px;" onclick="openAddSlotModal(${tier.id}, '${tier.name}')">+ Thêm slot</button>
+              
+              <!-- BAN TỔ CHỨC CÓ TOÀN QUYỀN BẬT / TẮT KHÓA NGỪNG BÁN -->
+              <button type="button" class="${tier.disabled ? 'btn-action-primary' : 'btn-action-danger'}" style="padding:5px 12px; font-size:12px;" onclick="openToggleTierLockModal(${tier.id}, '${tier.name}',${tier.disabled})">
+                ${tier.disabled ? 'Mở bán lại' : 'Khóa / Ngừng bán'}
+              </button>
+            ` : `<span style="font-size:12px; color:var(--text-muted); font-style:italic;">Đang chờ phê duyệt</span>`}
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // 1. Thêm hạng vé mới -> Gửi request chờ Admin duyệt & chuyển nút sang đỏ
+    function openAddTierModal() {
+      document.getElementById('newTierName').value = '';
+      document.getElementById('newTierCapacity').value = '50';
+      document.getElementById('newTierDesc').value = '';
+      openModal('addTierModal');
+    }
+    function handleAddNewTier(e) {
+      e.preventDefault();
+      const name = document.getElementById('newTierName').value.trim();
+      const capacity = parseInt(document.getElementById('newTierCapacity').value, 10);
+      const desc = document.getElementById('newTierDesc').value.trim() || 'Quyền vào cổng sự kiện';
+
+      const newId = ticketTiers.length ? Math.max(...ticketTiers.map(t => t.id)) + 1 : 1;
+      ticketTiers.push({ 
+        id: newId, 
+        name, 
+        capacity, 
+        sold: 0, 
+        pendingSlots: 0, 
+        desc, 
+        disabled: false, 
+        isPendingApproval: true 
+      });
+
+      closeModal('addTierModal');
+      renderTicketTiers();
+      evaluateFormDirtyState();
+      showToast(`Đã thêm đề xuất hạng vé [${name}]. Vui lòng nhấn gửi request để Admin duyệt!`);
+    }
+
+    // 2. Thêm slot -> Gửi request chờ Admin duyệt & chuyển nút sang đỏ
+    function openAddSlotModal(tierId, tierName) {
+      targetTierActionId = tierId;
+      document.getElementById('addSlotModalDesc').innerHTML = `Đề xuất tăng số lượng vé phát hành cho hạng vé <strong>[${tierName}]</strong>. Số slot mới sẽ hiển thị dưới dạng chờ duyệt và chỉ chính thức cộng dồn khi Admin phê duyệt.`;
+      document.getElementById('additionalSlotCount').value = '50';
+      openModal('addSlotModal');
+    }
+    function handleSaveAddSlot(e) {
+      e.preventDefault();
+      const added = parseInt(document.getElementById('additionalSlotCount').value, 10);
+      const tier = ticketTiers.find(t => t.id === targetTierActionId);
+      if (tier) {
+        tier.pendingSlots = (tier.pendingSlots || 0) + added;
+        renderTicketTiers();
+        closeModal('addSlotModal');
+        evaluateFormDirtyState();
+        showToast(`Đã ghi nhận thêm ${added} slot chờ duyệt cho [${tier.name}].`);
+      }
+    }
+
+    // 3. Ban tổ chức Bật / Tắt Khóa ngừng bán (Chủ động xử lý)
+    function openToggleTierLockModal(tierId, tierName, isCurrentlyDisabled) {
+      targetTierActionId = tierId;
+      const title = document.getElementById('toggleTierModalTitle');
+      const desc = document.getElementById('toggleTierModalDesc');
+      const btn = document.getElementById('btnConfirmToggleTier');
+
+      if (!isCurrentlyDisabled) {
+        title.textContent = "Xác nhận Khóa / Ngừng bán hạng vé?";
+        title.style.color = "var(--danger)";
+        desc.innerHTML = `Bạn có chắc chắn muốn tạm khóa hạng vé <strong>[${tierName}]</strong>? Khách mới sẽ không thể tiếp tục đăng ký. Thao tác có hiệu lực ngay lập tức và hệ thống sẽ gửi thông báo đến Admin.`;
+        btn.textContent = "Đồng ý Khóa";
+        btn.className = "btn-modal-confirm danger";
+      } else {
+        title.textContent = "Xác nhận Mở bán lại hạng vé?";
+        title.style.color = "var(--color-navy)";
+        desc.innerHTML = `Bạn có chắc chắn muốn mở bán lại hạng vé <strong>[${tierName}]</strong>? Khách tham dự sẽ có thể tiếp tục đăng ký bình thường. Thao tác có hiệu lực ngay lập tức và hệ thống sẽ gửi thông báo đến Admin.`;
+        btn.textContent = "Mở bán lại";
+        btn.className = "btn-modal-confirm";
+      }
+
+      openModal('toggleTierLockModal');
+    }
+
+    function executeToggleTierLock() {
+      const tier = ticketTiers.find(t => t.id === targetTierActionId);
+      if (tier) {
+        tier.disabled = !tier.disabled;
+        closeModal('toggleTierLockModal');
+        renderTicketTiers();
+        
+        if (tier.disabled) {
+          showToast(`Đã tạm khóa ngừng bán hạng vé [${tier.name}]! (Đã gửi thông báo hậu kiểm đến Admin)`);
+        } else {
+          showToast(`Đã mở bán lại hạng vé [${tier.name}] thành công! (Đã gửi thông báo hậu kiểm đến Admin)`);
+        }
+      }
+    }
+
+    /* ========================================================
+       TAB 2 LOGIC: TRẠM SOÁT VÉ, SECRET TOKEN & REFRESH
+       ======================================================== */
+    function renderStations() {
+      const tbody = document.getElementById('stationTableBody');
+      tbody.innerHTML = '';
+
+      kioskStations.forEach(station => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong id="stationNameLabel_${station.id}">${station.name}</strong></td>
+          <td>
+            <div class="token-secret-box">
+              <span class="token-masked" id="tokenMask_${station.id}">••••••••••••••••</span>
+              <button type="button" class="btn-reveal-token" onclick="requestPasswordToReveal(${station.id}, '${station.token}')">Hiển thị</button>
+            </div>
+          </td>
+          <td style="text-align:right;">
+            <button type="button" class="btn-action-secondary" style="padding:4px 10px; font-size:11.5px;" onclick="openStationSettingsModal(${station.id})">Cài đặt / Đổi tên</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function requestPasswordToReveal(stationId, tokenVal) {
+      pendingTokenId = stationId;
+      pendingTokenValue = tokenVal;
+      document.getElementById('adminPasswordInput').value = '';
+      openModal('passwordModal');
+    }
+    function verifyAndRevealToken() {
+      const pwd = document.getElementById('adminPasswordInput').value;
+      if (!pwd) {
+        alert('Vui lòng nhập mật khẩu quản trị!');
+        return;
+      }
+      closeModal('passwordModal');
+      const span = document.getElementById(`tokenMask_${pendingTokenId}`);
+      if (span) {
+        span.textContent = pendingTokenValue;
+        span.style.color = 'var(--color-teal)';
+        span.style.fontWeight = '700';
+      }
+      showToast('Xác thực thành công! Đã hiển thị Secret Token.');
+    }
+
+    function openStationSettingsModal(stationId) {
+      currentEditingStationId = stationId;
+      const station = kioskStations.find(s => s.id === stationId);
+      if (!station) return;
+
+      document.getElementById('stationModalTitle').textContent = `Cài đặt [${station.name}]`;
+      document.getElementById('editStationNameInput').value = station.name;
+      openModal('stationSettingsModal');
+    }
+    function saveStationSettings() {
+      const newName = document.getElementById('editStationNameInput').value.trim();
+      if (!newName) {
+        alert('Tên trạm không được để trống!');
+        return;
+      }
+      const station = kioskStations.find(s => s.id === currentEditingStationId);
+      if (station) {
+        station.name = newName;
+        renderStations();
+        closeModal('stationSettingsModal');
+        showToast('Đã cập nhật tên trạm thành công!');
+      }
+    }
+    function executeRefreshToken() {
+      const station = kioskStations.find(s => s.id === currentEditingStationId);
+      if (station) {
+        station.token = 'stk_live_' + Math.random().toString(36).substring(2, 9);
+        renderStations();
+        closeModal('stationSettingsModal');
+        showToast(`Đã sinh lại mã Secret Token mới cho ${station.name}!`);
+      }
+    }
+
+    function openAddStationModal() {
+      document.getElementById('newStationNameInput').value = '';
+      openModal('addStationModal');
+    }
+    function handleAddNewStation(e) {
+      e.preventDefault();
+      const name = document.getElementById('newStationNameInput').value.trim();
+      const newId = kioskStations.length ? Math.max(...kioskStations.map(s => s.id)) + 1 : 1;
+      const newToken = 'stk_live_' + Math.random().toString(36).substring(2, 9);
+
+      kioskStations.push({ id: newId, name, token: newToken });
+      closeModal('addStationModal');
+      renderStations();
+      showToast(`Đã thêm trạm [${name}] thành công!`);
+    }
+
+    /* ========================================================
+       TAB 4 LOGIC: ĐIỀU PHỐI CỔNG & HỦY SỰ KIỆN GỬI ADMIN
+       ======================================================== */
+    function confirmStateToggle(type) {
+      pendingToggleType = type;
+      const title = document.getElementById('confirmModalTitle');
+      const body = document.getElementById('confirmModalBody');
+      const btn = document.getElementById('confirmToggleBtn');
+
+      if (type === 'close_reg') {
+        const nextState = !advancedStates.isRegistrationClosed;
+        title.textContent = nextState ? "Xác nhận Đóng Đăng Ký Sớm" : "Xác nhận Mở Lại Đăng Ký";
+        body.textContent = nextState 
+          ? "Bạn có chắc muốn đóng cổng đăng ký vé sớm? Khách hàng sẽ không thể đăng ký thêm vé mới."
+          : "Bạn có chắc muốn mở lại cổng đăng ký cho người dùng?";
+        btn.className = nextState ? "btn-modal-confirm danger" : "btn-modal-confirm";
+        btn.textContent = nextState ? "Xác nhận Đóng" : "Xác nhận Mở lại";
+      } else if (type === 'lock_transfer') {
+        const nextState = !advancedStates.isTransferLocked;
+        title.textContent = nextState ? "Xác nhận Khóa Chuyển Nhượng" : "Xác nhận Mở Lại Chuyển Nhượng";
+        body.textContent = nextState 
+          ? "Người tham dự sẽ không thể thay đổi thông tin khuôn mặt hoặc chuyển vé cho người khác."
+          : "Người tham dự sẽ được phép chuyển nhượng hoặc thay đổi thông tin vé.";
+        btn.className = nextState ? "btn-modal-confirm danger" : "btn-modal-confirm";
+        btn.textContent = nextState ? "Khóa ngay" : "Mở chuyển nhượng";
+      }
+
+      openModal('confirmToggleModal');
+    }
+
+    function executeConfirmedStateToggle() {
+      closeModal('confirmToggleModal');
+
+      if (pendingToggleType === 'close_reg') {
+        advancedStates.isRegistrationClosed = !advancedStates.isRegistrationClosed;
+        const isClosed = advancedStates.isRegistrationClosed;
+        const badge = document.getElementById('badgeCloseReg');
+        const btn = document.getElementById('btnActionCloseReg');
+
+        badge.className = isClosed ? "state-badge locked" : "state-badge active";
+        badge.textContent = isClosed ? "Đã đóng đăng ký" : "Đang mở đăng ký";
+        btn.textContent = isClosed ? "Mở lại đăng ký" : "Đóng đăng ký";
+        btn.className = isClosed ? "btn-action-secondary" : "btn-action-danger";
+        showToast(isClosed ? "Đã đóng cổng đăng ký vé sớm!" : "Đã mở lại cổng đăng ký vé!");
+      } 
+      else if (pendingToggleType === 'lock_transfer') {
+        advancedStates.isTransferLocked = !advancedStates.isTransferLocked;
+        const isLocked = advancedStates.isTransferLocked;
+        const badge = document.getElementById('badgeLockTransfer');
+        const btn = document.getElementById('btnActionLockTransfer');
+
+        badge.className = isLocked ? "state-badge locked" : "state-badge active";
+        badge.textContent = isLocked ? "Đã khóa chuyển nhượng" : "Cho phép chuyển";
+        btn.textContent = isLocked ? "Mở khóa chuyển nhượng" : "Khóa chuyển nhượng";
+        btn.className = isLocked ? "btn-action-secondary" : "btn-action-danger";
+        showToast(isLocked ? "Đã khóa quyền chuyển nhượng vé!" : "Đã mở lại quyền chuyển nhượng!");
+      }
+    }
+
+    function openCancelEventModal() {
+      document.getElementById('cancelReasonInput').value = '';
+      document.getElementById('confirmIrreversibleCheck').checked = false;
+      openModal('cancelEventModal');
+    }
+
+    function handleRequestCancelEvent(e) {
+      e.preventDefault();
+      const reason = document.getElementById('cancelReasonInput').value.trim();
+      closeModal('cancelEventModal');
+
+      const badge = document.getElementById('badgeCancelEvent');
+      const btn = document.getElementById('btnActionCancelEvent');
+      badge.className = "state-badge locked";
+      badge.textContent = "Chờ Admin duyệt hủy";
+      btn.textContent = "Đang chờ duyệt hủy...";
+      btn.setAttribute('disabled', 'true');
+      btn.style.opacity = '0.6';
+      btn.style.cursor = 'not-allowed';
+
+      showToast(`Đã gửi yêu cầu hủy sự kiện lên Admin kèm lý do: "${reason}"`);
+    }
+
+    /* ========================================================
+       CHUYỂN MÀN HÌNH & TABS
+       ======================================================== */
+    function renderEventList(filter = 'all', searchQuery = '') {
+      const grid = document.getElementById('eventsGridList');
+      grid.innerHTML = '';
+
+      let list = eventsMockData.filter(e => {
+        const matchFilter = (filter === 'all' || e.status === filter);
+        const matchSearch = e.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            e.location.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchFilter && matchSearch;
+      });
+
+      if (list.length === 0) {
+        grid.innerHTML = `<div style="grid-column: span 2; text-align:center; padding: 40px; background:#fff; border-radius:12px; border:1px dashed var(--card-border); color:var(--text-muted);">Không tìm thấy sự kiện nào phù hợp.</div>`;
+        return;
+      }
+
+      list.forEach(ev => {
+        const percent = Math.round((ev.sold / ev.total) * 100);
+        const card = document.createElement('div');
+        card.className = 'event-item-card';
+        card.innerHTML = `
+          <div class="event-cover-box">
+            <img src="${ev.cover}" class="event-cover-img" alt="${ev.title}">
+            <span class="event-status-tag ${ev.status}">${ev.statusText}</span>
+          </div>
+
+          <div class="event-card-body">
+            <div>
+              <h3 class="event-title">${ev.title}</h3>
+              <div class="event-meta-list" style="margin-top:8px;">
+                <div class="event-meta-row">
+                  <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>${ev.date}</span>
+                </div>
+                <div class="event-meta-row">
+                  <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <span>${ev.location}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="event-progress-container">
+              <div class="event-progress-label">
+                <span>Tiến độ phát hành vé</span>
+                <strong>${ev.sold} / ${ev.total} (${percent}%)</strong>
+              </div>
+              <div class="event-progress-bar">
+                <div class="event-progress-fill" style="width: ${percent}%;"></div>
+              </div>
+            </div>
+
+            <button type="button" class="btn-manage-event" onclick="openEventDetail(${ev.id})">
+              <span>Quản trị sự kiện</span>
+              <svg class="icon" viewBox="0 0 24 24" style="width:14px;height:14px;"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function filterEvents(type, btn) {
+      document.querySelectorAll('.toolbar-filter-row .tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const q = document.getElementById('searchEventInput').value.trim();
+      renderEventList(type, q);
+    }
+
+    function handleSearchEvents() {
+      const q = document.getElementById('searchEventInput').value.trim();
+      const activeTab = document.querySelector('.toolbar-filter-row .tab-btn.active');
+      const filter = activeTab ? activeTab.getAttribute('onclick').match(/'([^']+)'/)[1] : 'all';
+      renderEventList(filter, q);
+    }
+
+    function openEventDetail(id) {
+      const ev = eventsMockData.find(e => e.id === id);
+      if (!ev) return;
+
+      document.getElementById('viewEventList').style.display = 'none';
+      document.getElementById('viewEventDetail').style.display = 'flex';
+      document.getElementById('btnBackToEventsList').style.display = 'inline-flex';
+      document.getElementById('btnCreateNewEvent').style.display = 'none';
+      document.getElementById('pageMainHeaderTitle').textContent = `Quản Trị — ${ev.title}`;
+
+      document.getElementById('detailEventHeading').textContent = ev.title;
+      document.getElementById('detailEventDate').textContent = ev.date;
+      document.getElementById('detailEventPlace').textContent = ev.location;
+
+      const badge = document.getElementById('detailStatusBadge');
+      badge.className = `event-status-tag ${ev.status}`;
+      badge.textContent = ev.statusText;
+
+      switchSubTab(1, document.querySelectorAll('.sub-tab-item')[0]);
+      renderTicketTiers();
+      renderStations();
+      showToast(`Đã mở giao diện quản trị sự kiện: ${ev.title}`);
+    }
+
+    function backToEventsList() {
+      document.getElementById('viewEventDetail').style.display = 'none';
+      document.getElementById('viewEventList').style.display = 'flex';
+      document.getElementById('btnBackToEventsList').style.display = 'none';
+      document.getElementById('btnCreateNewEvent').style.display = 'inline-flex';
+      document.getElementById('pageMainHeaderTitle').textContent = "Quản Lý Sự Kiện";
+    }
+
+    function switchSubTab(tabIndex, elem) {
+      document.querySelectorAll('.sub-tab-item').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.detail-tab-content').forEach(c => c.classList.remove('active'));
+
+      elem.classList.add('active');
+      const targetContent = document.getElementById(`tabContent${tabIndex}`);
+      if (targetContent) targetContent.classList.add('active');
+    }
+
+    function handleCreateNewEvent() {
+      showToast('Kích hoạt biểu mẫu Tạo sự kiện mới (UC11)...');
+    }
+
+    function simOpenDetail(id) { openEventDetail(id); }
+    function simSwitchSubTab(idx) {
+      const tabs = document.querySelectorAll('.sub-tab-item');
+      if (tabs[idx - 1]) switchSubTab(idx, tabs[idx - 1]);
+    }
+
+    function openLogoutModal() { openModal('logoutModal'); }
+
+    function executeLogout() {
+      localStorage.clear();
+      sessionStorage.clear();
+      closeModal('logoutModal');
+      showToast('Đăng xuất thành công!');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderEventList('all');
+      renderTicketTiers();
+      renderStations();
+    });
+  </script>
+</body>
+</html>
