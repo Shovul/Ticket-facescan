@@ -280,7 +280,7 @@
     color: var(--color-navy);
   }
 
-  .tier-tag {
+  .tier-tag, .face-info {
     font-size: 11px;
     font-weight: 700;
     padding: 3px 8px;
@@ -290,6 +290,9 @@
   }
   .tier-tag.standard { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
   .tier-tag.vip { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+
+  .face-info.active { background: #425B9A; color: #efefe9; border: 1px solid #65add6; }
+  .face-info.none { background: #972828; color: #efefe9; border: 1px solid #7f1e1e; }
 
   /* STATUS BADGES */
   .status-badge-pill {
@@ -685,12 +688,13 @@
           <table class="attendee-table">
             <thead>
               <tr>
-                <th style="width: 15%;">Mã vé</th>
-                <th style="width: 18%;">Người tham dự</th>
-                <th style="width: 22%;">Liên hệ (Email / SĐT)</th>
+                <th style="width: 12%;">Mã vé</th>
+                <th style="width: 17%;">Người tham dự</th>
+                <th style="width: 20%;">Liên hệ (Email / SĐT)</th>
                 <th style="width: 12%;">Hạng vé</th>
+                <th style="width: 10%;">Dữ liệu mặt</th>
                 <th style="width: 14%;">Trạng thái</th>
-                <th style="width: 17%;">Check-in</th>
+                <th style="width: 20%;">Check-in</th>
                 <th style="text-align:right; width: 12%;">Thao tác</th>
               </tr>
             </thead>
@@ -782,7 +786,8 @@
       avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400",
       status: "checked",
       checkinTime: "08:05:12",
-      checkinGate: "Cổng chính (Kiosk 1)"
+      checkinGate: "Cổng chính (Kiosk 1)",
+      hasFacescan: true
     },
     {
       id: 2,
@@ -795,7 +800,8 @@
       avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=400",
       status: "checked",
       checkinTime: "08:14:45",
-      checkinGate: "Cổng phụ (Kiosk 2)"
+      checkinGate: "Cổng phụ (Kiosk 2)",
+      hasFacescan: true
     },
     {
       id: 3,
@@ -808,7 +814,8 @@
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
       status: "pending",
       checkinTime: null,
-      checkinGate: null
+      checkinGate: null,
+      hasFacescan: true
     },
     {
       id: 4,
@@ -821,7 +828,8 @@
       avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400",
       status: "pending",
       checkinTime: null,
-      checkinGate: null
+      checkinGate: null,
+      hasFacescan: false
     },
     {
       id: 5,
@@ -834,7 +842,8 @@
       avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=400",
       status: "cancelled",
       checkinTime: null,
-      checkinGate: null
+      checkinGate: null,
+      hasFacescan: false
     },
     {
       id: 6,
@@ -847,7 +856,8 @@
       avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&q=80&w=400",
       status: "checked",
       checkinTime: "08:30:02",
-      checkinGate: "Cổng chính (Kiosk 1)"
+      checkinGate: "Cổng chính (Kiosk 1)",
+      hasFacescan: true
     },
     {
       id: 7,
@@ -860,7 +870,8 @@
       avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400",
       status: "checked",
       checkinTime: "08:33:19",
-      checkinGate: "Cổng chính (Kiosk 1)"
+      checkinGate: "Cổng chính (Kiosk 1)",
+      hasFacescan: true
     },
     {
       id: 8,
@@ -873,7 +884,8 @@
       avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=400",
       status: "pending",
       checkinTime: null,
-      checkinGate: null
+      checkinGate: null,
+      hasFacescan: false
     },
     {
       id: 9,
@@ -886,7 +898,8 @@
       avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=400",
       status: "checked",
       checkinTime: "08:42:50",
-      checkinGate: "Cổng phụ (Kiosk 2)"
+      checkinGate: "Cổng phụ (Kiosk 2)",
+      hasFacescan: true
     },
     {
       id: 10,
@@ -899,7 +912,8 @@
       avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=400",
       status: "pending",
       checkinTime: null,
-      checkinGate: null
+      checkinGate: null,
+      hasFacescan: true
     },
     {
       id: 11,
@@ -912,7 +926,8 @@
       avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=400",
       status: "checked",
       checkinTime: "08:50:11",
-      checkinGate: "Cổng chính (Kiosk 1)"
+      checkinGate: "Cổng chính (Kiosk 1)",
+      hasFacescan: true
     },
     {
       id: 12,
@@ -925,7 +940,8 @@
       avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=400",
       status: "pending",
       checkinTime: null,
-      checkinGate: null
+      checkinGate: null,
+      hasFacescan: false
     },
     {
       id: 13,
@@ -938,7 +954,8 @@
       avatar: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&q=80&w=400",
       status: "checked",
       checkinTime: "09:02:18",
-      checkinGate: "Cổng chính (Kiosk 1)"
+      checkinGate: "Cổng chính (Kiosk 1)",
+      hasFacescan: true
     },
     {
       id: 14,
@@ -951,7 +968,8 @@
       avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400",
       status: "pending",
       checkinTime: null,
-      checkinGate: null
+      checkinGate: null,
+      hasFacescan: false
     }
   ];
 
@@ -1018,6 +1036,7 @@
     pageData.forEach(item => {
       const tr = document.createElement('tr');
       const tierClass = item.tier.includes('VIP') ? 'vip' : 'standard';
+      const faceInfo = item.hasFacescan ? 'Có dữ liệu' : 'Không có';
 
       // 1. Cột Trạng thái
       let statusHtml = '';
@@ -1068,6 +1087,7 @@
           <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">${item.phone}</div>
         </td>
         <td><span class="tier-tag ${tierClass}">${item.tier}</span></td>
+        <td><span class="face-info ${item.hasFacescan ? "active" : "none"}">${faceInfo}</span></td>
         <td>${statusHtml}</td>
         <td>${checkinLogHtml}</td>
         <td style="text-align:right;">
