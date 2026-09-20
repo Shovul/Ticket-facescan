@@ -10,6 +10,7 @@ env/
 *$py.class
 *.so
 .Python
+__pycache__/
 
 # Logs
 *.log
