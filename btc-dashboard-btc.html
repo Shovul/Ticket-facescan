@@ -186,79 +186,55 @@
   }
   .sidebar-nav-item a:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
   .sidebar-nav-item a.active { color: #ffffff; background: var(--color-teal); font-weight: 700; }
-  .badge-live-tag {
-    font-size: 10px;
-    background: var(--color-yellow);
-    color: var(--color-navy);
-    font-weight: 800;
-    padding: 2px 6px;
-    border-radius: 10px;
-    margin-left: auto;
-  }
-
-  .sidebar-bottom {
-    padding: 12px;
-    border-top: 1px solid rgba(159, 216, 197, 0.15);
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .sidebar-bottom-link {
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    padding: 10px 14px;
-    color: #bad8e5;
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    border-radius: 8px;
-  }
-  .sidebar-bottom-link:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
-  .btn-sidebar-logout {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    padding: 10px 14px;
-    color: #fca5a5;
-    background: none;
-    border: none;
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .btn-sidebar-logout:hover { background: rgba(220, 38, 38, 0.15); color: #ffcaca; }
 
   /* MAIN VIEWPORT */
   .app-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   .main-top-header {
     background: var(--white);
     border-bottom: 1.5px solid var(--card-border);
-    padding: 14px 36px;
+    padding: 12px 36px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
+    flex-wrap: wrap;
   }
   .header-left { display: flex; align-items: center; gap: 14px; }
-  .btn-back-programs {
-    padding: 6px 12px;
-    background: var(--bg-page);
-    color: var(--color-navy);
-    border: 1.5px solid var(--card-border);
-    border-radius: 6px;
-    font-size: 12.5px;
-    font-weight: 700;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn-back-programs:hover { background: var(--color-teal); color: #fff; }
   .header-page-title { font-size: 18px; font-weight: 800; color: var(--color-navy); }
+
+  /* BỘ CHỌN SỰ KIỆN TẠI HEADER */
+  .event-selector-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-page);
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1.5px solid var(--card-border);
+  }
+  .event-selector-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .event-dropdown-select {
+    background: #fff;
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-navy);
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .event-dropdown-select:focus {
+    border-color: var(--color-teal);
+    box-shadow: 0 0 0 2px rgba(7, 159, 160, 0.15);
+  }
 
   .main-content-scroll {
     padding: 26px 36px 50px 36px;
@@ -270,21 +246,30 @@
     gap: 20px;
   }
 
-  .view-container { display: flex; flex-direction: column; gap: 20px; }
-
   /* BANNER SỰ KIỆN */
   .event-banner-card {
     background: linear-gradient(135deg, var(--color-navy) 0%, #034f75 100%);
     color: #fff;
     border-radius: 12px;
-    padding: 20px 24px;
+    padding: 22px 26px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 6px 20px rgba(2, 56, 82, 0.14);
+    flex-wrap: wrap;
+    gap: 16px;
   }
-  .banner-info h2 { font-size: 19px; font-weight: 800; margin-bottom: 4px; }
-  .banner-submeta { font-size: 12.5px; color: var(--color-mint); display: flex; gap: 16px; }
+  .banner-info h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .banner-submeta { font-size: 13px; color: var(--color-mint); display: flex; gap: 18px; flex-wrap: wrap; }
+  .banner-status-badge {
+    font-size: 11.5px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 12px;
+  }
+  .status-badge-live { background: #fef3c7; color: #92400e; }
+  .status-badge-upcoming { background: #e0f2fe; color: #0369a1; }
+  .status-badge-ended { background: #f1f5f9; color: #475569; }
 
   /* 4 THẺ KPI */
   .kpi-event-grid {
@@ -316,7 +301,7 @@
   }
   .kpi-event-desc { font-size: 12px; color: var(--text-muted); }
 
-  /* KHU VỰC TIẾN ĐỘ LẤP ĐẦY HỘI TRƯỜNG TRỰC QUAN */
+  /* KHU VỰC TIẾN ĐỘ LẤP ĐẦY HỘI TRƯỜNG */
   .occupancy-card {
     background: #fff;
     border: 1.5px solid var(--card-border);
@@ -379,7 +364,7 @@
     border-radius: 12px;
   }
 
-  /* BIỂU ĐỒ CỘT THEO TỪNG KHUNG GIỜ PHỤC VỤ BTC */
+  /* BIỂU ĐỒ CỘT THEO TỪNG KHUNG GIỜ */
   .hourly-chart-box {
     display: flex;
     align-items: flex-end;
@@ -406,9 +391,7 @@
     transition: height 0.4s ease;
     position: relative;
   }
-  .hourly-bar-fill.peak {
-    background: var(--color-orange);
-  }
+  .hourly-bar-fill.peak { background: var(--color-orange); }
   .hourly-bar-val {
     font-size: 11px;
     font-weight: 800;
@@ -516,12 +499,14 @@
 </head>
 <body>
 
-  <!-- SIMULATION TOOLBAR CHO TEST NHANH -->
+  <!-- SIMULATION TOOLBAR -->
   <div class="sim-bar">
-    <div><span class="sim-title">EventPass Live Dashboard:</span> Biểu đồ lưu lượng theo giờ & Tỷ lệ lấp đầy</div>
+    <div><span class="sim-title">EventPass Switcher:</span> Chuyển đổi xem số liệu đa sự kiện thời gian thực (UC10)</div>
     <div class="sim-actions">
-      <button type="button" class="sim-btn" onclick="simTriggerSocketCheckin()">Mô phỏng 1 khách check-in Face ID (+1)</button>
-      <button type="button" class="sim-btn" onclick="window.history.back()">Quay lại</button>
+      <button type="button" class="sim-btn" onclick="quickSelectEvent('evt_techday')">SGU TechDay 2026</button>
+      <button type="button" class="sim-btn" onclick="quickSelectEvent('evt_music')">Đại Nhạc Hội 2026</button>
+      <button type="button" class="sim-btn" onclick="quickSelectEvent('evt_ai_workshop')">Workshop Thị Giác AI</button>
+      <button type="button" class="sim-btn" onclick="simTriggerSocketCheckin()">+1 Khách check-in Face ID</button>
     </div>
   </div>
 
@@ -553,7 +538,7 @@
               </a>
             </li>
             <li class="sidebar-nav-item">
-              <a href="#">
+              <a href="btc-taosukienmoi-btc.html">
                 <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <span>Sự kiện của tôi</span>
               </a>
@@ -572,22 +557,34 @@
     <!-- MAIN -->
     <main class="app-main">
       <header class="main-top-header">
-        <h1 class="header-page-title">Live Dashboard Thống Kê Điểm Danh</h1>
+        <div class="header-left">
+          <h1 class="header-page-title">Live Dashboard Thống Kê Điểm Danh</h1>
+        </div>
+
+        <!-- BỘ CHỌN SỰ KIỆN TẠI HEADER -->
+        <div class="event-selector-wrap">
+          <span class="event-selector-label">Đang xem:</span>
+          <select id="eventSelectorDropdown" class="event-dropdown-select" onchange="handleEventSwitch(this.value)">
+            <option value="evt_techday">Ngày Hội Công Nghệ SGU TechDay 2026 (Live)</option>
+            <option value="evt_music">Đại Nhạc Hội SGU Music Festival 2026 (Sắp diễn ra)</option>
+            <option value="evt_ai_workshop">Workshop AI & Thị Giác Máy Tính (Đã kết thúc)</option>
+          </select>
+        </div>
       </header>
 
       <div class="main-content-scroll">
         
-        <!-- BANNER SỰ KIỆN -->
+        <!-- BANNER SỰ KIỆN ĐỘNG -->
         <div class="event-banner-card">
           <div class="banner-info">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-              <span style="font-size:11px; font-weight:800; background:#fef3c7; color:#92400e; padding:2px 8px; border-radius:12px;">Đang diễn ra</span>
-              <span style="font-size:12px; color:var(--color-mint); font-weight:700;">Hệ thống Kiosk Face ID đang mở cổng</span>
+              <span class="banner-status-badge status-badge-live" id="bannerStatusBadge">Đang diễn ra</span>
+              <span style="font-size:12px; color:var(--color-mint); font-weight:700;" id="bannerStatusSub">Hệ thống Kiosk Face ID đang mở cổng</span>
             </div>
-            <h2>Ngày Hội Công Nghệ SGU TechDay 2026</h2>
+            <h2 id="bannerEventTitle">Ngày Hội Công Nghệ SGU TechDay 2026</h2>
             <div class="banner-submeta">
-              <span>Hôm nay • 08:00 - 17:30</span>
-              <span>Hội trường A - Cơ sở chính SGU</span>
+              <span id="bannerEventTime">Hôm nay • 08:00 - 17:30</span>
+              <span id="bannerEventLocation">Hội trường A - Cơ sở chính SGU</span>
             </div>
           </div>
         </div>
@@ -603,26 +600,26 @@
           <div class="kpi-event-card">
             <div class="kpi-event-title">Tỷ lệ lấp đầy hội trường</div>
             <div class="kpi-event-value" style="color:var(--color-teal);" id="kpiFillRate">98.1%</div>
-            <div class="kpi-event-desc">Trạng thái: <strong style="color:var(--color-orange);">Gần kín chỗ</strong></div>
+            <div class="kpi-event-desc">Trạng thái: <strong id="kpiStatusText" style="color:var(--color-orange);">Gần kín chỗ</strong></div>
           </div>
 
           <div class="kpi-event-card">
             <div class="kpi-event-title">Tốc độ quét trung bình</div>
-            <div class="kpi-event-value" style="color:var(--color-teal);">0.28s</div>
+            <div class="kpi-event-value" style="color:var(--color-teal);" id="kpiScanSpeed">0.28s</div>
             <div class="kpi-event-desc">Độ trễ Kiosk: <strong>&lt; 1 giây</strong></div>
           </div>
 
           <div class="kpi-event-card">
             <div class="kpi-event-title">Lưu lượng hiện tại</div>
-            <div class="kpi-event-value" style="color:var(--color-orange);">24 / phút</div>
-            <div class="kpi-event-desc">Tại 2 trạm camera sảnh</div>
+            <div class="kpi-event-value" style="color:var(--color-orange);" id="kpiThroughput">24 / phút</div>
+            <div class="kpi-event-desc" id="kpiKioskStations">Tại 2 trạm camera sảnh</div>
           </div>
         </div>
 
         <!-- THANH TIẾN ĐỘ LẤP ĐẦY TRỰC QUAN -->
         <div class="occupancy-card">
           <div class="occupancy-header">
-            <span class="occupancy-title">Mức độ lấp đầy thực tế tại Hội trường A (Sức chứa 800 ghế)</span>
+            <span class="occupancy-title" id="occupancyCapacityTitle">Mức độ lấp đầy thực tế tại Hội trường A (Sức chứa 800 ghế)</span>
             <span class="occupancy-percent" id="barFillRateText">785 / 800 (98.1%)</span>
           </div>
           <div class="occupancy-bar-bg">
@@ -637,37 +634,13 @@
           <div class="panel-box">
             <div class="panel-header-sub">
               <h3>Lưu lượng khách qua cổng theo từng khung giờ</h3>
-              <span class="live-pill">Cập nhật theo giờ</span>
+              <span class="live-pill" id="chartLiveTag">Cập nhật theo giờ</span>
             </div>
 
-            <div class="hourly-chart-box">
-              <div class="hourly-col">
-                <span class="hourly-bar-val">120</span>
-                <div class="hourly-bar-fill" style="height: 35%;"></div>
-                <span class="hourly-label">07:00 - 08:00</span>
-              </div>
-              <div class="hourly-col">
-                <span class="hourly-bar-val">340</span>
-                <div class="hourly-bar-fill peak" style="height: 95%;"></div>
-                <span class="hourly-label">08:00 - 09:00</span>
-              </div>
-              <div class="hourly-col">
-                <span class="hourly-bar-val">180</span>
-                <div class="hourly-bar-fill" style="height: 52%;"></div>
-                <span class="hourly-label">09:00 - 10:00</span>
-              </div>
-              <div class="hourly-col">
-                <span class="hourly-bar-val">95</span>
-                <div class="hourly-bar-fill" style="height: 28%;"></div>
-                <span class="hourly-label">10:00 - 11:00</span>
-              </div>
-              <div class="hourly-col">
-                <span class="hourly-bar-val" id="currentHourVal">50</span>
-                <div class="hourly-bar-fill" id="currentHourBar" style="height: 18%;"></div>
-                <span class="hourly-label">11:00 - Hiện tại</span>
-              </div>
+            <div class="hourly-chart-box" id="hourlyChartContainer">
+              <!-- Render tự động theo dữ liệu sự kiện -->
             </div>
-            <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px;">
+            <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px;" id="peakHourSummary">
               * Khung giờ cao điểm: <strong>08:00 - 09:00</strong> (Đạt 340 lượt check-in qua Kiosk).
             </div>
           </div>
@@ -680,26 +653,7 @@
             </div>
 
             <ul class="live-feed-list" id="liveFeedList">
-              <li class="feed-item">
-                <div class="feed-user-meta">
-                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100" class="feed-avatar" alt="Avatar">
-                  <div>
-                    <div class="feed-name">Hà Thái Sơn</div>
-                    <div class="feed-sub">Vé VIP • Trạm 1 • 0.24s</div>
-                  </div>
-                </div>
-                <span class="feed-match-badge">Hợp lệ</span>
-              </li>
-              <li class="feed-item">
-                <div class="feed-user-meta">
-                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100" class="feed-avatar" alt="Avatar">
-                  <div>
-                    <div class="feed-name">Trần Minh Hoàng</div>
-                    <div class="feed-sub">Vé Chuẩn • Trạm 2 • 0.31s</div>
-                  </div>
-                </div>
-                <span class="feed-match-badge">Hợp lệ</span>
-              </li>
+              <!-- Render các lượt quét gần nhất -->
             </ul>
           </div>
 
@@ -712,19 +666,8 @@
             <div class="panel-header-sub">
               <h3>Tỷ lệ điểm danh theo hạng vé</h3>
             </div>
-            <div class="data-stat-row">
-              <span>Vé Tiêu Chuẩn (Standard Pass)</span>
-              <div style="display:flex; align-items:center; gap:10px;">
-                <div class="stat-progress-line"><div class="stat-progress-fill" style="width: 98%;"></div></div>
-                <strong id="stdCheckinText">590 / 600</strong>
-              </div>
-            </div>
-            <div class="data-stat-row">
-              <span>Vé Khách Mời / VIP (VIP Pass)</span>
-              <div style="display:flex; align-items:center; gap:10px;">
-                <div class="stat-progress-line"><div class="stat-progress-fill" style="width: 97.5%;"></div></div>
-                <strong id="vipCheckinText">195 / 200</strong>
-              </div>
+            <div id="tierStatsContainer">
+              <!-- Render động theo sự kiện -->
             </div>
           </div>
 
@@ -732,13 +675,8 @@
             <div class="panel-header-sub">
               <h3>Tải lưu lượng tại các trạm Kiosk</h3>
             </div>
-            <div class="data-stat-row">
-              <span>Trạm 1 - Cổng chính Hội trường A</span>
-              <span style="font-weight:700; color:var(--color-navy);">512 lượt (65%)</span>
-            </div>
-            <div class="data-stat-row">
-              <span>Trạm 2 - Lối vào VIP & Diễn giả</span>
-              <span style="font-weight:700; color:var(--color-navy);">273 lượt (35%)</span>
+            <div id="stationStatsContainer">
+              <!-- Render động theo sự kiện -->
             </div>
           </div>
 
@@ -749,15 +687,127 @@
 
   </div>
 
-  <!-- TOAST -->
+  <!-- TOAST NOTIFICATION -->
   <div id="toastNotification" class="toast-notification">
     <span id="toastMessage">Thao tác thành công!</span>
   </div>
 
   <script>
-    let currentCheckedIn = 785;
-    const totalCapacity = 800;
-    let currentHourCount = 50;
+    // Cơ sở dữ liệu Mock nhiều sự kiện để chuyển đổi linh hoạt
+    const eventsDataStore = {
+      evt_techday: {
+        id: "evt_techday",
+        title: "Ngày Hội Công Nghệ SGU TechDay 2026",
+        status: "live",
+        statusLabel: "Đang diễn ra",
+        statusSub: "Hệ thống Kiosk Face ID đang mở cổng",
+        time: "Hôm nay • 08:00 - 17:30",
+        location: "Hội trường A - Cơ sở chính SGU",
+        capacityTitle: "Mức độ lấp đầy thực tế tại Hội trường A (Sức chứa 800 ghế)",
+        checkedIn: 785,
+        capacity: 800,
+        scanSpeed: "0.28s",
+        throughput: "24 / phút",
+        kioskStationsText: "Tại 2 trạm camera sảnh",
+        statusText: "Gần kín chỗ",
+        statusTextColor: "var(--color-orange)",
+        peakSummary: "* Khung giờ cao điểm: <strong>08:00 - 09:00</strong> (Đạt 340 lượt check-in qua Kiosk).",
+        hourlyStats: [
+          { label: "07:00 - 08:00", val: 120, height: "35%", isPeak: false },
+          { label: "08:00 - 09:00", val: 340, height: "95%", isPeak: true },
+          { label: "09:00 - 10:00", val: 180, height: "52%", isPeak: false },
+          { label: "10:00 - 11:00", val: 95, height: "28%", isPeak: false },
+          { label: "11:00 - Hiện tại", val: 50, height: "18%", isPeak: false }
+        ],
+        feeds: [
+          { name: "Hà Thái Sơn", sub: "Vé VIP • Trạm 1 • 0.24s", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100" },
+          { name: "Trần Minh Hoàng", sub: "Vé Chuẩn • Trạm 2 • 0.31s", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100" },
+          { name: "Lê Thu Thảo", sub: "Vé Chuẩn • Trạm 1 • 0.27s", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100" }
+        ],
+        tierStats: [
+          { name: "Vé Tiêu Chuẩn (Standard Pass)", current: 590, total: 600, pct: "98.3%" },
+          { name: "Vé Khách Mời / VIP (VIP Pass)", current: 195, total: 200, pct: "97.5%" }
+        ],
+        stationStats: [
+          { name: "Trạm 1 - Cổng chính Hội trường A", countText: "512 lượt (65%)" },
+          { name: "Trạm 2 - Lối vào VIP & Diễn giả", countText: "273 lượt (35%)" }
+        ]
+      },
+
+      evt_music: {
+        id: "evt_music",
+        title: "Đại Nhạc Hội SGU Music Festival 2026",
+        status: "upcoming",
+        statusLabel: "Sắp diễn ra",
+        statusSub: "Cổng bán vé đã đóng • Đang trích xuất Face Vector",
+        time: "10/10/2026 • 18:00 - 22:30",
+        location: "Sân vận động Cơ sở chính SGU",
+        capacityTitle: "Sức chứa quy hoạch Sân vận động (2.000 chỗ)",
+        checkedIn: 0,
+        capacity: 2000,
+        scanSpeed: "0.25s (test)",
+        throughput: "0 / phút",
+        kioskStationsText: "Tại 4 làn Kiosk soát vé",
+        statusText: "Chưa mở cửa",
+        statusTextColor: "var(--text-muted)",
+        peakSummary: "* Sự kiện chưa mở cửa đón khách. Dự kiến mở Kiosk lúc 16:30.",
+        hourlyStats: [
+          { label: "16:30 - 17:30", val: 0, height: "5%", isPeak: false },
+          { label: "17:30 - 18:30", val: 0, height: "5%", isPeak: false },
+          { label: "18:30 - 19:30", val: 0, height: "5%", isPeak: false },
+          { label: "19:30 - 20:30", val: 0, height: "5%", isPeak: false },
+          { label: "20:30 - 22:30", val: 0, height: "5%", isPeak: false }
+        ],
+        feeds: [
+          { name: "Hệ thống Kiosk", sub: "Đã nạp 2.000 vector khuôn mặt", img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=100" }
+        ],
+        tierStats: [
+          { name: "Vé Tiêu Chuẩn - Khán Đài B", current: 0, total: 1200, pct: "0%" },
+          { name: "Vé VIP Khán Đài A", current: 0, total: 800, pct: "0%" }
+        ],
+        stationStats: [
+          { name: "Làn 1 & 2 - Cổng Sân vận động", countText: "Sẵn sàng (Đã kết nối camera)" },
+          { name: "Làn 3 & 4 - Cổng VIP Sân khấu", countText: "Sẵn sàng (Đã kết nối camera)" }
+        ]
+      },
+
+      evt_ai_workshop: {
+        id: "evt_ai_workshop",
+        title: "Workshop AI & Thị Giác Máy Tính 2026",
+        status: "ended",
+        statusLabel: "Đã kết thúc",
+        statusSub: "Đã đóng toàn bộ trạm Kiosk và lưu trữ biên bản",
+        time: "Hôm qua • 13:30 - 16:30",
+        location: "Phòng Hội Thảo B302 - Cơ sở chính SGU",
+        capacityTitle: "Mức độ lấp đầy phòng B302 (Sức chứa 150 chỗ)",
+        checkedIn: 146,
+        capacity: 150,
+        scanSpeed: "0.22s",
+        throughput: "0 / phút (Đã đóng)",
+        kioskStationsText: "Tại 1 trạm Kiosk cửa phòng",
+        statusText: "Đạt 97.3%",
+        statusTextColor: "var(--success)",
+        peakSummary: "* Khung giờ cao điểm: <strong>13:00 - 13:30</strong> (Đạt 118 lượt quét).",
+        hourlyStats: [
+          { label: "13:00 - 13:30", val: 118, height: "90%", isPeak: true },
+          { label: "13:30 - 14:00", val: 22, height: "25%", isPeak: false },
+          { label: "14:00 - 15:00", val: 6, height: "10%", isPeak: false },
+          { label: "15:00 - 16:30", val: 0, height: "5%", isPeak: false }
+        ],
+        feeds: [
+          { name: "Nguyễn Văn Hùng", sub: "Vé Hội Thảo • 13:28", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=100" },
+          { name: "Đặng Hoàng Nam", sub: "Vé Hội Thảo • 13:25", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" }
+        ],
+        tierStats: [
+          { name: "Vé Tham Dự Hội Thảo (0đ)", current: 146, total: 150, pct: "97.3%" }
+        ],
+        stationStats: [
+          { name: "Trạm 1 - Cửa chính B302", countText: "146 lượt (100%)" }
+        ]
+      }
+    };
+
+    let activeEventId = "evt_techday";
 
     function showToast(msg) {
       const toast = document.getElementById('toastNotification');
@@ -766,30 +816,136 @@
       setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
-    // Mô phỏng bắn Socket.io khi Kiosk nhận diện thành công 1 khách
+    // XỬ LÝ CHUYỂN ĐỔI SỰ KIỆN TẠI DROPDOWN
+    function handleEventSwitch(eventId) {
+      const data = eventsDataStore[eventId];
+      if (!data) return;
+
+      activeEventId = eventId;
+      document.getElementById('eventSelectorDropdown').value = eventId;
+
+      // 1. Cập nhật Banner
+      document.getElementById('bannerEventTitle').textContent = data.title;
+      document.getElementById('bannerEventTime').textContent = data.time;
+      document.getElementById('bannerEventLocation').textContent = data.location;
+      document.getElementById('bannerStatusSub').textContent = data.statusSub;
+
+      const badge = document.getElementById('bannerStatusBadge');
+      badge.textContent = data.statusLabel;
+      badge.className = "banner-status-badge " + (
+        data.status === 'live' ? 'status-badge-live' :
+        data.status === 'upcoming' ? 'status-badge-upcoming' : 'status-badge-ended'
+      );
+
+      // 2. Cập nhật 4 thẻ KPI
+      document.getElementById('kpiCheckedIn').textContent = `${data.checkedIn} / ${data.capacity}`;
+      document.getElementById('kpiRemaining').textContent = data.capacity - data.checkedIn;
+      
+      const rate = data.capacity > 0 ? ((data.checkedIn / data.capacity) * 100).toFixed(1) : "0.0";
+      document.getElementById('kpiFillRate').textContent = `${rate}%`;
+      
+      const kpiStatus = document.getElementById('kpiStatusText');
+      kpiStatus.textContent = data.statusText;
+      kpiStatus.style.color = data.statusTextColor;
+
+      document.getElementById('kpiScanSpeed').textContent = data.scanSpeed;
+      document.getElementById('kpiThroughput').textContent = data.throughput;
+      document.getElementById('kpiKioskStations').textContent = data.kioskStationsText;
+
+      // 3. Cập nhật thanh lấp đầy
+      document.getElementById('occupancyCapacityTitle').textContent = data.capacityTitle;
+      document.getElementById('barFillRateText').textContent = `${data.checkedIn} / ${data.capacity} (${rate}%)`;
+      document.getElementById('occupancyBarFill').style.width = `${rate}%`;
+
+      // 4. Cập nhật biểu đồ cột khung giờ
+      const chartBox = document.getElementById('hourlyChartContainer');
+      chartBox.innerHTML = '';
+      data.hourlyStats.forEach(col => {
+        const div = document.createElement('div');
+        div.className = 'hourly-col';
+        div.innerHTML = `
+          <span class="hourly-bar-val">${col.val}</span>
+          <div class="hourly-bar-fill ${col.isPeak ? 'peak' : ''}" style="height: ${col.height};"></div>
+          <span class="hourly-label">${col.label}</span>
+        `;
+        chartBox.appendChild(div);
+      });
+      document.getElementById('peakHourSummary').innerHTML = data.peakSummary;
+
+      // 5. Cập nhật Live Feed
+      const feedList = document.getElementById('liveFeedList');
+      feedList.innerHTML = '';
+      data.feeds.forEach(f => {
+        const li = document.createElement('li');
+        li.className = 'feed-item';
+        li.innerHTML = `
+          <div class="feed-user-meta">
+            <img src="${f.img}" class="feed-avatar" alt="Avatar">
+            <div>
+              <div class="feed-name">${f.name}</div>
+              <div class="feed-sub">${f.sub}</div>
+            </div>
+          </div>
+          <span class="feed-match-badge">Hợp lệ</span>
+        `;
+        feedList.appendChild(li);
+      });
+
+      // 6. Cập nhật tỷ lệ theo hạng vé
+      const tierBox = document.getElementById('tierStatsContainer');
+      tierBox.innerHTML = '';
+      data.tierStats.forEach(t => {
+        const row = document.createElement('div');
+        row.className = 'data-stat-row';
+        row.innerHTML = `
+          <span>${t.name}</span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="stat-progress-line"><div class="stat-progress-fill" style="width: ${t.pct};"></div></div>
+            <strong>${t.current} / ${t.total}</strong>
+          </div>
+        `;
+        tierBox.appendChild(row);
+      });
+
+      // 7. Cập nhật tải các trạm Kiosk
+      const stationBox = document.getElementById('stationStatsContainer');
+      stationBox.innerHTML = '';
+      data.stationStats.forEach(s => {
+        const row = document.createElement('div');
+        row.className = 'data-stat-row';
+        row.innerHTML = `
+          <span>${s.name}</span>
+          <span style="font-weight:700; color:var(--color-navy);">${s.countText}</span>
+        `;
+        stationBox.appendChild(row);
+      });
+
+      showToast(`Đã chuyển sang xem Dashboard: ${data.title}`);
+    }
+
+    function quickSelectEvent(eventId) {
+      handleEventSwitch(eventId);
+    }
+
+    // Giả lập check-in Face ID qua Socket.io
     function simTriggerSocketCheckin() {
-      if (currentCheckedIn >= totalCapacity) {
+      const data = eventsDataStore[activeEventId];
+      if (!data) return;
+
+      if (data.status !== 'live') {
+        alert(`Sự kiện này đang ở trạng thái [${data.statusLabel}], trạm Kiosk hiện không mở cổng điểm danh!`);
+        return;
+      }
+
+      if (data.checkedIn >= data.capacity) {
         alert("Hội trường đã đạt công suất tối đa 100%!");
         return;
       }
 
-      currentCheckedIn++;
-      currentHourCount++;
+      data.checkedIn++;
+      handleEventSwitch(activeEventId);
 
-      // Cập nhật thẻ KPI
-      document.getElementById('kpiCheckedIn').textContent = `${currentCheckedIn} / ${totalCapacity}`;
-      document.getElementById('kpiRemaining').textContent = totalCapacity - currentCheckedIn;
-
-      const rate = ((currentCheckedIn / totalCapacity) * 100).toFixed(1);
-      document.getElementById('kpiFillRate').textContent = `${rate}%`;
-      document.getElementById('barFillRateText').textContent = `${currentCheckedIn} / ${totalCapacity} (${rate}%)`;
-      document.getElementById('occupancyBarFill').style.width = `${rate}%`;
-
-      // Cập nhật biểu đồ cột giờ hiện tại
-      document.getElementById('currentHourVal').textContent = currentHourCount;
-      document.getElementById('currentHourBar').style.height = `${Math.min(currentHourCount * 0.35, 100)}%`;
-
-      // Thêm vào feed realtime
+      // Thêm lượt quét mới vào đầu feed
       const feed = document.getElementById('liveFeedList');
       const li = document.createElement('li');
       li.className = 'feed-item';
@@ -797,8 +953,8 @@
         <div class="feed-user-meta">
           <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100" class="feed-avatar" alt="Avatar">
           <div>
-            <div class="feed-name">Khách Kiosk vừa quét (${new Date().toLocaleTimeString()})</div>
-            <div class="feed-sub">Vé Standard • Trạm 1 • 0.22s</div>
+            <div class="feed-name">Khách vừa quét Kiosk (${new Date().toLocaleTimeString()})</div>
+            <div class="feed-sub">Vé Standard • Trạm 1 • 0.21s</div>
           </div>
         </div>
         <span class="feed-match-badge">Hợp lệ</span>
@@ -807,6 +963,10 @@
 
       showToast("Socket.io: +1 lượt check-in Face ID thời gian thực thành công!");
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      handleEventSwitch('evt_techday');
+    });
   </script>
 </body>
 </html>
