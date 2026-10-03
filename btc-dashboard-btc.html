@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EventPass Organizer — Live Dashboard Thống Kê Điểm Danh (UC10)</title>
+<title>EventPass Admin — Live Dashboard Thống Kê Điểm Danh (UC10)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
@@ -86,7 +86,7 @@
     min-height: calc(100vh - 35px);
   }
 
-  /* SIDEBAR */
+  /* SIDEBAR CHUẨN ADMIN */
   .app-sidebar {
     width: 270px;
     background: var(--color-navy);
@@ -132,35 +132,6 @@
     box-shadow: 0 0 7px var(--color-orange);
   }
 
-  .sidebar-org-profile {
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: rgba(255, 255, 255, 0.04);
-    border-bottom: 1px solid rgba(159, 216, 197, 0.12);
-  }
-  .sidebar-org-logo {
-    width: 38px;
-    height: 38px;
-    border-radius: 8px;
-    background: #fff;
-    padding: 3px;
-    object-fit: contain;
-    border: 1.5px solid var(--color-yellow);
-    flex-shrink: 0;
-  }
-  .sidebar-org-meta { overflow: hidden; }
-  .sidebar-org-name {
-    font-size: 13px;
-    font-weight: 700;
-    color: #ffffff;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .sidebar-org-role { font-size: 11px; color: var(--color-mint); margin-top: 2px; }
-
   .sidebar-nav-section { padding: 18px 12px; }
   .sidebar-section-title {
     font-size: 10.5px;
@@ -187,6 +158,82 @@
   .sidebar-nav-item a:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
   .sidebar-nav-item a.active { color: #ffffff; background: var(--color-teal); font-weight: 700; }
 
+  /* DƯỚI CÙNG SIDEBAR */
+  .sidebar-footer-admin {
+    padding: 16px 14px;
+    border-top: 1px solid rgba(159, 216, 197, 0.15);
+    background: rgba(1, 36, 53, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .admin-meta-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .admin-avatar-tiny {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #fff;
+    padding: 2px;
+    object-fit: cover;
+    border: 1.5px solid var(--color-yellow);
+    flex-shrink: 0;
+  }
+  .admin-info-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .admin-title-txt {
+    font-size: 13px;
+    font-weight: 800;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .admin-email-txt {
+    font-size: 11px;
+    color: var(--color-mint);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .admin-btn-cluster {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .btn-sidebar-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(159, 216, 197, 0.2);
+    color: #bad8e5;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .btn-sidebar-icon:hover {
+    background: var(--color-teal);
+    color: #fff;
+    border-color: var(--color-yellow);
+  }
+  .btn-sidebar-icon.danger:hover {
+    background: var(--color-red);
+    color: #fff;
+    border-color: #fca5a5;
+  }
+
   /* MAIN VIEWPORT */
   .app-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   .main-top-header {
@@ -202,7 +249,6 @@
   .header-left { display: flex; align-items: center; gap: 14px; }
   .header-page-title { font-size: 18px; font-weight: 800; color: var(--color-navy); }
 
-  /* BỘ CHỌN SỰ KIỆN TẠI HEADER */
   .event-selector-wrap {
     display: flex;
     align-items: center;
@@ -301,7 +347,7 @@
   }
   .kpi-event-desc { font-size: 12px; color: var(--text-muted); }
 
-  /* KHU VỰC TIẾN ĐỘ LẤP ĐẦY HỘI TRƯỜNG */
+  /* THANH TIẾN ĐỘ */
   .occupancy-card {
     background: #fff;
     border: 1.5px solid var(--card-border);
@@ -331,7 +377,7 @@
     transition: width 0.4s ease;
   }
 
-  /* BỐ CỤC BIỂU ĐỒ KHUNG GIỜ + FEED */
+  /* BỐ CỤC KHUNG GIỜ + FEED */
   .metrics-content-grid {
     display: grid;
     grid-template-columns: 1.45fr 1fr;
@@ -350,6 +396,8 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 14px;
+    gap: 8px;
+    flex-wrap: wrap;
   }
   .panel-header-sub h3 { font-size: 14.5px; font-weight: 800; color: var(--color-navy); }
   .live-pill {
@@ -364,7 +412,28 @@
     border-radius: 12px;
   }
 
-  /* BIỂU ĐỒ CỘT THEO TỪNG KHUNG GIỜ */
+  /* NÚT XEM LỊCH SỬ RA VÀO (NHỮNG AI ĐÃ ĐIỂM DANH) */
+  .btn-view-checkedin-history {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #e6f7f3;
+    border: 1.5px solid #bcf0e2;
+    border-radius: 6px;
+    color: var(--color-teal);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-view-checkedin-history:hover {
+    background: var(--color-teal);
+    color: #fff;
+    border-color: var(--color-teal);
+  }
+
+  /* BIỂU ĐỒ CỘT */
   .hourly-chart-box {
     display: flex;
     align-items: flex-end;
@@ -405,7 +474,7 @@
     white-space: nowrap;
   }
 
-  /* REALTIME FEED */
+  /* LIVE FEED */
   .live-feed-list {
     list-style: none;
     display: flex;
@@ -443,7 +512,7 @@
     border-radius: 4px;
   }
 
-  /* BẢNG TỶ LỆ THEO HẠNG VÉ & TRẠM SOÁT VÉ */
+  /* HẠNG VÉ & TRẠM */
   .secondary-metrics-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -467,6 +536,135 @@
   }
   .stat-progress-fill { height: 100%; background: var(--color-teal); }
 
+  /* ========================================================
+     MODAL LỊCH SỬ NHẬT KÝ ĐÃ ĐIỂM DANH (CHECKED-IN GUESTS)
+     ======================================================== */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 56, 82, 0.55);
+    backdrop-filter: blur(3px);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .modal-backdrop.show { opacity: 1; visibility: visible; }
+  
+  .history-modal-box {
+    background: #fff;
+    width: 100%;
+    max-width: 900px;
+    max-height: 85vh;
+    border-radius: 14px;
+    box-shadow: 0 20px 45px rgba(2, 56, 82, 0.28);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .history-modal-header {
+    padding: 16px 22px;
+    background: var(--color-navy);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .history-modal-title {
+    font-size: 16px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .history-modal-toolbar {
+    padding: 12px 20px;
+    background: var(--bg-page);
+    border-bottom: 1.5px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .history-search-input {
+    padding: 6px 12px;
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-family: inherit;
+    outline: none;
+    width: 260px;
+  }
+  .history-search-input:focus { border-color: var(--color-teal); }
+  
+  .history-table-container {
+    padding: 0;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    text-align: left;
+  }
+  .history-table th {
+    background: #f8fbfa;
+    color: var(--color-navy);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 10px 16px;
+    border-bottom: 1.5px solid var(--card-border);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  .history-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--hairline);
+    vertical-align: middle;
+  }
+  .history-table tr:hover td { background: #fafdfc; }
+  .history-modal-footer {
+    padding: 12px 20px;
+    background: var(--bg-page);
+    border-top: 1px solid var(--hairline);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  /* MODAL ĐỔI MK & ĐĂNG XUẤT */
+  .auth-modal-box {
+    background: #fff;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(2, 56, 82, 0.28);
+  }
+  .form-group-item { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; text-align: left; }
+  .form-group-item label { font-size: 11.5px; font-weight: 700; color: var(--color-navy); text-transform: uppercase; }
+  .form-input-control {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 13px;
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    outline: none;
+    font-family: inherit;
+  }
+  .form-input-control:focus { border-color: var(--color-teal); }
+
   /* Toast Notification */
   .toast-notification {
     position: fixed;
@@ -482,7 +680,7 @@
     align-items: center;
     gap: 10px;
     font-size: 13px;
-    z-index: 2000;
+    z-index: 6000;
     opacity: 0;
     transform: translateY(20px);
     pointer-events: none;
@@ -505,51 +703,69 @@
     <div class="sim-actions">
       <button type="button" class="sim-btn" onclick="quickSelectEvent('evt_techday')">SGU TechDay 2026</button>
       <button type="button" class="sim-btn" onclick="quickSelectEvent('evt_music')">Đại Nhạc Hội 2026</button>
-      <button type="button" class="sim-btn" onclick="quickSelectEvent('evt_ai_workshop')">Workshop Thị Giác AI</button>
       <button type="button" class="sim-btn" onclick="simTriggerSocketCheckin()">+1 Khách check-in Face ID</button>
     </div>
   </div>
 
   <div class="app-layout">
 
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR CHUẨN ADMIN -->
     <aside class="app-sidebar">
       <div class="sidebar-top">
         <div class="sidebar-brand-header">
           <a href="#" class="brand-logo">
-            EventPass<span class="role-tag">ORGANIZER</span><span class="accent-dot"></span>
+            EventPass<span class="role-tag">ADMIN</span><span class="accent-dot"></span>
           </a>
-        </div>
-        <div class="sidebar-org-profile">
-          <img src="https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png" class="sidebar-org-logo" alt="Logo">
-          <div class="sidebar-org-meta">
-            <div class="sidebar-org-name">Đoàn Trường ĐH Sài Gòn</div>
-            <div class="sidebar-org-role">Tài khoản Ban Tổ Chức</div>
-          </div>
         </div>
 
         <div class="sidebar-nav-section">
-          <div class="sidebar-section-title">Quản Trị Sự Kiện</div>
+          <div class="sidebar-section-title">Hệ Thống Quản Trị</div>
           <ul class="sidebar-nav-list">
             <li class="sidebar-nav-item">
-              <a href="#" class="active">
+              <a href="btc-dashboard-btc.html" class="active">
                 <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-                <span>Tổng quan số liệu</span>
+                <span>Tổng quan</span>
               </a>
             </li>
             <li class="sidebar-nav-item">
-              <a href="btc-taosukienmoi-btc.html">
+              <a href="btc-sukiencuatoi-btc.html">
                 <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span>Sự kiện của tôi</span>
+                <span>Quản lý sự kiện</span>
               </a>
             </li>
             <li class="sidebar-nav-item">
-              <a href="#">
+              <a href="btc-dsthamgia-btc.html">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 <span>Danh sách tham dự</span>
               </a>
             </li>
+            <li class="sidebar-nav-item">
+              <a href="admin-lichsugiaodich.html">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                <span>Lịch sử tài chính</span>
+              </a>
+            </li>
           </ul>
+        </div>
+      </div>
+
+      <!-- DƯỚI CÙNG SIDEBAR: QUẢN TRỊ VIÊN, EMAIL NHỎ, NÚT ĐỔI MK & ĐĂNG XUẤT -->
+      <div class="sidebar-footer-admin">
+        <div class="admin-meta-wrap">
+          <img src="https://media.istockphoto.com/id/2149922267/vector/user-icon.jpg?s=612x612&w=0&k=20&c=i6jYPfB1pWjK8pll6YRxAK9fgBmf65-w5wbKH9R1dyQ=" class="admin-avatar-tiny" alt="Admin">
+          <div class="admin-info-text">
+            <span class="admin-title-txt">Quản trị viên</span>
+            <span class="admin-email-txt">admin@eventpass.vn</span>
+          </div>
+        </div>
+
+        <div class="admin-btn-cluster">
+          <button type="button" class="btn-sidebar-icon" onclick="openChangePasswordModal()" title="Đổi mật khẩu quản trị">
+            <svg class="icon" style="width:15px;height:15px;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </button>
+          <button type="button" class="btn-sidebar-icon danger" onclick="openLogoutModal()" title="Đăng xuất tài khoản">
+            <svg class="icon" style="width:15px;height:15px;" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </button>
         </div>
       </div>
     </aside>
@@ -637,49 +853,45 @@
               <span class="live-pill" id="chartLiveTag">Cập nhật theo giờ</span>
             </div>
 
-            <div class="hourly-chart-box" id="hourlyChartContainer">
-              <!-- Render tự động theo dữ liệu sự kiện -->
-            </div>
+            <div class="hourly-chart-box" id="hourlyChartContainer"></div>
             <div style="font-size:11.5px; color:var(--text-muted); margin-top:8px;" id="peakHourSummary">
               * Khung giờ cao điểm: <strong>08:00 - 09:00</strong> (Đạt 340 lượt check-in qua Kiosk).
             </div>
           </div>
 
-          <!-- Nhật ký Face ID trực tiếp -->
+          <!-- Nhật ký Face ID trực tiếp + Nút xem Lịch sử những ai đã điểm danh -->
           <div class="panel-box">
             <div class="panel-header-sub">
-              <h3>Nhật ký Face ID vừa qua cổng</h3>
-              <span class="live-pill">Live Feed</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <h3>Nhật ký Face ID vừa qua cổng</h3>
+                <span class="live-pill">Live Feed</span>
+              </div>
+              <button type="button" class="btn-view-checkedin-history" onclick="openCheckedInHistoryModal()">
+                <svg class="icon" style="width:14px;height:14px;" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+                <span>Xem lịch sử ra vào toàn bộ khách</span>
+              </button>
             </div>
 
-            <ul class="live-feed-list" id="liveFeedList">
-              <!-- Render các lượt quét gần nhất -->
-            </ul>
+            <ul class="live-feed-list" id="liveFeedList"></ul>
           </div>
 
         </div>
 
         <!-- HẠNG VÉ & TRẠM KIOSK -->
         <div class="secondary-metrics-row">
-          
           <div class="panel-box">
             <div class="panel-header-sub">
               <h3>Tỷ lệ điểm danh theo hạng vé</h3>
             </div>
-            <div id="tierStatsContainer">
-              <!-- Render động theo sự kiện -->
-            </div>
+            <div id="tierStatsContainer"></div>
           </div>
 
           <div class="panel-box">
             <div class="panel-header-sub">
               <h3>Tải lưu lượng tại các trạm Kiosk</h3>
             </div>
-            <div id="stationStatsContainer">
-              <!-- Render động theo sự kiện -->
-            </div>
+            <div id="stationStatsContainer"></div>
           </div>
-
         </div>
 
       </div>
@@ -687,13 +899,113 @@
 
   </div>
 
-  <!-- TOAST NOTIFICATION -->
+  <!-- ========================================================
+       MODAL: LỊCH SỬ NHỮNG AI ĐÃ ĐIỂM DANH (CHECKED-IN GUESTS)
+       ======================================================== -->
+  <div class="modal-backdrop" id="checkedInHistoryModal">
+    <div class="history-modal-box">
+      <div class="history-modal-header">
+        <h3 class="history-modal-title">
+          <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-yellow);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span id="historyModalTitle">Lịch Sử Khách Đã Điểm Danh Vào Cổng</span>
+        </h3>
+        <button type="button" style="background:none; border:none; color:#fff; font-size:22px; cursor:pointer;" onclick="closeModal('checkedInHistoryModal')">&times;</button>
+      </div>
+
+      <div class="history-modal-toolbar">
+        <input type="text" class="history-search-input" id="historySearchInput" placeholder="Tìm tên khách, mã vé, trạm Kiosk..." oninput="renderCheckedInHistoryTable()">
+        <button type="button" class="btn-view-checkedin-history" style="background:#fff;" onclick="exportCheckedInCSV()">
+          <svg class="icon" style="width:13px;height:13px;" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Xuất danh sách đã vào cổng (.CSV)</span>
+        </button>
+      </div>
+
+      <div class="history-table-container">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th style="width: 28%;">Khách Tham Dự</th>
+              <th style="width: 20%;">Mã Thẻ Vé</th>
+              <th style="width: 18%;">Hạng Vé</th>
+              <th style="width: 18%;">Thời Điểm Check-in</th>
+              <th style="width: 16%;">Cổng / Trạm Kiosk</th>
+            </tr>
+          </thead>
+          <tbody id="checkedInTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="history-modal-footer">
+        <span id="historyCountSummary">Hiển thị 0 lượt quét Face ID hợp lệ</span>
+        <button type="button" class="btn-sidebar-icon" style="width:auto; padding:4px 14px;" onclick="closeModal('checkedInHistoryModal')">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ĐỔI MẬT KHẨU -->
+  <div class="modal-backdrop" id="changePasswordModal">
+    <div class="auth-modal-box">
+      <h3 style="font-size:16.5px; font-weight:800; color:var(--color-navy); margin-bottom:6px;">Đổi Mật Khẩu Quản Trị</h3>
+      <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:16px;">Vui lòng nhập mật khẩu hiện tại và thiết lập mật khẩu mới.</p>
+
+      <form onsubmit="handleSaveNewPassword(event)">
+        <div class="form-group-item">
+          <label>Mật khẩu hiện tại</label>
+          <input type="password" id="currentPwd" class="form-input-control" placeholder="••••••••" required>
+        </div>
+        <div class="form-group-item">
+          <label>Mật khẩu mới</label>
+          <input type="password" id="newPwd" class="form-input-control" placeholder="Tối thiểu 6 ký tự" minlength="6" required>
+        </div>
+        <div class="form-group-item">
+          <label>Xác nhận mật khẩu mới</label>
+          <input type="password" id="confirmPwd" class="form-input-control" placeholder="Nhập lại mật khẩu mới" minlength="6" required>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+          <button type="button" class="sim-btn" style="color:var(--color-navy); background:#fff; border-color:var(--card-border);" onclick="closeModal('changePasswordModal')">Hủy</button>
+          <button type="submit" class="sim-btn" style="background:var(--color-teal);">Cập Nhật</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ĐĂNG XUẤT -->
+  <div class="modal-backdrop" id="logoutModal">
+    <div class="auth-modal-box" style="text-align:center;">
+      <h3 style="font-size:17px; font-weight:800; color:var(--color-navy); margin-bottom:8px;">Xác Nhận Đăng Xuất</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">Bạn có chắc chắn muốn kết thúc phiên làm việc của Quản trị viên?</p>
+      <div style="display:flex; justify-content:center; gap:10px;">
+        <button type="button" class="sim-btn" style="color:var(--color-navy); background:#fff; border-color:var(--card-border); padding:8px 16px;" onclick="closeModal('logoutModal')">Hủy bỏ</button>
+        <button type="button" class="sim-btn" style="background:var(--color-red); padding:8px 18px;" onclick="executeLogout()">Đăng Xuất</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
   <div id="toastNotification" class="toast-notification">
     <span id="toastMessage">Thao tác thành công!</span>
   </div>
 
   <script>
-    // Cơ sở dữ liệu Mock nhiều sự kiện để chuyển đổi linh hoạt
+    // Cơ sở dữ liệu những ai đã điểm danh
+    const checkedInLogsStore = {
+      evt_techday: [
+        { name: "Hà Thái Sơn", ticket: "PASS-789-VIP", tier: "VIP Pass", time: "08:05:12", kiosk: "Trạm 1 - Cổng chính", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100" },
+        { name: "Trần Minh Hoàng", ticket: "PASS-102-STD", tier: "Standard Pass", time: "08:14:45", kiosk: "Trạm 2 - Cổng VIP", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100" },
+        { name: "Lê Thu Thảo", ticket: "PASS-305-STD", tier: "Standard Pass", time: "08:21:09", kiosk: "Trạm 1 - Cổng chính", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100" },
+        { name: "Đặng Quang Minh", ticket: "PASS-771-VIP", tier: "VIP Pass", time: "08:30:02", kiosk: "Trạm 1 - Cổng chính", img: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&q=80&w=100" },
+        { name: "Vũ Phương Linh", ticket: "PASS-812-STD", tier: "Standard Pass", time: "08:33:19", kiosk: "Trạm 1 - Cổng chính", img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=100" },
+        { name: "Hoàng Gia Hưng", ticket: "PASS-925-VIP", tier: "VIP Pass", time: "08:42:50", kiosk: "Trạm 2 - Cổng VIP", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=100" },
+        { name: "Lâm Nhật Huy", ticket: "PASS-992-STD", tier: "Standard Pass", time: "08:50:11", kiosk: "Trạm 1 - Cổng chính", img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=100" },
+        { name: "Võ Tuấn Kiệt", ticket: "PASS-997-STD", tier: "Standard Pass", time: "09:02:18", kiosk: "Trạm 1 - Cổng chính", img: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&q=80&w=100" }
+      ],
+      evt_music: [],
+      evt_ai_workshop: [
+        { name: "Nguyễn Văn Hùng", ticket: "WS-012", tier: "Vé Hội Thảo (0đ)", time: "13:28:10", kiosk: "Trạm 1 - Cửa B302", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=100" },
+        { name: "Đặng Hoàng Nam", ticket: "WS-045", tier: "Vé Hội Thảo (0đ)", time: "13:25:40", kiosk: "Trạm 1 - Cửa B302", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=100" }
+      ]
+    };
+
     const eventsDataStore = {
       evt_techday: {
         id: "evt_techday",
@@ -733,7 +1045,6 @@
           { name: "Trạm 2 - Lối vào VIP & Diễn giả", countText: "273 lượt (35%)" }
         ]
       },
-
       evt_music: {
         id: "evt_music",
         title: "Đại Nhạc Hội SGU Music Festival 2026",
@@ -758,9 +1069,7 @@
           { label: "19:30 - 20:30", val: 0, height: "5%", isPeak: false },
           { label: "20:30 - 22:30", val: 0, height: "5%", isPeak: false }
         ],
-        feeds: [
-          { name: "Hệ thống Kiosk", sub: "Đã nạp 2.000 vector khuôn mặt", img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=100" }
-        ],
+        feeds: [],
         tierStats: [
           { name: "Vé Tiêu Chuẩn - Khán Đài B", current: 0, total: 1200, pct: "0%" },
           { name: "Vé VIP Khán Đài A", current: 0, total: 800, pct: "0%" }
@@ -770,7 +1079,6 @@
           { name: "Làn 3 & 4 - Cổng VIP Sân khấu", countText: "Sẵn sàng (Đã kết nối camera)" }
         ]
       },
-
       evt_ai_workshop: {
         id: "evt_ai_workshop",
         title: "Workshop AI & Thị Giác Máy Tính 2026",
@@ -816,7 +1124,136 @@
       setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
-    // XỬ LÝ CHUYỂN ĐỔI SỰ KIỆN TẠI DROPDOWN
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+    /* ========================================================
+       MODAL: NHỮNG AI ĐÃ ĐIỂM DANH (CHECKED-IN GUESTS)
+       ======================================================== */
+    function openCheckedInHistoryModal() {
+      const data = eventsDataStore[activeEventId];
+      document.getElementById('historyModalTitle').textContent = `Lịch Sử Khách Đã Điểm Danh — ${data.title}`;
+      document.getElementById('historySearchInput').value = '';
+      renderCheckedInHistoryTable();
+      openModal('checkedInHistoryModal');
+    }
+
+    function renderCheckedInHistoryTable() {
+      const list = checkedInLogsStore[activeEventId] || [];
+      const kw = document.getElementById('historySearchInput').value.trim().toLowerCase();
+      const tbody = document.getElementById('checkedInTableBody');
+      tbody.innerHTML = '';
+
+      const filtered = list.filter(item => {
+        return item.name.toLowerCase().includes(kw) ||
+               item.ticket.toLowerCase().includes(kw) ||
+               item.tier.toLowerCase().includes(kw) ||
+               item.kiosk.toLowerCase().includes(kw);
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align:center; padding:30px; color:var(--text-muted);">
+              Chưa ghi nhận lượt check-in nào khớp với tìm kiếm.
+            </td>
+          </tr>
+        `;
+        document.getElementById('historyCountSummary').textContent = `Hiển thị 0 lượt quét Face ID`;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <img src="${item.img}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1.5px solid var(--color-teal);" alt="Avatar">
+              <strong style="color:var(--color-navy);">${item.name}</strong>
+            </div>
+          </td>
+          <td><span style="font-family:'JetBrains Mono',monospace; font-size:11.5px; font-weight:700; background:#f1f5f9; padding:2px 6px; border-radius:4px; border:1px solid #cbd5e1;">${item.ticket}</span></td>
+          <td><span style="font-size:11.5px; font-weight:700; color:var(--color-navy);">${item.tier}</span></td>
+          <td><span style="font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--color-teal);">${item.time}</span></td>
+          <td><span style="font-size:11.5px; color:var(--text-muted);">${item.kiosk}</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('historyCountSummary').textContent = `Hiển thị ${filtered.length} / ${list.length} khách đã điểm danh thành công`;
+    }
+
+    function exportCheckedInCSV() {
+      const list = checkedInLogsStore[activeEventId] || [];
+      if (list.length === 0) {
+        alert("Chưa có lượt khách nào điểm danh để xuất báo cáo!");
+        return;
+      }
+
+      const headers = ["Họ và tên", "Mã thẻ vé", "Hạng vé", "Thời gian quét", "Trạm Kiosk", "Trạng thái"];
+      const rows = list.map(item => [
+        `"${item.name}"`,
+        `"${item.ticket}"`,
+        `"${item.tier}"`,
+        `"${item.time}"`,
+        `"${item.kiosk}"`,
+        `"Đã vào cổng hợp lệ"`
+      ]);
+
+      let csv = "\uFEFF" + headers.join(",") + "\r\n";
+      rows.forEach(r => csv += r.join(",") + "\r\n");
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Nhat_ky_diem_danh_${activeEventId}_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast("Đã xuất danh sách những người đã điểm danh ra file CSV thành công!");
+    }
+
+    /* ========================================================
+       MODAL AUTH: ĐỔI MẬT KHẨU & ĐĂNG XUẤT
+       ======================================================== */
+    function openChangePasswordModal() {
+      document.getElementById('currentPwd').value = '';
+      document.getElementById('newPwd').value = '';
+      document.getElementById('confirmPwd').value = '';
+      openModal('changePasswordModal');
+    }
+
+    function handleSaveNewPassword(e) {
+      e.preventDefault();
+      const currentPwd = document.getElementById('currentPwd').value;
+      const newPwd = document.getElementById('newPwd').value;
+      const confirmPwd = document.getElementById('confirmPwd').value;
+
+      if (!currentPwd) {
+        alert("Vui lòng nhập mật khẩu hiện tại!");
+        return;
+      }
+      if (newPwd !== confirmPwd) {
+        alert("Mật khẩu mới và xác nhận mật khẩu không khớp!");
+        return;
+      }
+
+      closeModal('changePasswordModal');
+      showToast("Đã cập nhật mật khẩu quản trị viên thành công!");
+    }
+
+    function openLogoutModal() { openModal('logoutModal'); }
+
+    function executeLogout() {
+      closeModal('logoutModal');
+      showToast("Đã đăng xuất tài khoản Quản trị viên!");
+      setTimeout(() => window.location.reload(), 1000);
+    }
+
+    /* ========================================================
+       CHUYỂN ĐỔI SỰ KIỆN & LIVE FEED
+       ======================================================== */
     function handleEventSwitch(eventId) {
       const data = eventsDataStore[eventId];
       if (!data) return;
@@ -857,7 +1294,7 @@
       document.getElementById('barFillRateText').textContent = `${data.checkedIn} / ${data.capacity} (${rate}%)`;
       document.getElementById('occupancyBarFill').style.width = `${rate}%`;
 
-      // 4. Cập nhật biểu đồ cột khung giờ
+      // 4. Biểu đồ cột
       const chartBox = document.getElementById('hourlyChartContainer');
       chartBox.innerHTML = '';
       data.hourlyStats.forEach(col => {
@@ -875,23 +1312,27 @@
       // 5. Cập nhật Live Feed
       const feedList = document.getElementById('liveFeedList');
       feedList.innerHTML = '';
-      data.feeds.forEach(f => {
-        const li = document.createElement('li');
-        li.className = 'feed-item';
-        li.innerHTML = `
-          <div class="feed-user-meta">
-            <img src="${f.img}" class="feed-avatar" alt="Avatar">
-            <div>
-              <div class="feed-name">${f.name}</div>
-              <div class="feed-sub">${f.sub}</div>
+      if (data.feeds.length === 0) {
+        feedList.innerHTML = '<li style="text-align:center; padding:16px; color:var(--text-muted); font-size:12px;">Chưa có lượt quét Face ID nào.</li>';
+      } else {
+        data.feeds.forEach(f => {
+          const li = document.createElement('li');
+          li.className = 'feed-item';
+          li.innerHTML = `
+            <div class="feed-user-meta">
+              <img src="${f.img}" class="feed-avatar" alt="Avatar">
+              <div>
+                <div class="feed-name">${f.name}</div>
+                <div class="feed-sub">${f.sub}</div>
+              </div>
             </div>
-          </div>
-          <span class="feed-match-badge">Hợp lệ</span>
-        `;
-        feedList.appendChild(li);
-      });
+            <span class="feed-match-badge">Hợp lệ</span>
+          `;
+          feedList.appendChild(li);
+        });
+      }
 
-      // 6. Cập nhật tỷ lệ theo hạng vé
+      // 6. Hạng vé
       const tierBox = document.getElementById('tierStatsContainer');
       tierBox.innerHTML = '';
       data.tierStats.forEach(t => {
@@ -907,7 +1348,7 @@
         tierBox.appendChild(row);
       });
 
-      // 7. Cập nhật tải các trạm Kiosk
+      // 7. Trạm Kiosk
       const stationBox = document.getElementById('stationStatsContainer');
       stationBox.innerHTML = '';
       data.stationStats.forEach(s => {
@@ -945,7 +1386,20 @@
       data.checkedIn++;
       handleEventSwitch(activeEventId);
 
-      // Thêm lượt quét mới vào đầu feed
+      const nowStr = new Date().toLocaleTimeString();
+
+      // Thêm bản ghi mới vào danh sách những ai đã điểm danh
+      if (!checkedInLogsStore[activeEventId]) checkedInLogsStore[activeEventId] = [];
+      checkedInLogsStore[activeEventId].unshift({
+        name: `Khách Vừa Check-in (${nowStr})`,
+        ticket: `PASS-${Math.floor(100+Math.random()*900)}-LIVE`,
+        tier: "Standard Pass",
+        time: nowStr,
+        kiosk: "Trạm 1 - Cổng chính",
+        img: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100"
+      });
+
+      // Thêm vào đầu feed
       const feed = document.getElementById('liveFeedList');
       const li = document.createElement('li');
       li.className = 'feed-item';
@@ -953,7 +1407,7 @@
         <div class="feed-user-meta">
           <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100" class="feed-avatar" alt="Avatar">
           <div>
-            <div class="feed-name">Khách vừa quét Kiosk (${new Date().toLocaleTimeString()})</div>
+            <div class="feed-name">Khách vừa quét Kiosk (${nowStr})</div>
             <div class="feed-sub">Vé Standard • Trạm 1 • 0.21s</div>
           </div>
         </div>

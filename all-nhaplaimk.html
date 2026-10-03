@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EventPass — Thiết Lập Mật Khẩu Mới</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-navy: #023852;
+    --color-teal: #079FA0;
+    --color-mint: #9FD8C5;
+    --color-yellow: #FAC005;
+    --color-orange: #F58B01;
+    --color-red: #DC2E2F;
+
+    --bg-page: #f2f7f5;
+    --card-border: #cfe5dc;
+    --text-primary: #023852;
+    --text-muted: #537583;
+    --hairline: #e3efea;
+    --success: #15803d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-page);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Sandbox Toolbar */
+  .sim-bar {
+    background: var(--color-navy);
+    color: #e2e8f0;
+    padding: 8px 24px;
+    font-size: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    border-bottom: 2px solid var(--color-teal);
+    z-index: 1000;
+  }
+  .sim-title { font-weight: 700; color: var(--color-yellow); }
+  .sim-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sim-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .sim-btn:hover { background: var(--color-teal); color: #fff; border-color: var(--color-yellow); }
+
+  .top-bar {
+    background: #012233;
+    color: #e2eff5;
+    padding: 8px 48px;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .top-bar strong { color: var(--color-yellow); font-weight: 600; }
+
+  .header {
+    background: #fff;
+    border-bottom: 1.5px solid var(--card-border);
+    padding: 14px 48px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+  .brand-name {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--color-navy);
+    letter-spacing: -0.5px;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+  .brand-name span.pass-tag {
+    font-size: 12px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--color-teal);
+    padding: 2px 7px;
+    border-radius: 5px;
+    margin-left: 6px;
+    letter-spacing: 0.5px;
+  }
+  .brand-name .accent-dot {
+    width: 7px;
+    height: 7px;
+    background-color: var(--color-orange);
+    border-radius: 50%;
+    margin-left: 5px;
+    box-shadow: 0 0 7px var(--color-orange);
+  }
+
+  .main-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 36px 20px;
+  }
+  .recover-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1.5px solid var(--card-border);
+    box-shadow: 0 20px 45px -15px rgba(2, 56, 82, 0.16);
+    display: flex;
+    width: 960px;
+    max-width: 100%;
+    min-height: 520px;
+    overflow: hidden;
+  }
+
+  /* Cột trái: Nhận diện & Tiêu chuẩn */
+  .visual-column {
+    flex: 0 0 42%;
+    background: linear-gradient(155deg, var(--color-navy) 0%, #044b6e 100%);
+    color: #fff;
+    padding: 40px 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .badge-kicker {
+    display: inline-block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-navy);
+    background: var(--color-yellow);
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .hero-title {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.35;
+    color: #ffffff;
+  }
+  .hero-desc {
+    font-size: 13px;
+    color: #bad8e5;
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+
+  .verified-acc-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(159, 216, 197, 0.3);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 20px;
+    font-size: 12.5px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .verified-acc-label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    color: var(--color-mint);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .verified-acc-email {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .security-rules {
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid var(--color-teal);
+    padding: 12px 14px;
+    font-size: 12px;
+    color: #d1e7f0;
+    line-height: 1.6;
+    margin-top: 20px;
+  }
+
+  /* Cột phải: Form nhập mật khẩu */
+  .form-column {
+    flex: 1;
+    padding: 44px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .form-title {
+    font-size: 23px;
+    font-weight: 800;
+    color: var(--color-navy);
+    letter-spacing: -0.5px;
+  }
+  .form-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    margin-bottom: 22px;
+    line-height: 1.5;
+  }
+
+  .banner-alert {
+    display: none;
+    padding: 12px 14px;
+    border-radius: 7px;
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+  .banner-alert.show { display: block; }
+  .banner-alert.error {
+    background: #fde8e8;
+    color: var(--color-red);
+    border: 1px solid #f8b4b4;
+  }
+
+  .form-group { margin-bottom: 16px; position: relative; }
+  .form-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--color-navy);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .form-label .req { color: var(--color-red); margin-left: 2px; }
+
+  .input-password-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .form-input {
+    width: 100%;
+    padding: 10px 40px 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--color-navy);
+    background: #fbfdfc;
+    border: 1.5px solid var(--card-border);
+    border-radius: 7px;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+  .form-input:focus {
+    border-color: var(--color-teal);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(7, 159, 160, 0.15);
+  }
+  .form-input.is-invalid {
+    border-color: var(--color-red);
+    background: #fff8f8;
+  }
+  .btn-toggle-eye {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+  }
+  .btn-toggle-eye:hover { color: var(--color-teal); }
+
+  /* Thanh đo độ mạnh mật khẩu */
+  .password-meter-bar {
+    width: 100%;
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .meter-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+  }
+
+  .error-message {
+    display: none;
+    color: var(--color-red);
+    font-size: 11px;
+    margin-top: 4px;
+    font-weight: 600;
+  }
+  .form-group.has-error .error-message { display: block; }
+
+  .btn-submit {
+    width: 100%;
+    padding: 12px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background-color 0.2s ease;
+  }
+  .btn-submit:hover { background: #058586; }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .form-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+    font-size: 12.5px;
+  }
+  .back-link {
+    color: var(--color-teal);
+    text-decoration: none;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .back-link:hover { text-decoration: underline; color: var(--color-navy); }
+
+  /* Toast Notification */
+  .toast-notification {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--color-navy);
+    color: #fff;
+    border-left: 4px solid var(--color-teal);
+    padding: 14px 20px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(2, 56, 82, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    z-index: 2000;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .toast-notification.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+  @media (max-width: 860px) {
+    .recover-card { flex-direction: column; width: 100%; min-height: 0; }
+    .visual-column, .form-column { padding: 32px 24px; }
+    .top-bar, .header { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- SIMULATION TOOLBAR -->
+  <div class="sim-bar">
+    <div><span class="sim-title">EventPass Auth Link Sandbox:</span> Đặt lại mật khẩu từ liên kết Gmail</div>
+    <div class="sim-actions">
+      <button type="button" class="sim-btn" onclick="simFillPassword()">Điền mẫu hợp lệ</button>
+      <button type="button" class="sim-btn" onclick="simTriggerShortPassword()">Mật khẩu quá ngắn (&lt;6)</button>
+      <button type="button" class="sim-btn" onclick="simTriggerMismatch()">Mật khẩu không khớp</button>
+      <button type="button" class="sim-btn" onclick="simTriggerExpiredToken()">Token hết hạn / Không hợp lệ</button>
+      <button type="button" class="sim-btn" onclick="location.reload()">Làm mới</button>
+    </div>
+  </div>
+
+  <div class="top-bar">
+    <span>Cổng phát hành vé điện tử và Điểm danh nhận diện khuôn mặt</span>
+    <span>Hệ thống bảo mật tài khoản tập trung</span>
+  </div>
+
+  <header class="header">
+    <a href="#" class="brand-name">
+      EventPass<span class="pass-tag">SECURITY</span><span class="accent-dot"></span>
+    </a>
+  </header>
+
+  <main class="main-wrapper">
+    <div class="recover-card">
+
+      <!-- CỘT TRÁI: NHẬN DIỆN TÀI KHOẢN TỪ LINK GMAIL -->
+      <div class="visual-column">
+        <div>
+          <span class="badge-kicker">Xác thực hợp lệ</span>
+          <h1 class="hero-title">Thiết lập mật khẩu truy cập mới</h1>
+          <p class="hero-desc">Bạn vừa truy cập thành công qua liên kết xác thực an toàn gửi đến hộp thư Gmail.</p>
+
+
+        </div>
+
+        <div>
+          <div class="security-rules">
+            <strong>Nguyên tắc bảo vệ tài khoản:</strong>
+            Mọi phiên đăng nhập hiện tại trên các thiết bị cũ sẽ tự động bị thu hồi ngay sau khi mật khẩu mới được lưu.
+          </div>
+        </div>
+      </div>
+
+      <!-- CỘT PHẢI: FORM NHẬP MẬT KHẨU MỚI -->
+      <div class="form-column">
+        <div id="bannerAlert" class="banner-alert"></div>
+
+        <div id="resetFormContent">
+          <h2 class="form-title">Tạo mật khẩu mới</h2>
+          <p class="form-subtitle">Vui lòng thiết lập mật khẩu mạnh có tối thiểu 6 ký tự để bảo vệ tài khoản của bạn.</p>
+
+          <form id="newPasswordForm" novalidate onsubmit="handleResetPasswordSubmit(event)">
+            <!-- Mật khẩu mới -->
+            <div class="form-group" id="fg-newPassword">
+              <label class="form-label" for="newPassword">Mật khẩu mới <span class="req">*</span></label>
+              <div class="input-password-wrap">
+                <input type="password" id="newPassword" class="form-input" placeholder="Tối thiểu 6 ký tự..." required oninput="evaluatePasswordStrength(this.value)">
+                <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('newPassword', this)" title="Ẩn/Hiện mật khẩu">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <div class="password-meter-bar">
+                <div id="meterFill" class="meter-fill"></div>
+              </div>
+              <div class="error-message" id="err-newPassword">Mật khẩu phải chứa ít nhất 6 ký tự</div>
+            </div>
+
+            <!-- Xác nhận mật khẩu mới -->
+            <div class="form-group" id="fg-confirmPassword">
+              <label class="form-label" for="confirmPassword">Xác nhận mật khẩu mới <span class="req">*</span></label>
+              <div class="input-password-wrap">
+                <input type="password" id="confirmPassword" class="form-input" placeholder="Nhập lại mật khẩu mới..." required>
+                <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('confirmPassword', this)" title="Ẩn/Hiện mật khẩu">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <div class="error-message" id="err-confirmPassword">Mật khẩu xác nhận không trùng khớp</div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="btnSubmitNewPass">
+              <span>Cập Nhật Mật Khẩu Mới</span>
+            </button>
+          </form>
+
+          <div class="form-bottom-row">
+            <a href="javascript:void(0)" class="back-link" onclick="alert('Quay về trang Đăng nhập hệ thống.')">
+              <svg class="icon" style="width:14px;height:14px;" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+              <span>Hủy, quay lại Đăng nhập</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification" class="toast-notification">
+    <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-mint); width:18px; height:18px;"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="toastMessage">Thao tác thành công!</span>
+  </div>
+
+  <script>
+    let isTokenValid = true;
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMessage').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function showBannerError(msg) {
+      const b = document.getElementById('bannerAlert');
+      b.className = 'banner-alert show error';
+      b.textContent = msg;
+    }
+
+    function clearBanner() {
+      const b = document.getElementById('bannerAlert');
+      b.className = 'banner-alert';
+      b.textContent = '';
+    }
+
+    function setError(fieldId, msg) {
+      const fg = document.getElementById('fg-' + fieldId);
+      const input = document.getElementById(fieldId);
+      const err = document.getElementById('err-' + fieldId);
+      if (fg && input && err) {
+        fg.classList.add('has-error');
+        input.classList.add('is-invalid');
+        err.textContent = msg;
+      }
+    }
+
+    function clearErrors() {
+      clearBanner();
+      document.querySelectorAll('.form-group').forEach(fg => fg.classList.remove('has-error'));
+      document.querySelectorAll('.form-input').forEach(inp => inp.classList.remove('is-invalid'));
+    }
+
+    function togglePasswordVisibility(fieldId, btn) {
+      const input = document.getElementById(fieldId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = `<svg class="icon" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+      } else {
+        input.type = 'password';
+        btn.innerHTML = `<svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+      }
+    }
+
+    function evaluatePasswordStrength(val) {
+      const meter = document.getElementById('meterFill');
+      if (!val) {
+        meter.style.width = '0%';
+        return;
+      }
+      if (val.length < 6) {
+        meter.style.width = '30%';
+        meter.style.backgroundColor = 'var(--color-red)';
+      } else if (val.length < 9) {
+        meter.style.width = '65%';
+        meter.style.backgroundColor = 'var(--color-orange)';
+      } else {
+        meter.style.width = '100%';
+        meter.style.backgroundColor = 'var(--success)';
+      }
+    }
+
+    function handleResetPasswordSubmit(e) {
+      e.preventDefault();
+      clearErrors();
+
+      if (!isTokenValid) {
+        showBannerError("Liên kết đặt lại mật khẩu đã hết hạn hoặc không hợp lệ. Vui lòng gửi lại yêu cầu quên mật khẩu từ Gmail!");
+        return;
+      }
+
+      const newPass = document.getElementById('newPassword').value;
+      const confirmPass = document.getElementById('confirmPassword').value;
+
+      let hasError = false;
+
+      if (!newPass) {
+        setError('newPassword', 'Vui lòng nhập mật khẩu mới.');
+        hasError = true;
+      } else if (newPass.length < 6) {
+        setError('newPassword', 'Mật khẩu phải chứa ít nhất 6 ký tự.');
+        hasError = true;
+      }
+
+      if (!confirmPass) {
+        setError('confirmPassword', 'Vui lòng xác nhận mật khẩu.');
+        hasError = true;
+      } else if (newPass && newPass !== confirmPass) {
+        setError('confirmPassword', 'Mật khẩu xác nhận không trùng khớp.');
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      const btn = document.getElementById('btnSubmitNewPass');
+      btn.disabled = true;
+      btn.innerHTML = `<span>Đang lưu mật khẩu mới...</span>`;
+
+      setTimeout(() => {
+        showToast("Đổi mật khẩu thành công! Toàn bộ phiên đăng nhập cũ đã được thu hồi.");
+        setTimeout(() => {
+          alert("🎉 ĐỔI MẬT KHẨU THÀNH CÔNG!\n\nHệ thống đã lưu mật khẩu mới. Bạn có thể sử dụng mật khẩu này để đăng nhập lại trên mọi nền tảng.");
+          btn.disabled = false;
+          btn.innerHTML = `<span>Cập Nhật Mật Khẩu Mới</span>`;
+          document.getElementById('newPasswordForm').reset();
+          document.getElementById('meterFill').style.width = '0%';
+        }, 1200);
+      }, 700);
+    }
+
+    /* Các hàm mô phỏng kịch bản kiểm thử */
+    function simFillPassword() {
+      clearErrors();
+      isTokenValid = true;
+      document.getElementById('newPassword').value = "EventPass@2026";
+      document.getElementById('confirmPassword').value = "EventPass@2026";
+      evaluatePasswordStrength("EventPass@2026");
+      showToast("Đã điền mật khẩu hợp lệ.");
+    }
+
+    function simTriggerShortPassword() {
+      clearErrors();
+      isTokenValid = true;
+      document.getElementById('newPassword').value = "123";
+      document.getElementById('confirmPassword').value = "123";
+      evaluatePasswordStrength("123");
+      document.getElementById('btnSubmitNewPass').click();
+    }
+
+    function simTriggerMismatch() {
+      clearErrors();
+      isTokenValid = true;
+      document.getElementById('newPassword').value = "MatKhauChuan123";
+      document.getElementById('confirmPassword').value = "MatKhauGoSai456";
+      evaluatePasswordStrength("MatKhauChuan123");
+      document.getElementById('btnSubmitNewPass').click();
+    }
+
+    function simTriggerExpiredToken() {
+      clearErrors();
+      isTokenValid = false;
+      showBannerError("Cảnh báo: Liên kết này đã hết hạn hiệu lực 15 phút hoặc đã từng được sử dụng trước đó!");
+      document.getElementById('btnSubmitNewPass').disabled = true;
+    }
+  </script>
+</body>
+</html>

@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EventPass Organizer — Sự kiện của tôi (UC11, UC12)</title>
+<title>EventPass Admin — Quản Trị & Chỉnh Sửa Sự Kiện (UC12)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&display=swap&subset=vietnamese" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --color-navy: #023852;
@@ -83,7 +83,7 @@
 
   .app-layout { display: flex; flex: 1; min-height: calc(100vh - 35px); }
 
-  /* SIDEBAR */
+  /* SIDEBAR CHUẨN ADMIN */
   .app-sidebar {
     width: 270px;
     background: var(--color-navy);
@@ -103,25 +103,88 @@
   .brand-logo span.role-tag { font-size: 10.5px; font-weight: 800; color: #fff; background: var(--color-teal); padding: 2px 7px; border-radius: 5px; margin-left: 6px; }
   .brand-logo .accent-dot { width: 7px; height: 7px; background-color: var(--color-orange); border-radius: 50%; margin-left: 5px; box-shadow: 0 0 7px var(--color-orange); }
 
-  .sidebar-org-profile { padding: 16px 20px; display: flex; align-items: center; gap: 12px; background: rgba(255, 255, 255, 0.04); border-bottom: 1px solid rgba(159, 216, 197, 0.12); }
-  .sidebar-org-logo { width: 38px; height: 38px; border-radius: 8px; background: #fff; padding: 3px; object-fit: contain; border: 1.5px solid var(--color-yellow); flex-shrink: 0; }
-  .sidebar-org-meta { overflow: hidden; }
-  .sidebar-org-name { font-size: 13px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sidebar-org-role { font-size: 11px; color: var(--color-mint); margin-top: 2px; }
-
   .sidebar-nav-section { padding: 18px 12px; }
   .sidebar-section-title { font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: rgba(159, 216, 197, 0.6); letter-spacing: 1px; padding: 0 12px; margin-bottom: 8px; }
   .sidebar-nav-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
   .sidebar-nav-item a { display: flex; align-items: center; gap: 11px; padding: 10px 14px; color: #bad8e5; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 8px; transition: all 0.15s ease; }
   .sidebar-nav-item a:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
   .sidebar-nav-item a.active { color: #ffffff; background: var(--color-teal); font-weight: 700; }
-  .badge-live-tag { font-size: 10px; background: var(--color-yellow); color: var(--color-navy); font-weight: 800; padding: 2px 6px; border-radius: 10px; margin-left: auto; }
 
-  .sidebar-bottom { padding: 12px; border-top: 1px solid rgba(159, 216, 197, 0.15); display: flex; flex-direction: column; gap: 4px; }
-  .sidebar-bottom-link { display: flex; align-items: center; gap: 11px; padding: 10px 14px; color: #bad8e5; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 8px; transition: all 0.15s ease; }
-  .sidebar-bottom-link:hover { color: #fff; background: rgba(255, 255, 255, 0.08); }
-  .btn-sidebar-logout { width: 100%; display: flex; align-items: center; gap: 11px; padding: 10px 14px; color: #fca5a5; background: none; border: none; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s ease; }
-  .btn-sidebar-logout:hover { background: rgba(220, 38, 38, 0.15); color: #ffcaca; }
+  /* DƯỚI CÙNG SIDEBAR: QUẢN TRỊ VIÊN, EMAIL, ĐỔI MK & ĐĂNG XUẤT */
+  .sidebar-footer-admin {
+    padding: 16px 14px;
+    border-top: 1px solid rgba(159, 216, 197, 0.15);
+    background: rgba(1, 36, 53, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .admin-meta-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .admin-avatar-tiny {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #fff;
+    padding: 2px;
+    object-fit: cover;
+    border: 1.5px solid var(--color-yellow);
+    flex-shrink: 0;
+  }
+  .admin-info-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .admin-title-txt {
+    font-size: 13px;
+    font-weight: 800;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .admin-email-txt {
+    font-size: 11px;
+    color: var(--color-mint);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .admin-btn-cluster {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .btn-sidebar-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(159, 216, 197, 0.2);
+    color: #bad8e5;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+  .btn-sidebar-icon:hover {
+    background: var(--color-teal);
+    color: #fff;
+    border-color: var(--color-yellow);
+  }
+  .btn-sidebar-icon.danger:hover {
+    background: var(--color-red);
+    color: #fff;
+    border-color: #fca5a5;
+  }
 
   /* MAIN VIEWPORT */
   .app-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
@@ -180,6 +243,19 @@
   .detail-tab-content { background: var(--white); border-radius: 12px; border: 1px solid var(--card-border); padding: 26px 30px; box-shadow: 0 6px 20px rgba(2, 56, 82, 0.04); display: none; }
   .detail-tab-content.active { display: block; }
 
+  /* Section header bên trong form */
+  .form-section-divider {
+    border-bottom: 1.5px solid var(--hairline);
+    padding-bottom: 8px;
+    margin: 18px 0 14px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-navy);
+    font-size: 14px;
+    font-weight: 800;
+  }
+
   .form-grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; }
   .form-field { display: flex; flex-direction: column; gap: 6px; }
   .form-field.full { grid-column: span 2; }
@@ -229,8 +305,6 @@
   .tier-badge-status { font-size: 10.5px; padding: 2px 7px; border-radius: 4px; font-weight: 700; }
   .tier-badge-status.active { background: #dcfce7; color: #166534; }
   .tier-badge-status.locked { background: #fee2e2; color: #991b1b; }
-  .tier-badge-status.pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-  .pending-slot-tag { color: var(--color-orange); font-weight: 700; font-size: 11.5px; }
 
   /* Trạm soát vé */
   .station-list-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
@@ -252,22 +326,6 @@
   /* Buttons */
   .btn-action-primary { padding: 9px 18px; background: var(--color-teal); color: #fff; border: none; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
   .btn-action-primary:hover { background: var(--color-teal-hover); }
-  
-  /* Trạng thái đổi sang màu ĐỎ khi phát hiện có chỉnh sửa */
-  .btn-action-primary.dirty {
-    background: var(--color-red) !important;
-    box-shadow: 0 4px 14px rgba(220, 46, 47, 0.35);
-    animation: pulseNotice 2s infinite ease-in-out;
-  }
-  .btn-action-primary.dirty:hover {
-    background: var(--color-red-hover) !important;
-  }
-
-  @keyframes pulseNotice {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.02); }
-    100% { transform: scale(1); }
-  }
 
   .btn-action-secondary { padding: 8px 16px; background: #fff; color: var(--color-navy); border: 1.5px solid var(--card-border); border-radius: 6px; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.15s ease; }
   .btn-action-secondary:hover { border-color: var(--color-teal); color: var(--color-teal); }
@@ -280,15 +338,28 @@
   .modal-backdrop { position: fixed; inset: 0; background: rgba(2, 56, 82, 0.45); backdrop-filter: blur(2px); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; visibility: hidden; transition: opacity 0.2s ease, visibility 0.2s ease; }
   .modal-backdrop.show { opacity: 1; visibility: visible; }
   .modal-box { background: #fff; width: 100%; max-width: 460px; border-radius: 12px; padding: 24px 26px; box-shadow: 0 20px 40px -10px rgba(2, 56, 82, 0.28); }
-  .modal-title { font-size: 18px; font-weight: 800; color: var(--color-navy); margin-bottom: 8px; }
+  .modal-title { font-size: 18px; font-weight: 800; color: var(--color-navy); margin-bottom: 6px; }
   .modal-body { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; }
   .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
   .btn-modal-cancel { padding: 9px 16px; background: #fff; border: 1.5px solid var(--card-border); border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
   .btn-modal-confirm { padding: 9px 18px; background: var(--color-teal); color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; }
   .btn-modal-confirm.danger { background: var(--danger); }
 
+  .form-group-item { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; text-align: left; }
+  .form-group-item label { font-size: 11.5px; font-weight: 700; color: var(--color-navy); text-transform: uppercase; }
+  .form-input-control {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 13px;
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    outline: none;
+    font-family: inherit;
+  }
+  .form-input-control:focus { border-color: var(--color-teal); }
+
   /* Toast Notification */
-  .toast-notification { position: fixed; bottom: 24px; left: 24px; background: var(--color-navy); color: #fff; border-left: 4px solid var(--color-teal); padding: 14px 20px; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(2, 56, 82, 0.4); display: flex; align-items: center; gap: 12px; font-size: 13.5px; font-weight: 500; z-index: 4000; opacity: 0; transform: translateY(20px); pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+  .toast-notification { position: fixed; bottom: 24px; left: 24px; background: var(--color-navy); color: #fff; border-left: 4px solid var(--color-teal); padding: 14px 20px; border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(2, 56, 82, 0.4); display: flex; align-items: center; gap: 12px; font-size: 13.5px; font-weight: 500; z-index: 6000; opacity: 0; transform: translateY(20px); pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
   .toast-notification.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
   .toast-icon { width: 22px; height: 22px; border-radius: 50%; background: var(--color-teal); display: inline-flex; align-items: center; justify-content: center; }
 
@@ -310,75 +381,75 @@
 
   <!-- SIMULATION TOOLBAR -->
   <div class="sim-bar">
-    <div><span class="sim-title">EventPass UC11-UC12 Sandbox:</span> Phân quyền & Phát hiện thay đổi dữ liệu</div>
+    <div><span class="sim-title">EventPass Management:</span> Quản trị & Chỉnh sửa Đầy đủ Thông tin Sự kiện (UC12)</div>
     <div class="sim-actions">
       <button type="button" class="sim-btn" onclick="simOpenDetail(1)">Mở Sự kiện SGU TechDay</button>
       <button type="button" class="sim-btn" onclick="simSwitchSubTab(2)">Mở Tab Trạm Soát Vé</button>
       <button type="button" class="sim-btn" onclick="simSwitchSubTab(4)">Mở Tab Cài Đặt Nâng Cao</button>
-      <button type="button" class="sim-btn" onclick="openLogoutModal()">Đăng xuất (UC03)</button>
+      <button type="button" class="sim-btn" onclick="openLogoutModal()">Đăng xuất</button>
     </div>
   </div>
 
   <div class="app-layout">
 
-    <!-- 1. SIDEBAR -->
+    <!-- 1. SIDEBAR CHUẨN ADMIN -->
     <aside class="app-sidebar">
       <div class="sidebar-top">
         <div class="sidebar-brand-header">
           <a href="#" class="brand-logo">
-            EventPass<span class="role-tag">ORGANIZER</span><span class="accent-dot"></span>
+            EventPass<span class="role-tag">ADMIN</span><span class="accent-dot"></span>
           </a>
         </div>
 
-        <div class="sidebar-org-profile">
-          <img src="https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png" class="sidebar-org-logo" alt="Logo đơn vị">
-          <div class="sidebar-org-meta">
-            <div class="sidebar-org-name">Đoàn Trường ĐH Sài Gòn</div>
-            <div class="sidebar-org-role">Tài khoản Ban Tổ Chức</div>
-          </div>
-        </div>
-
         <div class="sidebar-nav-section">
-          <div class="sidebar-section-title">Quản Trị Sự Kiện</div>
+          <div class="sidebar-section-title">Hệ Thống Quản Trị</div>
           <ul class="sidebar-nav-list">
             <li class="sidebar-nav-item">
-              <a href="#" title="UC10">
+              <a href="btc-dashboard-btc.html">
                 <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-                <span>Tổng quan số liệu</span>
+                <span>Tổng quan</span>
               </a>
             </li>
             <li class="sidebar-nav-item">
-              <a href="javascript:void(0)" class="active" onclick="backToEventsList()" title="UC11, UC12">
+              <a href="btc-sukiencuatoi-btc.html" class="active">
                 <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                <span>Sự kiện của tôi</span>
+                <span>Quản lý sự kiện</span>
               </a>
             </li>
             <li class="sidebar-nav-item">
-              <a href="#" title="UC13">
+              <a href="btc-dsthamgia-btc.html">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 <span>Danh sách tham dự</span>
               </a>
             </li>
             <li class="sidebar-nav-item">
-              <a href="#" title="Kiosk">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                <span>Kiosk điểm danh</span>
-                <span class="badge-live-tag">Webcam</span>
+              <a href="admin-lichsugiaodich.html">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                <span>Lịch sử tài chính</span>
               </a>
             </li>
           </ul>
         </div>
       </div>
 
-      <div class="sidebar-bottom">
-        <a href="#" class="sidebar-bottom-link" title="UC04">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span>Hồ sơ & Đổi mật khẩu</span>
-        </a>
-        <button type="button" class="btn-sidebar-logout" onclick="openLogoutModal()">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-          <span>Đăng xuất tài khoản</span>
-        </button>
+      <!-- DƯỚI CÙNG SIDEBAR: QUẢN TRỊ VIÊN, EMAIL, ĐỔI MK & ĐĂNG XUẤT -->
+      <div class="sidebar-footer-admin">
+        <div class="admin-meta-wrap">
+          <img src="https://media.istockphoto.com/id/2149922267/vector/user-icon.jpg?s=612x612&w=0&k=20&c=i6jYPfB1pWjK8pll6YRxAK9fgBmf65-w5wbKH9R1dyQ=" class="admin-avatar-tiny" alt="Admin">
+          <div class="admin-info-text">
+            <span class="admin-title-txt">Quản trị viên</span>
+            <span class="admin-email-txt">admin@eventpass.vn</span>
+          </div>
+        </div>
+
+        <div class="admin-btn-cluster">
+          <button type="button" class="btn-sidebar-icon" onclick="openChangePasswordModal()" title="Đổi mật khẩu quản trị">
+            <svg class="icon" style="width:15px;height:15px;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </button>
+          <button type="button" class="btn-sidebar-icon danger" onclick="openLogoutModal()" title="Đăng xuất tài khoản">
+            <svg class="icon" style="width:15px;height:15px;" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </button>
+        </div>
       </div>
     </aside>
 
@@ -456,13 +527,13 @@
             </div>
           </div>
 
-          <!-- TAB 1: THÔNG TIN CHUNG & HẠNG VÉ -->
+          <!-- TAB 1: THÔNG TIN CHUNG & HẠNG VÉ (ĐỒNG BỘ TOÀN DIỆN VỚI FORM TẠO MỚI) -->
           <div id="tabContent1" class="detail-tab-content active">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--hairline);">
               <div>
                 <h3 style="font-size:15px; font-weight:800; color:var(--color-navy);">Thông tin chi tiết sự kiện</h3>
-                <p style="font-size:12.5px; color:var(--text-muted);" id="approvalStatusNotice">
-                  Trạng thái: <strong style="color:var(--success);">Đã duyệt (Dữ liệu công khai)</strong>
+                <p style="font-size:12.5px; color:var(--text-muted);">
+                  Trạng thái: <strong style="color:var(--success);">Dữ liệu hoạt động trực tiếp trên sàn</strong>
                 </p>
               </div>
               <button type="button" id="btnToggleEdit" class="btn-action-secondary" onclick="toggleEventEditing()">
@@ -471,27 +542,83 @@
               </button>
             </div>
 
-            <form id="eventMainForm" onsubmit="handleRequestAdminApproval(event)">
+            <form id="eventMainForm" onsubmit="handleDirectSaveEvent(event)">
               <fieldset id="eventFormFieldSet" disabled style="border:none; padding:0; margin:0; display:flex; flex-direction:column; gap:16px;">
+                
+                <!-- 1. THÔNG TIN BAN TỔ CHỨC & PHÁP LÝ -->
+                <div class="form-section-divider">
+                  <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal);"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                  <span>1. Thông Tin Ban Tổ Chức & Pháp Lý Đơn Vị</span>
+                </div>
+
+                <div class="form-grid-layout">
+                  <div class="form-field">
+                    <label class="field-label">Tên cơ quan / Đơn vị tổ chức <span class="req">*</span></label>
+                    <input type="text" class="form-control" id="formOrgName" value="Đoàn Trường Đại học Sài Gòn" required>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">Hòm thư điện tử chính thức <span class="req">*</span></label>
+                    <input type="email" class="form-control" id="formOrgEmail" value="doantruong@sgu.edu.vn" required>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">Đường dây nóng hỗ trợ khách vé <span class="req">*</span></label>
+                    <input type="tel" class="form-control" id="formOrgHotline" value="028.3835.4409" required>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">Website / Cổng thông tin sự kiện</label>
+                    <input type="url" class="form-control" id="formOrgWebsite" value="https://techday.sgu.edu.vn">
+                  </div>
+
+                  <div class="form-field full">
+                    <label class="field-label">Mã định danh / Quyết định thành lập</label>
+                    <input type="text" class="form-control" id="formOrgLegalId" value="QĐ-ĐHSG/2026-CNTT">
+                  </div>
+
+                  <div class="form-field full">
+                    <label class="field-label">Bộ Nhận Diện Chính Thức (Logo / Con dấu đơn vị)</label>
+                    <div style="display:flex; align-items:center; gap:16px;">
+                      <div style="width:68px; height:68px; border-radius:10px; border:1.5px solid var(--card-border); background:#fff; display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+                        <img id="formOrgLogoPreview" src="https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png" style="width:100%; height:100%; object-fit:contain; padding:4px;" alt="Logo Preview">
+                      </div>
+                      <div style="flex:1;">
+                        <input type="file" id="formOrgLogoFile" accept="image/png,image/jpeg,image/svg+xml" style="display:none;" onchange="handleFormOrgLogoUpload(this.files)">
+                        <button type="button" class="btn-action-secondary" style="padding:6px 12px; font-size:12px;" onclick="document.getElementById('formOrgLogoFile').click()">
+                          <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                          <span>Thay đổi logo nhận diện</span>
+                        </button>
+                        <span style="font-size:11.5px; color:var(--text-muted); display:block; margin-top:4px;">Logo hiển thị trên thẻ vé điện tử và đầu email gửi vé.</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. THÔNG TIN CHUNG SỰ KIỆN & ẢNH -->
+                <div class="form-section-divider">
+                  <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>2. Thông Tin Chung Sự Kiện & Hình Ảnh</span>
+                </div>
+
                 <div class="form-grid-layout">
                   <div class="form-field full">
                     <label class="field-label">Tên sự kiện <span class="req">*</span></label>
-                    <input type="text" class="form-control check-dirty" id="formEventName" value="Ngày Hội Công Nghệ SGU TechDay 2026" required oninput="evaluateFormDirtyState()">
+                    <input type="text" class="form-control" id="formEventName" value="Ngày Hội Công Nghệ SGU TechDay 2026" required>
                   </div>
 
                   <div class="form-field full">
                     <label class="field-label">Mô tả sự kiện & Lịch trình</label>
-                    <textarea class="form-control check-dirty" id="formEventDesc" rows="3" oninput="evaluateFormDirtyState()">Ngày hội triển lãm công nghệ, tuyển dụng kỹ sư và trình diễn các giải pháp trí tuệ nhân tạo, thị giác máy tính hàng đầu năm 2026.</textarea>
+                    <textarea class="form-control" id="formEventDesc" rows="3">Ngày hội triển lãm công nghệ, tuyển dụng kỹ sư và trình diễn các giải pháp trí tuệ nhân tạo, thị giác máy tính hàng đầu năm 2026.</textarea>
                   </div>
 
-                  <!-- KÉO THẢ ẢNH & CLICK CHỌN NHIỀU ẢNH (CHỈ HIỆN KHI BẤM CHỈNH SỬA THÔNG TIN) -->
+                  <!-- KÉO THẢ ẢNH & CLICK CHỌN NHIỀU ẢNH -->
                   <div class="form-field full">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                       <label class="field-label">Hình ảnh minh họa sự kiện (Tối đa 20 ảnh — Bấm vào ảnh để phóng to)</label>
                       <span style="font-size:12px; color:var(--color-teal); font-weight:700;" id="photoCountBadge">Đã chọn: 3 / 20</span>
                     </div>
                     
-                    <!-- VÙNG KÉO THẢ: MẶC ĐỊNH DISPLAY: NONE -->
                     <div class="upload-dropzone" id="uploadDropzoneBox">
                       <svg class="icon" viewBox="0 0 24 24" style="width:28px; height:28px; color:var(--color-teal); margin-bottom:6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                       <div style="font-size:13px; font-weight:700; color:var(--color-navy);">Kéo thả ảnh vào đây hoặc bấm để chọn tải lên</div>
@@ -508,53 +635,84 @@
 
                   <div class="form-field">
                     <label class="field-label">Nhân vật nổi bật</label>
-                    <input type="text" class="form-control check-dirty" id="formEventSpeakers" value="TS. Nguyễn Văn A (Trưởng khoa CNTT), Mr. John Doe (Google Developer)" oninput="evaluateFormDirtyState()">
+                    <input type="text" class="form-control" id="formEventSpeakers" value="TS. Nguyễn Văn A (Trưởng khoa CNTT), Mr. John Doe (Google Developer)">
                   </div>
 
                   <div class="form-field">
                     <label class="field-label">Địa điểm tổ chức <span class="req">*</span></label>
-                    <input type="text" class="form-control check-dirty" id="formEventLocation" value="Hội trường A - Cơ sở chính, 280 An Dương Vương, Q5" required oninput="evaluateFormDirtyState()">
-                  </div>
-
-                  <div class="form-field">
-                    <label class="field-label">Thời gian bắt đầu check-in</label>
-                    <input type="datetime-local" class="form-control check-dirty" id="formEventStart" value="2026-09-20T08:00" oninput="evaluateFormDirtyState()">
-                  </div>
-
-                  <div class="form-field">
-                    <label class="field-label">Thời gian đóng cửa vào cổng</label>
-                    <input type="datetime-local" class="form-control check-dirty" id="formEventEnd" value="2026-09-20T17:30" oninput="evaluateFormDirtyState()">
-                  </div>
-
-                  <!-- QUẢN LÝ HẠNG VÉ -->
-                  <div class="form-field full" style="margin-top: 10px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                      <div>
-                        <label class="field-label" style="margin:0;">Danh sách hạng vé phát hành & Hạn mức slot</label>
-                        <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Bổ sung hạng vé, thêm slot linh hoạt hoặc bật/tắt ngừng bán an toàn.</p>
-                      </div>
-                      <button type="button" id="btnAddTierTopBtn" class="btn-action-primary" style="padding:6px 12px; font-size:12px; display:none;" onclick="openAddTierModal()">+ Thêm hạng vé mới</button>
-                    </div>
-
-                    <div id="ticketTierContainer"></div>
+                    <input type="text" class="form-control" id="formEventLocation" value="Hội trường A - Cơ sở chính, 280 An Dương Vương, Q5" required>
                   </div>
                 </div>
 
-                <div id="submitApprovalContainer" style="display:none; margin-top: 14px; padding-top:14px; border-top:1px solid var(--hairline);">
+                <!-- 3. CHU TRÌNH 5 MỐC THỜI GIAN TUYẾN TÍNH -->
+                <div class="form-section-divider">
+                  <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>3. Chu Trình Thời Gian Sự Kiện (5 Mốc Tuyến Tính)</span>
+                </div>
+
+                <div class="form-grid-layout">
+                  <div class="form-field">
+                    <label class="field-label">1. Ngày công khai xuất hiện trên Web <span class="req">*</span></label>
+                    <input type="datetime-local" class="form-control" id="formEventPublish" value="2026-09-01T08:00" required>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">2. Ngày chính thức mở cổng bán vé <span class="req">*</span></label>
+                    <input type="datetime-local" class="form-control" id="formEventSaleStart" value="2026-09-05T08:00" required>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">3. Ngày đóng cổng bán vé <span class="req">*</span></label>
+                    <input type="datetime-local" class="form-control" id="formEventSaleEnd" value="2026-09-20T05:00" required>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">4. Thời gian bắt đầu quét Kiosk Check-in <span class="req">*</span></label>
+                    <input type="datetime-local" class="form-control" id="formEventCheckinStart" value="2026-09-20T07:00" required>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">5A. Thời gian bắt đầu sự kiện chính thức <span class="req">*</span></label>
+                    <input type="datetime-local" class="form-control" id="formEventStart" value="2026-09-20T08:00" required>
+                  </div>
+
+                  <div class="form-field">
+                    <label class="field-label">5B. Thời gian bế mạc sự kiện <span class="req">*</span></label>
+                    <input type="datetime-local" class="form-control" id="formEventEnd" value="2026-09-20T17:30" required>
+                  </div>
+                </div>
+
+                <!-- 4. QUẢN LÝ PHÂN HẠNG VÉ -->
+                <div class="form-section-divider">
+                  <svg class="icon" viewBox="0 0 24 24" style="color:var(--color-teal);"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+                  <span>4. Danh Sách Phân Hạng Vé & Slot Phát Hành</span>
+                </div>
+
+                <div class="form-field full">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <p style="font-size:12px; color:var(--text-muted); margin:0;">Bổ sung hạng vé, thêm slot bán ngay hoặc bật/tắt ngừng bán an toàn.</p>
+                    <button type="button" id="btnAddTierTopBtn" class="btn-action-primary" style="padding:6px 12px; font-size:12px; display:none;" onclick="openAddTierModal()">+ Thêm hạng vé mới</button>
+                  </div>
+
+                  <div id="ticketTierContainer"></div>
+                </div>
+
+                <!-- NÚT LƯU TRỰC TIẾP -->
+                <div id="submitDirectContainer" style="display:none; margin-top: 14px; padding-top:14px; border-top:1px solid var(--hairline);">
                   <div style="display:flex; align-items:center; gap:12px;">
-                    <!-- NÚT GỬI REQUEST: TỰ ĐỘNG CHUYỂN SANG ĐỎ KHI CÓ THAY ĐỔI -->
-                    <button type="submit" id="btnSubmitApproval" class="btn-action-primary">
-                      <svg class="icon" viewBox="0 0 24 24" style="width:15px;height:15px;"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                      <span>Hoàn thành & Gửi request đến Admin chờ duyệt</span>
+                    <button type="submit" id="btnSubmitDirect" class="btn-action-primary">
+                      <svg class="icon" viewBox="0 0 24 24" style="width:15px;height:15px;"><polyline points="20 6 9 17 4 12"/></svg>
+                      <span>Lưu Thay Đổi Trực Tiếp</span>
                     </button>
-                    <span style="font-size:12.5px; color:var(--text-muted);" id="dirtyStateHint">Chưa có thay đổi mới nào.</span>
+                    <span style="font-size:12.5px; color:var(--text-muted);">Các thay đổi sẽ được công khai ngay trên nền tảng.</span>
                   </div>
                 </div>
+
               </fieldset>
             </form>
           </div>
 
-          <!-- TAB 2: CẤU HÌNH TRẠM SOÁT VÉ -->
+          <!-- TAB 2: CẤU HÌNH TRẠM SOÁT VÉ (CẤP TOKEN TRỰC TIẾP) -->
           <div id="tabContent2" class="detail-tab-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
               <div>
@@ -605,10 +763,10 @@
               <div style="background: linear-gradient(145deg, var(--color-navy) 0%, #034b6e 100%); color: #fff; border-radius: 14px; padding: 24px; box-shadow: 0 12px 30px rgba(2, 56, 82, 0.2);">
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.15); padding-bottom:14px; margin-bottom:16px;">
                   <div style="display:flex; align-items:center; gap:10px;">
-                    <img src="https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png" style="width:38px;height:38px;border-radius:6px;background:#fff;padding:2px;" alt="Logo">
+                    <img id="detailPassLogoImg" src="https://upload.wikimedia.org/wikipedia/vi/thumb/2/2e/Dai_hoc_Sai_Gon_logo.png/220px-Dai_hoc_Sai_Gon_logo.png" style="width:38px;height:38px;border-radius:6px;background:#fff;padding:2px;object-fit:contain;" alt="Logo">
                     <div>
                       <div style="font-size:10px; text-transform:uppercase; color:var(--color-mint); font-weight:800;">Đơn vị tổ chức</div>
-                      <div style="font-size:13px; font-weight:700;">Đoàn Trường ĐH Sài Gòn</div>
+                      <div style="font-size:13px; font-weight:700;" id="detailPassOrgName">Đoàn Trường ĐH Sài Gòn</div>
                     </div>
                   </div>
                   <span style="font-size:11px; background:rgba(255,255,255,0.2); padding:3px 8px; border-radius:10px; font-weight:800;">VIP PASS</span>
@@ -631,7 +789,7 @@
             </div>
           </div>
 
-          <!-- TAB 4: CÀI ĐẶT NÂNG CAO -->
+          <!-- TAB 4: CÀI ĐẶT NÂNG CAO (ĐIỀU PHỐI TRỰC TIẾP) -->
           <div id="tabContent4" class="detail-tab-content">
             <h3 style="font-size:15px; font-weight:800; color:var(--color-navy); margin-bottom:4px;">Điều Phối Cổng & Giới Hạn Sự Kiện</h3>
             <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:16px;">Các thao tác can thiệp trực tiếp vào chu trình phát hành vé và mở cổng soát vé</p>
@@ -651,12 +809,12 @@
               <div class="danger-action-row">
                 <div>
                   <div style="display:flex; align-items:center;">
-                    <h4 style="font-size:13.5px; font-weight:800; color:var(--danger);">Hủy sự kiện</h4>
+                    <h4 style="font-size:13.5px; font-weight:800; color:var(--danger);">Hủy sự kiện khẩn cấp</h4>
                     <span class="state-badge active" id="badgeCancelEvent">Sự kiện hoạt động</span>
                   </div>
-                  <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Yêu cầu Admin hủy sự kiện, vô hiệu hóa mã vé và gửi thông báo khẩn cấp đến khách tham dự.</p>
+                  <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Vô hiệu hóa toàn bộ mã vé và gửi email thông báo hủy ngay lập tức đến khách tham dự.</p>
                 </div>
-                <button type="button" id="btnActionCancelEvent" class="btn-action-danger filled" onclick="openCancelEventModal()">Yêu cầu hủy sự kiện này</button>
+                <button type="button" id="btnActionCancelEvent" class="btn-action-danger filled" onclick="openCancelEventModal()">Xác nhận hủy sự kiện này</button>
               </div>
             </div>
           </div>
@@ -674,18 +832,22 @@
     <img id="lightboxImg" class="lightbox-content" src="" alt="Phóng to ảnh">
   </div>
 
-  <!-- MODAL: THÊM HẠNG VÉ MỚI (GỬI ADMIN DUYỆT) -->
+  <!-- MODAL: THÊM HẠNG VÉ MỚI (MỞ BÁN TRỰC TIẾP) -->
   <div class="modal-backdrop" id="addTierModal">
     <div class="modal-box">
-      <h3 class="modal-title">+ Thêm Hạng Vé Mới (Chờ Admin Duyệt)</h3>
-      <p class="modal-body">Khai báo phân hạng vé mới. Hạng vé sẽ ở trạng thái <strong>Chờ duyệt</strong> và chỉ mở bán sau khi được Admin phê duyệt.</p>
+      <h3 class="modal-title">+ Thêm Hạng Vé Mới</h3>
+      <p class="modal-body">Khai báo phân hạng vé mới. Hạng vé sẽ được kích hoạt mở bán trực tiếp lên sàn.</p>
       <form onsubmit="handleAddNewTier(event)">
         <div class="form-field" style="margin-bottom: 12px;">
           <label class="field-label">Tên hạng vé <span class="req">*</span></label>
           <input type="text" id="newTierName" class="form-control" placeholder="Ví dụ: Vé Sinh Viên Khóa Mới" required>
         </div>
         <div class="form-field" style="margin-bottom: 12px;">
-          <label class="field-label">Số lượng slot đề xuất <span class="req">*</span></label>
+          <label class="field-label">Giá vé (VNĐ) <span class="req">*</span></label>
+          <input type="number" id="newTierPrice" class="form-control" value="0" min="0" step="10000" placeholder="0 = Miễn phí" required>
+        </div>
+        <div class="form-field" style="margin-bottom: 12px;">
+          <label class="field-label">Số lượng slot phát hành <span class="req">*</span></label>
           <input type="number" id="newTierCapacity" class="form-control" value="50" min="1" required>
         </div>
         <div class="form-field" style="margin-bottom: 20px;">
@@ -694,17 +856,17 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-modal-cancel" onclick="closeModal('addTierModal')">Hủy</button>
-          <button type="submit" class="btn-modal-confirm">Gửi yêu cầu tạo vé lên Admin</button>
+          <button type="submit" class="btn-modal-confirm">Kích hoạt mở bán ngay</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: THÊM SLOT CHO HẠNG VÉ (GỬI ADMIN DUYỆT) -->
+  <!-- MODAL: THÊM SLOT CHO HẠNG VÉ (CỘNG DỒN NGAY) -->
   <div class="modal-backdrop" id="addSlotModal">
     <div class="modal-box">
-      <h3 class="modal-title">+ Đề Xuất Tăng Slot Vé Phát Hành</h3>
-      <p class="modal-body" id="addSlotModalDesc">Đề xuất gia tăng thêm số lượng vé phát hành. Slot mới sẽ ở trạng thái <strong>Chờ duyệt</strong> và chưa cộng vào Tổng slot chính thức.</p>
+      <h3 class="modal-title">+ Tăng Thêm Slot Vé Phát Hành</h3>
+      <p class="modal-body" id="addSlotModalDesc">Bổ sung thêm số lượng vé phát hành. Slot mới sẽ được cộng dồn trực tiếp vào tổng slot mở bán của sự kiện.</p>
       <form onsubmit="handleSaveAddSlot(event)">
         <div class="form-field" style="margin-bottom: 20px;">
           <label class="field-label">Số lượng slot muốn bổ sung thêm <span class="req">*</span></label>
@@ -712,7 +874,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-modal-cancel" onclick="closeModal('addSlotModal')">Hủy</button>
-          <button type="submit" class="btn-modal-confirm">Gửi báo cáo tăng slot lên Admin</button>
+          <button type="submit" class="btn-modal-confirm">Cộng slot trực tiếp</button>
         </div>
       </form>
     </div>
@@ -730,27 +892,27 @@
     </div>
   </div>
 
-  <!-- MODAL: HỦY SỰ KIỆN GỬI ADMIN DUYỆT (TAB 4) -->
+  <!-- MODAL: HỦY SỰ KIỆN TRỰC TIẾP -->
   <div class="modal-backdrop" id="cancelEventModal">
     <div class="modal-box" style="max-width: 480px;">
-      <h3 class="modal-title" style="color:var(--danger);">Yêu Cầu Hủy Sự Kiện Lên Admin</h3>
+      <h3 class="modal-title" style="color:var(--danger);">Xác Nhận Hủy Sự Kiện Khẩn Cấp</h3>
       <p class="modal-body">
-        Hành động này mang tính chất nghiêm trọng. Khi được Admin duyệt, toàn bộ vé sẽ bị vô hiệu hóa và email thông báo hủy sẽ được phát đi. <strong>Thao tác không thể khôi phục!</strong>
+        Hành động này sẽ ngay lập tức vô hiệu hóa toàn bộ vé đã cấp và gửi email thông báo hủy đến người tham dự. <strong>Thao tác không thể khôi phục!</strong>
       </p>
-      <form onsubmit="handleRequestCancelEvent(event)">
+      <form onsubmit="handleExecuteCancelEvent(event)">
         <div class="form-field" style="margin-bottom: 14px;">
           <label class="field-label">Lý do hủy sự kiện <span class="req">*</span></label>
-          <textarea id="cancelReasonInput" class="form-control" rows="3" placeholder="Nhập chi tiết lý do hủy sự kiện..." required minlength="10"></textarea>
+          <textarea id="cancelReasonInput" class="form-control" rows="3" placeholder="Nhập lý do gửi đến người tham dự..." required minlength="10"></textarea>
         </div>
         <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom: 20px;">
           <input type="checkbox" id="confirmIrreversibleCheck" style="margin-top:3px;" required>
           <label for="confirmIrreversibleCheck" style="font-size:12.5px; color:var(--color-navy); font-weight:600; cursor:pointer;">
-            Tôi xác nhận lý do trên là chính xác và hiểu rằng sự kiện không thể khôi phục sau khi được Admin duyệt hủy.
+            Tôi xác nhận hủy sự kiện này và hiểu rằng dữ liệu vé sẽ bị vô hiệu hóa lập tức.
           </label>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-modal-cancel" onclick="closeModal('cancelEventModal')">Hủy bỏ</button>
-          <button type="submit" class="btn-modal-confirm danger">Gửi yêu cầu hủy lên Admin</button>
+          <button type="submit" class="btn-modal-confirm danger">Xác nhận hủy sự kiện</button>
         </div>
       </form>
     </div>
@@ -760,7 +922,7 @@
   <div class="modal-backdrop" id="passwordModal">
     <div class="modal-box">
       <h3 class="modal-title">Xác thực Mật khẩu Quản trị</h3>
-      <p class="modal-body">Mã Secret Token là khóa định danh phần cứng bảo mật. Vui lòng nhập mật khẩu tài khoản Ban tổ chức để hiển thị chuỗi kết nối Kiosk.</p>
+      <p class="modal-body">Mã Secret Token là khóa định danh phần cứng bảo mật. Vui lòng nhập mật khẩu tài khoản quản trị để hiển thị chuỗi kết nối Kiosk.</p>
       <div class="form-field" style="margin-bottom: 20px;">
         <label class="field-label">Mật khẩu tài khoản <span class="req">*</span></label>
         <input type="password" id="adminPasswordInput" class="form-control" placeholder="Nhập mật khẩu quản trị...">
@@ -787,7 +949,7 @@
         <label class="field-label">Thao tác phần cứng</label>
         <button type="button" class="btn-action-secondary" style="width:100%; justify-content:center; color:var(--danger); border-color:#fecaca;" onclick="executeRefreshToken()">
           <svg class="icon" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-          <span>Refresh Token (Cấp lại Secret Token mới)</span>
+          <span>Refresh Token (Cấp lại Secret Token mới ngay)</span>
         </button>
       </div>
 
@@ -802,7 +964,7 @@
   <div class="modal-backdrop" id="addStationModal">
     <div class="modal-box">
       <h3 class="modal-title">Thêm Trạm Soát Vé Mới</h3>
-      <p class="modal-body">Khai báo làn kiểm soát mới tại cổng vào. Hệ thống sẽ tự động cấp một Secret Token bảo mật riêng.</p>
+      <p class="modal-body">Khai báo làn kiểm soát mới tại cổng vào. Hệ thống sẽ tự động cấp một Secret Token bảo mật hoạt động ngay.</p>
       <form onsubmit="handleAddNewStation(event)">
         <div class="form-field" style="margin-bottom: 20px;">
           <label class="field-label">Tên trạm / Làn kiểm soát <span class="req">*</span></label>
@@ -828,14 +990,44 @@
     </div>
   </div>
 
-  <!-- MODAL ĐĂNG XUẤT -->
-  <div class="modal-backdrop" id="logoutModal">
+  <!-- MODAL: ĐỔI MẬT KHẨU QUẢN TRỊ -->
+  <div class="modal-backdrop" id="changePasswordModal">
     <div class="modal-box">
-      <h3 class="modal-title">Xác nhận Đăng xuất Quản trị</h3>
-      <p class="modal-body">Bạn có chắc chắn muốn kết thúc phiên làm việc của Ban tổ chức? Mọi kết nối điều hành sẽ được đóng lại an toàn.</p>
-      <div class="modal-footer">
+      <h3 class="modal-title">Đổi Mật Khẩu Quản Trị</h3>
+      <p class="modal-body">Cập nhật mật khẩu mới cho tài khoản Quản trị viên để tăng cường tính bảo mật.</p>
+
+      <form onsubmit="handleSaveNewPassword(event)">
+        <div class="form-group-item">
+          <label>Mật khẩu hiện tại <span style="color:var(--danger);">*</span></label>
+          <input type="password" id="currentPasswordInput" class="form-input-control" placeholder="Nhập mật khẩu hiện tại..." required>
+        </div>
+
+        <div class="form-group-item">
+          <label>Mật khẩu mới <span style="color:var(--danger);">*</span></label>
+          <input type="password" id="newPasswordInput" class="form-input-control" placeholder="Tối thiểu 6 ký tự..." minlength="6" required>
+        </div>
+
+        <div class="form-group-item">
+          <label>Xác nhận mật khẩu mới <span style="color:var(--danger);">*</span></label>
+          <input type="password" id="confirmNewPasswordInput" class="form-input-control" placeholder="Nhập lại mật khẩu mới..." minlength="6" required>
+        </div>
+
+        <div class="modal-footer" style="margin-top: 18px;">
+          <button type="button" class="btn-modal-cancel" onclick="closeModal('changePasswordModal')">Hủy bỏ</button>
+          <button type="submit" class="btn-modal-confirm">Cập Nhật Mật Khẩu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ĐĂNG XUẤT -->
+  <div class="modal-backdrop" id="logoutModal">
+    <div class="modal-box" style="text-align: center;">
+      <h3 class="modal-title">Xác Nhận Đăng Xuất</h3>
+      <p class="modal-body">Bạn có chắc chắn muốn kết thúc phiên làm việc của Quản trị viên?</p>
+      <div class="modal-footer" style="justify-content: center;">
         <button type="button" class="btn-modal-cancel" onclick="closeModal('logoutModal')">Hủy</button>
-        <button type="button" class="btn-modal-confirm danger" onclick="executeLogout()">Đăng xuất ngay</button>
+        <button type="button" class="btn-modal-confirm danger" onclick="executeLogout()">Đăng Xuất Ngay</button>
       </div>
     </div>
   </div>
@@ -899,8 +1091,8 @@
     ];
 
     let ticketTiers = [
-      { id: 1, name: "Vé Tiêu chuẩn (Standard Pass)", sold: 580, capacity: 600, pendingSlots: 0, desc: "Quyền vào cổng tham quan chung", disabled: false, isPendingApproval: false },
-      { id: 2, name: "Vé Khách mời / VIP (VIP Pass)", sold: 185, capacity: 200, pendingSlots: 0, desc: "Ngồi hàng đầu & Tiệc trà networking", disabled: false, isPendingApproval: false }
+      { id: 1, name: "Vé Tiêu chuẩn (Standard Pass)", price: 0, sold: 580, capacity: 600, desc: "Quyền vào cổng tham quan chung", disabled: false },
+      { id: 2, name: "Vé Khách mời / VIP (VIP Pass)", price: 0, sold: 185, capacity: 200, desc: "Ngồi hàng đầu & Tiệc trà networking", disabled: false }
     ];
 
     let kioskStations = [
@@ -920,10 +1112,6 @@
     let pendingToggleType = '';
     let targetTierActionId = null;
 
-    // Lưu trữ snapshot dữ liệu gốc để so sánh phát hiện chỉnh sửa (Dirty State)
-    let initialFormSnapshot = {};
-    let hasDirtyChanges = false;
-
     const toastNotification = document.getElementById('toastNotification');
     const toastMessage = document.getElementById('toastMessage');
     let toastTimeout = null;
@@ -941,67 +1129,13 @@
     function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
     /* ========================================================
-       CƠ CHẾ PHÁT HIỆN THAY ĐỔI DỮ LIỆU (DIRTY DETECTION)
-       ======================================================== */
-    function takeFormSnapshot() {
-      initialFormSnapshot = {
-        name: document.getElementById('formEventName').value.trim(),
-        desc: document.getElementById('formEventDesc').value.trim(),
-        speakers: document.getElementById('formEventSpeakers').value.trim(),
-        location: document.getElementById('formEventLocation').value.trim(),
-        start: document.getElementById('formEventStart').value,
-        end: document.getElementById('formEventEnd').value,
-        tierCount: ticketTiers.length,
-        tiersState: JSON.stringify(ticketTiers.map(t => ({ id: t.id, cap: t.capacity, pending: t.pendingSlots, name: t.name })))
-      };
-    }
-
-    function evaluateFormDirtyState() {
-      if (!isEditingEvent) return;
-
-      const current = {
-        name: document.getElementById('formEventName').value.trim(),
-        desc: document.getElementById('formEventDesc').value.trim(),
-        speakers: document.getElementById('formEventSpeakers').value.trim(),
-        location: document.getElementById('formEventLocation').value.trim(),
-        start: document.getElementById('formEventStart').value,
-        end: document.getElementById('formEventEnd').value,
-        tierCount: ticketTiers.length,
-        tiersState: JSON.stringify(ticketTiers.map(t => ({ id: t.id, cap: t.capacity, pending: t.pendingSlots, name: t.name })))
-      };
-
-      const isChanged = (
-        current.name !== initialFormSnapshot.name ||
-        current.desc !== initialFormSnapshot.desc ||
-        current.speakers !== initialFormSnapshot.speakers ||
-        current.location !== initialFormSnapshot.location ||
-        current.start !== initialFormSnapshot.start ||
-        current.end !== initialFormSnapshot.end ||
-        current.tierCount !== initialFormSnapshot.tierCount ||
-        current.tiersState !== initialFormSnapshot.tiersState
-      );
-
-      hasDirtyChanges = isChanged;
-      const btn = document.getElementById('btnSubmitApproval');
-      const hint = document.getElementById('dirtyStateHint');
-
-      if (isChanged) {
-        btn.classList.add('dirty');
-        hint.innerHTML = '<strong style="color:var(--danger);">* Đã phát hiện thay đổi mới chưa gửi duyệt!</strong>';
-      } else {
-        btn.classList.remove('dirty');
-        hint.innerHTML = 'Chưa có thay đổi mới nào.';
-      }
-    }
-
-    /* ========================================================
-       TAB 1 LOGIC: PHÂN QUYỀN, KÉO THẢ ẢNH, HẠNG VÉ
+       TAB 1 LOGIC: CHỈNH SỬA & LƯU THAY ĐỔI TRỰC TIẾP
        ======================================================== */
     function toggleEventEditing() {
       isEditingEvent = !isEditingEvent;
       const fieldset = document.getElementById('eventFormFieldSet');
       const btnText = document.getElementById('btnEditText');
-      const submitContainer = document.getElementById('submitApprovalContainer');
+      const submitContainer = document.getElementById('submitDirectContainer');
       const addTierTopBtn = document.getElementById('btnAddTierTopBtn');
       const uploadDropzoneBox = document.getElementById('uploadDropzoneBox');
 
@@ -1010,28 +1144,39 @@
         btnText.textContent = "Hủy chỉnh sửa";
         submitContainer.style.display = "block";
         addTierTopBtn.style.display = "inline-flex";
-        uploadDropzoneBox.style.display = "block"; // CHỈ HIỆN KHI BẤM CHỈNH SỬA
-        takeFormSnapshot();
-        evaluateFormDirtyState();
-        showToast('Đã mở khóa các trường thông tin & khu vực tải ảnh.');
+        uploadDropzoneBox.style.display = "block";
+        showToast('Đã mở khóa các trường để chỉnh sửa trực tiếp.');
       } else {
         fieldset.setAttribute('disabled', 'true');
         btnText.textContent = "Chỉnh sửa thông tin";
         submitContainer.style.display = "none";
         addTierTopBtn.style.display = "none";
-        uploadDropzoneBox.style.display = "none"; // ẨN ĐI KHI Ở CHẾ ĐỘ XEM
-        hasDirtyChanges = false;
-        document.getElementById('btnSubmitApproval').classList.remove('dirty');
+        uploadDropzoneBox.style.display = "none";
       }
       renderTicketTiers();
     }
 
-    function handleRequestAdminApproval(e) {
+    function handleFormOrgLogoUpload(files) {
+      if (!files || files.length === 0) return;
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('formOrgLogoPreview').src = e.target.result;
+        document.getElementById('detailPassLogoImg').src = e.target.result;
+        showToast("Đã cập nhật logo nhận diện ban tổ chức!");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleDirectSaveEvent(e) {
       e.preventDefault();
+      
+      // Đồng bộ tên đơn vị sang thẻ vé
+      const orgName = document.getElementById('formOrgName').value.trim();
+      document.getElementById('detailPassOrgName').textContent = orgName || "Đơn vị tổ chức";
+
       toggleEventEditing();
-      const notice = document.getElementById('approvalStatusNotice');
-      notice.innerHTML = 'Trạng thái: <strong style="color:var(--color-orange);">Đang chờ Admin phê duyệt thay đổi (Request Pending)</strong>';
-      showToast('Đã gửi yêu cầu chỉnh sửa đến Admin! Thay đổi sẽ hiển thị sau khi được phê duyệt.');
+      showToast('Đã lưu và cập nhật thay đổi thành công lên nền tảng!');
     }
 
     function openLightbox(src) {
@@ -1092,7 +1237,6 @@
         reader.readAsDataURL(file);
       }
       document.getElementById('photoCountBadge').textContent = `Đã chọn: ${files.length} / 20`;
-      evaluateFormDirtyState();
       showToast(`Đã tải lên ${files.length} ảnh minh họa.`);
     }
 
@@ -1106,20 +1250,11 @@
         const div = document.createElement('div');
         div.className = 'ticket-tier-row';
 
-        let badgeHtml = '';
-        if (tier.isPendingApproval) {
-          badgeHtml = '<span class="tier-badge-status pending">Chờ Admin duyệt</span>';
-        } else if (tier.disabled) {
-          badgeHtml = '<span class="tier-badge-status locked">Đã ngừng phát hành</span>';
-        } else {
-          badgeHtml = '<span class="tier-badge-status active">Đang mở bán</span>';
-        }
+        let badgeHtml = tier.disabled 
+          ? '<span class="tier-badge-status locked">Đã ngừng phát hành</span>'
+          : '<span class="tier-badge-status active">Đang mở bán</span>';
 
-        // Tổng slot: Chưa cộng slot chờ duyệt vào số chính thức
-        let slotDisplayHtml = `Tổng slot: <strong>${tier.capacity}</strong>`;
-        if (tier.pendingSlots > 0) {
-          slotDisplayHtml += ` <span class="pending-slot-tag">(+${tier.pendingSlots} slot chờ duyệt)</span>`;
-        }
+        const priceText = tier.price === 0 ? 'Miễn phí (0đ)' : `${tier.price.toLocaleString('vi-VN')} đ`;
 
         div.innerHTML = `
           <div class="ticket-tier-info">
@@ -1127,27 +1262,23 @@
               <span>${tier.name}</span>
               ${badgeHtml}
             </h4>
-            <p>Đã đăng ký: <strong>${tier.sold}</strong> / ${slotDisplayHtml} • Còn ${available} chỗ • ${tier.desc}</p>
+            <p>Giá: <strong>${priceText}</strong> • Đã đăng ký: <strong>${tier.sold}</strong> / Tổng slot: <strong>${tier.capacity}</strong> • Còn ${available} chỗ • ${tier.desc}</p>
           </div>
-          <!-- CÁC NÚT THAO TÁC NÀY CHỈ HIỆN KHI Ở CHẾ ĐỘ CHỈNH SỬA THÔNG TIN -->
           <div style="display: ${isEditingEvent ? 'flex' : 'none'}; align-items:center; gap:8px;">
-            ${!tier.isPendingApproval ? `
-              <button type="button" class="btn-action-secondary" style="padding:5px 12px; font-size:12px;" onclick="openAddSlotModal(${tier.id}, '${tier.name}')">+ Thêm slot</button>
-              
-              <!-- BAN TỔ CHỨC CÓ TOÀN QUYỀN BẬT / TẮT KHÓA NGỪNG BÁN -->
-              <button type="button" class="${tier.disabled ? 'btn-action-primary' : 'btn-action-danger'}" style="padding:5px 12px; font-size:12px;" onclick="openToggleTierLockModal(${tier.id}, '${tier.name}',${tier.disabled})">
-                ${tier.disabled ? 'Mở bán lại' : 'Khóa / Ngừng bán'}
-              </button>
-            ` : `<span style="font-size:12px; color:var(--text-muted); font-style:italic;">Đang chờ phê duyệt</span>`}
+            <button type="button" class="btn-action-secondary" style="padding:5px 12px; font-size:12px;" onclick="openAddSlotModal(${tier.id}, '${tier.name}')">+ Thêm slot</button>
+            <button type="button" class="${tier.disabled ? 'btn-action-primary' : 'btn-action-danger'}" style="padding:5px 12px; font-size:12px;" onclick="openToggleTierLockModal(${tier.id}, '${tier.name}', ${tier.disabled})">
+              ${tier.disabled ? 'Mở bán lại' : 'Khóa / Ngừng bán'}
+            </button>
           </div>
         `;
         container.appendChild(div);
       });
     }
 
-    // 1. Thêm hạng vé mới -> Gửi request chờ Admin duyệt & chuyển nút sang đỏ
+    // 1. Thêm hạng vé mới -> Kích hoạt bán trực tiếp
     function openAddTierModal() {
       document.getElementById('newTierName').value = '';
+      document.getElementById('newTierPrice').value = '0';
       document.getElementById('newTierCapacity').value = '50';
       document.getElementById('newTierDesc').value = '';
       openModal('addTierModal');
@@ -1155,6 +1286,7 @@
     function handleAddNewTier(e) {
       e.preventDefault();
       const name = document.getElementById('newTierName').value.trim();
+      const price = parseInt(document.getElementById('newTierPrice').value, 10) || 0;
       const capacity = parseInt(document.getElementById('newTierCapacity').value, 10);
       const desc = document.getElementById('newTierDesc').value.trim() || 'Quyền vào cổng sự kiện';
 
@@ -1162,24 +1294,22 @@
       ticketTiers.push({ 
         id: newId, 
         name, 
+        price,
         capacity, 
         sold: 0, 
-        pendingSlots: 0, 
         desc, 
-        disabled: false, 
-        isPendingApproval: true 
+        disabled: false 
       });
 
       closeModal('addTierModal');
       renderTicketTiers();
-      evaluateFormDirtyState();
-      showToast(`Đã thêm đề xuất hạng vé [${name}]. Vui lòng nhấn gửi request để Admin duyệt!`);
+      showToast(`Đã thêm và mở bán hạng vé [${name}] thành công!`);
     }
 
-    // 2. Thêm slot -> Gửi request chờ Admin duyệt & chuyển nút sang đỏ
+    // 2. Thêm slot -> Cộng trực tiếp
     function openAddSlotModal(tierId, tierName) {
       targetTierActionId = tierId;
-      document.getElementById('addSlotModalDesc').innerHTML = `Đề xuất tăng số lượng vé phát hành cho hạng vé <strong>[${tierName}]</strong>. Số slot mới sẽ hiển thị dưới dạng chờ duyệt và chỉ chính thức cộng dồn khi Admin phê duyệt.`;
+      document.getElementById('addSlotModalDesc').innerHTML = `Bổ sung thêm số lượng vé phát hành cho hạng vé <strong>[${tierName}]</strong>. Số slot mới sẽ cộng dồn trực tiếp vào hệ thống mở bán.`;
       document.getElementById('additionalSlotCount').value = '50';
       openModal('addSlotModal');
     }
@@ -1188,15 +1318,14 @@
       const added = parseInt(document.getElementById('additionalSlotCount').value, 10);
       const tier = ticketTiers.find(t => t.id === targetTierActionId);
       if (tier) {
-        tier.pendingSlots = (tier.pendingSlots || 0) + added;
+        tier.capacity += added;
         renderTicketTiers();
         closeModal('addSlotModal');
-        evaluateFormDirtyState();
-        showToast(`Đã ghi nhận thêm ${added} slot chờ duyệt cho [${tier.name}].`);
+        showToast(`Đã cộng dồn thêm ${added} slot cho hạng vé [${tier.name}]!`);
       }
     }
 
-    // 3. Ban tổ chức Bật / Tắt Khóa ngừng bán (Chủ động xử lý)
+    // 3. Khóa / Mở bán lại hạng vé
     function openToggleTierLockModal(tierId, tierName, isCurrentlyDisabled) {
       targetTierActionId = tierId;
       const title = document.getElementById('toggleTierModalTitle');
@@ -1206,13 +1335,13 @@
       if (!isCurrentlyDisabled) {
         title.textContent = "Xác nhận Khóa / Ngừng bán hạng vé?";
         title.style.color = "var(--danger)";
-        desc.innerHTML = `Bạn có chắc chắn muốn tạm khóa hạng vé <strong>[${tierName}]</strong>? Khách mới sẽ không thể tiếp tục đăng ký. Thao tác có hiệu lực ngay lập tức và hệ thống sẽ gửi thông báo đến Admin.`;
+        desc.innerHTML = `Bạn có chắc chắn muốn tạm khóa hạng vé <strong>[${tierName}]</strong>? Khách mới sẽ không thể tiếp tục đăng ký.`;
         btn.textContent = "Đồng ý Khóa";
         btn.className = "btn-modal-confirm danger";
       } else {
         title.textContent = "Xác nhận Mở bán lại hạng vé?";
         title.style.color = "var(--color-navy)";
-        desc.innerHTML = `Bạn có chắc chắn muốn mở bán lại hạng vé <strong>[${tierName}]</strong>? Khách tham dự sẽ có thể tiếp tục đăng ký bình thường. Thao tác có hiệu lực ngay lập tức và hệ thống sẽ gửi thông báo đến Admin.`;
+        desc.innerHTML = `Bạn có chắc chắn muốn mở bán lại hạng vé <strong>[${tierName}]</strong>? Khách tham dự sẽ có thể tiếp tục đăng ký bình thường.`;
         btn.textContent = "Mở bán lại";
         btn.className = "btn-modal-confirm";
       }
@@ -1226,17 +1355,12 @@
         tier.disabled = !tier.disabled;
         closeModal('toggleTierLockModal');
         renderTicketTiers();
-        
-        if (tier.disabled) {
-          showToast(`Đã tạm khóa ngừng bán hạng vé [${tier.name}]! (Đã gửi thông báo hậu kiểm đến Admin)`);
-        } else {
-          showToast(`Đã mở bán lại hạng vé [${tier.name}] thành công! (Đã gửi thông báo hậu kiểm đến Admin)`);
-        }
+        showToast(tier.disabled ? `Đã tạm khóa ngừng bán hạng vé [${tier.name}]!` : `Đã mở bán lại hạng vé [${tier.name}] thành công!`);
       }
     }
 
     /* ========================================================
-       TAB 2 LOGIC: TRẠM SOÁT VÉ, SECRET TOKEN & REFRESH
+       TAB 2 LOGIC: TRẠM SOÁT VÉ & SECRET TOKEN
        ======================================================== */
     function renderStations() {
       const tbody = document.getElementById('stationTableBody');
@@ -1328,11 +1452,11 @@
       kioskStations.push({ id: newId, name, token: newToken });
       closeModal('addStationModal');
       renderStations();
-      showToast(`Đã thêm trạm [${name}] thành công!`);
+      showToast(`Đã thêm trạm [${name}] và cấp Token thành công!`);
     }
 
     /* ========================================================
-       TAB 4 LOGIC: ĐIỀU PHỐI CỔNG & HỦY SỰ KIỆN GỬI ADMIN
+       TAB 4 LOGIC: ĐIỀU PHỐI CỔNG & HỦY SỰ KIỆN TRỰC TIẾP
        ======================================================== */
     function confirmStateToggle(type) {
       pendingToggleType = type;
@@ -1348,14 +1472,6 @@
           : "Bạn có chắc muốn mở lại cổng đăng ký cho người dùng?";
         btn.className = nextState ? "btn-modal-confirm danger" : "btn-modal-confirm";
         btn.textContent = nextState ? "Xác nhận Đóng" : "Xác nhận Mở lại";
-      } else if (type === 'lock_transfer') {
-        const nextState = !advancedStates.isTransferLocked;
-        title.textContent = nextState ? "Xác nhận Khóa Chuyển Nhượng" : "Xác nhận Mở Lại Chuyển Nhượng";
-        body.textContent = nextState 
-          ? "Người tham dự sẽ không thể thay đổi thông tin khuôn mặt hoặc chuyển vé cho người khác."
-          : "Người tham dự sẽ được phép chuyển nhượng hoặc thay đổi thông tin vé.";
-        btn.className = nextState ? "btn-modal-confirm danger" : "btn-modal-confirm";
-        btn.textContent = nextState ? "Khóa ngay" : "Mở chuyển nhượng";
       }
 
       openModal('confirmToggleModal');
@@ -1375,18 +1491,6 @@
         btn.textContent = isClosed ? "Mở lại đăng ký" : "Đóng đăng ký";
         btn.className = isClosed ? "btn-action-secondary" : "btn-action-danger";
         showToast(isClosed ? "Đã đóng cổng đăng ký vé sớm!" : "Đã mở lại cổng đăng ký vé!");
-      } 
-      else if (pendingToggleType === 'lock_transfer') {
-        advancedStates.isTransferLocked = !advancedStates.isTransferLocked;
-        const isLocked = advancedStates.isTransferLocked;
-        const badge = document.getElementById('badgeLockTransfer');
-        const btn = document.getElementById('btnActionLockTransfer');
-
-        badge.className = isLocked ? "state-badge locked" : "state-badge active";
-        badge.textContent = isLocked ? "Đã khóa chuyển nhượng" : "Cho phép chuyển";
-        btn.textContent = isLocked ? "Mở khóa chuyển nhượng" : "Khóa chuyển nhượng";
-        btn.className = isLocked ? "btn-action-secondary" : "btn-action-danger";
-        showToast(isLocked ? "Đã khóa quyền chuyển nhượng vé!" : "Đã mở lại quyền chuyển nhượng!");
       }
     }
 
@@ -1396,7 +1500,7 @@
       openModal('cancelEventModal');
     }
 
-    function handleRequestCancelEvent(e) {
+    function handleExecuteCancelEvent(e) {
       e.preventDefault();
       const reason = document.getElementById('cancelReasonInput').value.trim();
       closeModal('cancelEventModal');
@@ -1404,13 +1508,50 @@
       const badge = document.getElementById('badgeCancelEvent');
       const btn = document.getElementById('btnActionCancelEvent');
       badge.className = "state-badge locked";
-      badge.textContent = "Chờ Admin duyệt hủy";
-      btn.textContent = "Đang chờ duyệt hủy...";
+      badge.textContent = "Đã hủy sự kiện";
+      btn.textContent = "Sự kiện đã bị hủy";
       btn.setAttribute('disabled', 'true');
       btn.style.opacity = '0.6';
       btn.style.cursor = 'not-allowed';
 
-      showToast(`Đã gửi yêu cầu hủy sự kiện lên Admin kèm lý do: "${reason}"`);
+      showToast(`Đã hủy sự kiện thành công! Email thông báo đã gửi đến người tham dự.`);
+    }
+
+    /* ========================================================
+       MODAL AUTH: ĐỔI MẬT KHẨU & ĐĂNG XUẤT
+       ======================================================== */
+    function openChangePasswordModal() {
+      document.getElementById('currentPasswordInput').value = '';
+      document.getElementById('newPasswordInput').value = '';
+      document.getElementById('confirmNewPasswordInput').value = '';
+      openModal('changePasswordModal');
+    }
+
+    function handleSaveNewPassword(e) {
+      e.preventDefault();
+      const cur = document.getElementById('currentPasswordInput').value;
+      const pwd = document.getElementById('newPasswordInput').value;
+      const confirm = document.getElementById('confirmNewPasswordInput').value;
+
+      if (!cur) {
+        alert("Vui lòng nhập mật khẩu hiện tại!");
+        return;
+      }
+      if (pwd !== confirm) {
+        alert("Mật khẩu mới và xác nhận mật khẩu không khớp!");
+        return;
+      }
+
+      closeModal('changePasswordModal');
+      showToast("Đã cập nhật mật khẩu quản trị viên thành công!");
+    }
+
+    function openLogoutModal() { openModal('logoutModal'); }
+
+    function executeLogout() {
+      closeModal('logoutModal');
+      showToast("Đã đăng xuất tài khoản Quản trị viên an toàn!");
+      setTimeout(() => window.location.reload(), 1000);
     }
 
     /* ========================================================
@@ -1533,22 +1674,13 @@
     }
 
     function handleCreateNewEvent() {
-      showToast('Kích hoạt biểu mẫu Tạo sự kiện mới (UC11)...');
+      window.location.href = "btc-taosukienmoi-btc_3.html";
     }
 
     function simOpenDetail(id) { openEventDetail(id); }
     function simSwitchSubTab(idx) {
       const tabs = document.querySelectorAll('.sub-tab-item');
       if (tabs[idx - 1]) switchSubTab(idx, tabs[idx - 1]);
-    }
-
-    function openLogoutModal() { openModal('logoutModal'); }
-
-    function executeLogout() {
-      localStorage.clear();
-      sessionStorage.clear();
-      closeModal('logoutModal');
-      showToast('Đăng xuất thành công!');
     }
 
     document.addEventListener('DOMContentLoaded', () => {
