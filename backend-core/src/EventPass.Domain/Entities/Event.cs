@@ -18,5 +18,5 @@ public class Event : BaseEntity
     public ICollection<Ticket> Tickets { get; set; } = new List<Ticket>();
     public ICollection<Order> Orders { get; set; } = new List<Order>();
     public ICollection<TicketDetail> TicketDetails { get; set; } = new List<TicketDetail>();
-    public ICollection<string> EventImages { get; set; } = new List<string>();
+    public ICollection<string>? EventImages { get; set; } = new List<string>();
 }

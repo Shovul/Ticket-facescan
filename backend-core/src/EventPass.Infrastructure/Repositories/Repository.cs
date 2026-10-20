@@ -1,16 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using EventPass.Application.Interfaces;
 using EventPass.Domain.Entities;
+using EventPass.Infrastructure.Persistence;
 using System.Linq.Expressions;
 
 namespace EventPass.Infrastructure.Repositories;
 
 public class Repository<T> : IRepository<T> where T : BaseEntity
 {
-    protected readonly DbContext _context;
+    protected readonly AppDbContext _context;
     protected readonly DbSet<T> _dbSet;
 
-    public Repository(DbContext context)
+    public Repository(AppDbContext context)
     {
         _context = context;
         _dbSet = context.Set<T>();

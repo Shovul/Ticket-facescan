@@ -1,4 +1,5 @@
 using EventPass.Domain.Enums;
+using Pgvector;
 
 namespace EventPass.Domain.Entities;
 
@@ -10,6 +11,7 @@ public class User : BaseEntity
     public string? Phone { get; set; }
     public string? AvatarUrl { get; set; }
     public UserRole Role { get; set; } = UserRole.User;
+    public Vector? FaceVector { get; set; }
 
     public ICollection<Order> Orders { get; set; } = new List<Order>();
 }

@@ -15,10 +15,14 @@ public class AppDbContext : DbContext
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<TicketDetail> TicketDetails => Set<TicketDetail>();
+    public DbSet<CheckinLog> CheckinLogs => Set<CheckinLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Kích hoạt extension pgvector
+        modelBuilder.HasPostgresExtension("vector");
 
         // Global Query Filters to automatically ignore soft-deleted records
         modelBuilder.Entity<User>().HasQueryFilter(e => !e.IsDeleted);
@@ -27,16 +31,27 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Order>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<TicketDetail>().HasQueryFilter(e => !e.IsDeleted);
 
-        // JSON Converter for List<string> (ImageUrls and FaceImageUrls)
-        var stringListConverter = new ValueConverter<List<string>, string>(
-            v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-            v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()
+        // Cấu hình cột vector(512)
+        modelBuilder.Entity<TicketDetail>()
+            .Property(td => td.FaceVector)
+            .HasColumnType("vector(512)");
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.FaceVector)
+            .HasColumnType("vector(512)");
+
+        // JSON Converter cho ICollection<string> (hỗ trợ null từ DB)
+        var stringListConverter = new ValueConverter<ICollection<string>?, string?>(
+            v => v == null ? null : JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+            v => string.IsNullOrWhiteSpace(v) 
+                ? new List<string>() 
+                : JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()
         );
 
-        var stringListComparer = new ValueComparer<List<string>>(
-            (c1, c2) => c1!.SequenceEqual(c2!),
-            c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-            c => c.ToList()
+        var stringListComparer = new ValueComparer<ICollection<string>?>(
+            (c1, c2) => (c1 == null && c2 == null) || (c1 != null && c2 != null && c1.SequenceEqual(c2)),
+            c => c == null ? 0 : c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+            c => c == null ? new List<string>() : c.ToList()
         );
 
         // Apply converter to Event Image URLs list
@@ -50,6 +65,21 @@ public class AppDbContext : DbContext
             .Property(td => td.TicketImages)
             .HasConversion(stringListConverter)
             .Metadata.SetValueComparer(stringListComparer);
+
+        // Configure CheckinLog
+        modelBuilder.Entity<CheckinLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.TicketDetail)
+                .WithMany()
+                .HasForeignKey(e => e.TicketDetailId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.Event)
+                .WithMany()
+                .HasForeignKey(e => e.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

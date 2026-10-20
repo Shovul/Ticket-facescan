@@ -1,4 +1,5 @@
 using EventPass.Domain.Enums;
+using Pgvector;
 
 namespace EventPass.Domain.Entities;
 
@@ -13,11 +14,12 @@ public class TicketDetail : BaseEntity
     public string AttendeeEmail { get; set; } = string.Empty;
     public string? AttendeePhone { get; set; }
     public string? AttendeeFaceData { get; set; }
+    public Vector? FaceVector { get; set; }
     public TicketDetailStatus Status { get; set; }
     public DateTime? CheckedInAt { get; set; }
 
     public Order Order { get; set; } = null!;
     public Event Event { get; set; } = null!;
     public Ticket Ticket { get; set; } = null!;
-    public ICollection<string> TicketImages { get; set; } = new List<string>();
+    public ICollection<string>? TicketImages { get; set; } = new List<string>();
 }
