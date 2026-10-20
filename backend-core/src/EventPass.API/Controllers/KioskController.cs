@@ -4,6 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace EventPass.API.Controllers;
 
+public class KioskCheckinFormRequest
+{
+    public int EventId { get; set; }
+    public IFormFile? FaceImage { get; set; }
+    public string KioskName { get; set; } = "Kiosk Cổng 1";
+}
+
 [ApiController]
 [Route("api/v1/kiosk")]
 public class KioskController : ControllerBase
@@ -23,19 +30,13 @@ public class KioskController : ControllerBase
     }
 
     /// <summary>
-    /// Điểm danh Face ID siêu tốc tại trạm Kiosk (UC14 - Bảng 6.4 & 6.5 Hồ sơ SGU)
+    /// Điểm danh Face ID siêu tốc tại trạm Kiosk (UC14 - Bảng 6.4 &amp; 6.5 Hồ sơ SGU)
     /// </summary>
-    /// <param name="eventId">ID Sự kiện</param>
-    /// <param name="faceImage">File ảnh chụp khuôn mặt từ camera Kiosk</param>
-    /// <param name="kioskName">Tên trạm Kiosk (Mặc định: Kiosk Cổng 1)</param>
     [HttpPost("checkin")]
     [Consumes("multipart/form-data")]
-    public async Task<ActionResult<KioskCheckinResponse>> Checkin(
-        [FromForm] int eventId,
-        [FromForm] IFormFile? faceImage,
-        [FromForm] string kioskName = "Kiosk Cổng 1")
+    public async Task<ActionResult<KioskCheckinResponse>> Checkin([FromForm] KioskCheckinFormRequest request)
     {
-        if (eventId <= 0)
+        if (request.EventId <= 0)
         {
             return BadRequest(new KioskCheckinResponse
             {
@@ -46,7 +47,7 @@ public class KioskController : ControllerBase
             });
         }
 
-        if (faceImage == null || faceImage.Length == 0)
+        if (request.FaceImage == null || request.FaceImage.Length == 0)
         {
             return BadRequest(new KioskCheckinResponse
             {
@@ -57,8 +58,8 @@ public class KioskController : ControllerBase
             });
         }
 
-        // Kiểm tra dung lượng ảnh tối đa (ví dụ 10MB)
-        if (faceImage.Length > 10 * 1024 * 1024)
+        // Kiểm tra dung lượng ảnh tối đa (10MB)
+        if (request.FaceImage.Length > 10 * 1024 * 1024)
         {
             return BadRequest(new KioskCheckinResponse
             {
@@ -71,12 +72,12 @@ public class KioskController : ControllerBase
 
         try
         {
-            await using var stream = faceImage.OpenReadStream();
+            await using var stream = request.FaceImage.OpenReadStream();
             var response = await _kioskService.CheckinByFaceAsync(
-                eventId, 
-                kioskName, 
+                request.EventId, 
+                request.KioskName, 
                 stream, 
-                faceImage.FileName, 
+                request.FaceImage.FileName, 
                 HttpContext.RequestAborted);
 
             return Ok(response);

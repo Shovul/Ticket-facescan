@@ -51,17 +51,20 @@ builder.Services.AddScoped<IKioskNotificationService, KioskNotificationService>(
 // 6. Đăng ký SignalR (Realtime Notification)
 builder.Services.AddSignalR();
 
-// 7. Đăng ký Web API Controllers & OpenAPI/Swagger
+// 7. Đăng ký Web API Controllers & Swagger UI
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Cấu hình Swagger UI trực quan
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.MapOpenApi();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "EventPass API v1");
+    c.RoutePrefix = "swagger";
+});
 
 app.UseCors("AllowAll");
 
