@@ -61,4 +61,18 @@ public class TicketDetailRepository : Repository<TicketDetail>, ITicketDetailRep
             .AsNoTracking()
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<(int TotalTickets, int CheckedInCount, Event? Event)> GetEventKioskSummaryAsync(
+        int eventId, 
+        CancellationToken cancellationToken = default)
+    {
+        var ev = await _appDbContext.Events.FirstOrDefaultAsync(e => e.Id == eventId && !e.IsDeleted, cancellationToken);
+        if (ev == null)
+            return (0, 0, null);
+
+        var total = await _appDbContext.TicketDetails.CountAsync(td => td.EventId == eventId && !td.IsDeleted, cancellationToken);
+        var checkedIn = await _appDbContext.TicketDetails.CountAsync(td => td.EventId == eventId && td.Status == EventPass.Domain.Enums.TicketDetailStatus.CheckedIn && !td.IsDeleted, cancellationToken);
+
+        return (total, checkedIn, ev);
+    }
 }

@@ -33,3 +33,18 @@ public class OfflineLogItem
     public string CheckinMethod { get; set; } = "QR_CODE"; // QR_CODE, MANUAL_CODE, FACE_ID_OFFLINE
     public string? Notes { get; set; }
 }
+
+public class KioskEventInfoDto
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string Location { get; set; } = string.Empty;
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public string? CoverImage { get; set; }
+    public bool IsFaceRecognitionEnabled { get; set; }
+    public bool IsQrEnabled { get; set; }
+    public int TotalTickets { get; set; }
+    public int CheckedInCount { get; set; }
+}

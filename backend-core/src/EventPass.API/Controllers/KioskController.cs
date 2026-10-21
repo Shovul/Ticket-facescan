@@ -109,6 +109,22 @@ public class KioskController : ControllerBase
     }
 
     /// <summary>
+    /// Lấy thông tin cấu hình sự kiện cho màn hình Kiosk (Tên sự kiện, Cờ Face ID/QR, Số lượng vé)
+    /// </summary>
+    [HttpGet("events/{eventId}")]
+    public async Task<ActionResult<KioskEventInfoDto>> GetKioskEventInfo(int eventId)
+    {
+        if (eventId <= 0)
+            return BadRequest(new { Error = "Mã sự kiện không hợp lệ." });
+
+        var info = await _kioskService.GetEventInfoAsync(eventId, HttpContext.RequestAborted);
+        if (info == null)
+            return NotFound(new { Error = "Không tìm thấy sự kiện tương ứng." });
+
+        return Ok(info);
+    }
+
+    /// <summary>
     /// Điểm danh bằng Mã vé hoặc Quét mã QR (Cơ chế Cứu hộ kép khi mạng lag/Face ID gián đoạn)
     /// </summary>
     [HttpPost("checkin-code")]

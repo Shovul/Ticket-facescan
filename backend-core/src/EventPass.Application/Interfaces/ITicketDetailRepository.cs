@@ -18,4 +18,8 @@ public interface ITicketDetailRepository : IRepository<TicketDetail>
     Task<IEnumerable<TicketDetail>> GetTicketsForOfflineSyncAsync(
         int eventId, 
         CancellationToken cancellationToken = default);
+
+    Task<(int TotalTickets, int CheckedInCount, Event? Event)> GetEventKioskSummaryAsync(
+        int eventId, 
+        CancellationToken cancellationToken = default);
 }

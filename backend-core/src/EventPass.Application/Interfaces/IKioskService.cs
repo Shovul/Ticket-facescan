@@ -31,4 +31,8 @@ public interface IKioskService
         int eventId, 
         string? reason = null, 
         CancellationToken cancellationToken = default);
+
+    Task<KioskEventInfoDto?> GetEventInfoAsync(
+        int eventId, 
+        CancellationToken cancellationToken = default);
 }

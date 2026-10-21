@@ -547,4 +547,30 @@ public class KioskService : IKioskService
         _logger.LogInformation("📢 Đã phát lệnh SignalR giải phóng Cache cho sự kiện {EventId}. Lý do: {Reason}", eventId, reason ?? "Admin triggered");
         return true;
     }
+
+    /// <summary>
+    /// Lấy thông tin cấu hình và thống kê vé phục vụ màn hình Kiosk khởi động
+    /// </summary>
+    public async Task<KioskEventInfoDto?> GetEventInfoAsync(int eventId, CancellationToken cancellationToken = default)
+    {
+        var summary = await _ticketDetailRepo.GetEventKioskSummaryAsync(eventId, cancellationToken);
+        if (summary.Event == null)
+            return null;
+
+        var ev = summary.Event;
+        return new KioskEventInfoDto
+        {
+            Id = ev.Id,
+            Title = ev.Title,
+            Description = ev.Description,
+            Location = ev.Location,
+            StartTime = ev.StartTime,
+            EndTime = ev.EndTime,
+            CoverImage = ev.CoverImage,
+            IsFaceRecognitionEnabled = ev.IsFaceRecognitionEnabled,
+            IsQrEnabled = ev.IsQrEnabled,
+            TotalTickets = summary.TotalTickets,
+            CheckedInCount = summary.CheckedInCount
+        };
+    }
 }
