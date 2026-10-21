@@ -39,4 +39,26 @@ public class TicketDetailRepository : Repository<TicketDetail>, ITicketDetailRep
 
         return (candidate.Ticket, candidate.Distance);
     }
+
+    public async Task<TicketDetail?> GetByTicketCodeAsync(
+        int eventId, 
+        string ticketCode, 
+        CancellationToken cancellationToken = default)
+    {
+        return await _appDbContext.TicketDetails
+            .Include(td => td.Ticket)
+            .Include(td => td.Event)
+            .FirstOrDefaultAsync(td => td.EventId == eventId && td.TicketCode == ticketCode && !td.IsDeleted, cancellationToken);
+    }
+
+    public async Task<IEnumerable<TicketDetail>> GetTicketsForOfflineSyncAsync(
+        int eventId, 
+        CancellationToken cancellationToken = default)
+    {
+        return await _appDbContext.TicketDetails
+            .Include(td => td.Ticket)
+            .Where(td => td.EventId == eventId && !td.IsDeleted)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
 }

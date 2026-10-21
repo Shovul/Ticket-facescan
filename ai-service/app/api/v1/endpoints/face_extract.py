@@ -1,3 +1,5 @@
+import time
+import logging
 from typing import Optional
 from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException, status
 from pydantic import BaseModel, Field
@@ -7,6 +9,7 @@ from app.services.deepface_service import deepface_service
 from app.utils.image_processing import bytes_to_cv2, base64_to_cv2
 
 router = APIRouter()
+logger = logging.getLogger("eventpass.ai.api")
 
 
 class Base64ExtractRequest(BaseModel):
@@ -52,6 +55,8 @@ async def extract_face_from_file(
     Nhận tệp ảnh nhị phân -> Tiền xử lý -> Trích xuất vector đặc trưng 512 chiều.
     Vector này sẽ được Backend .NET Core lưu vào cột `face_vector VECTOR(512)` hoặc đối soát qua `pgvector`.
     """
+    t_start = time.time()
+
     # 1. Kiểm tra định dạng tệp hợp lệ
     if file.content_type not in ["image/jpeg", "image/png", "image/webp", "application/octet-stream"]:
         raise HTTPException(
@@ -60,8 +65,13 @@ async def extract_face_from_file(
         )
 
     try:
+        t0 = time.time()
         image_bytes = await file.read()
+        t_read = (time.time() - t0) * 1000
+
+        t0 = time.time()
         cv2_image = bytes_to_cv2(image_bytes)
+        t_decode = (time.time() - t0) * 1000
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -69,10 +79,17 @@ async def extract_face_from_file(
         )
 
     # 2. Trích xuất vector
+    t0 = time.time()
     result = deepface_service.extract_embedding(
         cv2_image,
         enforce_detection=enforce_detection,
         anti_spoofing=anti_spoofing
+    )
+    t_extract = (time.time() - t0) * 1000
+    t_total = (time.time() - t_start) * 1000
+
+    logger.info(
+        f"⚡ [AI-PROFILE] Read={t_read:.1f}ms | Decode&Resize={t_decode:.1f}ms | Extract={t_extract:.1f}ms | Total={t_total:.1f}ms"
     )
 
     if not result["success"]:
@@ -100,7 +117,7 @@ async def extract_face_from_base64(payload: Base64ExtractRequest):
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"code": "INVALID_BASE64", "message": f"Dữ liệu Base64 không hợp lệ: {str(e)}"}
+            detail={"code": "DECODE_ERROR", "message": f"Không thể giải mã chuỗi Base64: {str(e)}"}
         )
 
     result = deepface_service.extract_embedding(

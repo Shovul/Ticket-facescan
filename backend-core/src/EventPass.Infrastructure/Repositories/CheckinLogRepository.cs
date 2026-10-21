@@ -21,6 +21,12 @@ public class CheckinLogRepository : ICheckinLogRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task AddRangeLogsAsync(IEnumerable<CheckinLog> logs, CancellationToken cancellationToken = default)
+    {
+        await _context.CheckinLogs.AddRangeAsync(logs, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<CheckinLog>> GetRecentLogsByEventAsync(
         int eventId, 
         int limit = 50, 

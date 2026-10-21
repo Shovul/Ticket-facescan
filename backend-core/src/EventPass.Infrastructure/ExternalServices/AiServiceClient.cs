@@ -18,7 +18,8 @@ public class AiServiceClient : IAiServiceClient
         _httpClient = httpClient;
         _logger = logger;
 
-        var baseUrl = configuration["AiService:BaseUrl"] ?? "http://localhost:8000";
+        // Dùng 127.0.0.1 để tránh lỗi timeout 2s khi Windows resolve IPv6 [::1]
+        var baseUrl = configuration["AiService:BaseUrl"] ?? "http://127.0.0.1:8000";
         _httpClient.BaseAddress = new Uri(baseUrl);
         _apiKey = configuration["AiService:ApiKey"] ?? "eventpass_internal_ai_token_2026";
     }
@@ -34,9 +35,14 @@ public class AiServiceClient : IAiServiceClient
         {
             using var formData = new MultipartFormDataContent();
             
-            var streamContent = new StreamContent(imageStream);
-            streamContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-            formData.Add(streamContent, "file", fileName);
+            // Đọc toàn bộ stream vào mảng byte để HttpClient biết trước chính xác Content-Length, loại bỏ độ trễ chunked transfer
+            using var ms = new MemoryStream();
+            await imageStream.CopyToAsync(ms, cancellationToken);
+            var imageBytes = ms.ToArray();
+
+            var byteContent = new ByteArrayContent(imageBytes);
+            byteContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+            formData.Add(byteContent, "file", fileName);
 
             formData.Add(new StringContent(enforceDetection ? "true" : "false"), "enforce_detection");
             formData.Add(new StringContent(antiSpoofing ? "true" : "false"), "anti_spoofing");

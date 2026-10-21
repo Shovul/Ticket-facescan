@@ -9,4 +9,13 @@ public interface ITicketDetailRepository : IRepository<TicketDetail>
         int eventId, 
         Vector queryVector, 
         CancellationToken cancellationToken = default);
+
+    Task<TicketDetail?> GetByTicketCodeAsync(
+        int eventId, 
+        string ticketCode, 
+        CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<TicketDetail>> GetTicketsForOfflineSyncAsync(
+        int eventId, 
+        CancellationToken cancellationToken = default);
 }

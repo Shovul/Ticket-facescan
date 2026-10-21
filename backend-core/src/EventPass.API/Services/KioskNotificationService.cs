@@ -29,4 +29,25 @@ public class KioskNotificationService : IKioskNotificationService
             _logger.LogWarning(ex, "Không thể gửi sự kiện SignalR tới Kiosk/Dashboard: {Message}", ex.Message);
         }
     }
+
+    public async Task NotifyPurgeCacheAsync(int eventId, string? reason = null)
+    {
+        try
+        {
+            var groupName = $"event_{eventId}";
+            var payload = new
+            {
+                EventId = eventId,
+                Action = "PURGE_CACHE",
+                Timestamp = DateTime.UtcNow,
+                Reason = reason ?? "Admin triggered cache clear"
+            };
+            await _hubContext.Clients.Group(groupName).SendAsync("ReceivePurgeCache", payload);
+            await _hubContext.Clients.All.SendAsync("GlobalPurgeCache", payload);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Không thể gửi sự kiện SignalR PurgeCache: {Message}", ex.Message);
+        }
+    }
 }
