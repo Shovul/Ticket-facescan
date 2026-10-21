@@ -42,6 +42,7 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITicketDetailRepository, TicketDetailRepository>();
 builder.Services.AddScoped<ICheckinLogRepository, CheckinLogRepository>();
+builder.Services.AddScoped<IKioskRepository, KioskRepository>();
 
 // 5. Đăng ký Application Services (Business Logic Layer)
 builder.Services.AddScoped<IEventService, EventService>();

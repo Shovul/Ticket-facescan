@@ -30,11 +30,64 @@ public class KioskController : ControllerBase
     }
 
     /// <summary>
+    /// Xác thực khóa bí mật X-Kiosk-Secret-Key thực tế trước khi mở trạm (BR03 / BR05)
+    /// </summary>
+    [HttpPost("events/{eventId}/verify-token")]
+    public async Task<ActionResult<VerifyKioskTokenResponse>> VerifyToken(
+        int eventId,
+        [FromBody] VerifyKioskTokenRequest request)
+    {
+        if (eventId <= 0)
+        {
+            return BadRequest(new VerifyKioskTokenResponse
+            {
+                Success = false,
+                Message = "Mã sự kiện không hợp lệ."
+            });
+        }
+
+        var response = await _kioskService.VerifySecretTokenAsync(eventId, request.SecretToken, HttpContext.RequestAborted);
+        if (!response.Success)
+        {
+            return Unauthorized(response);
+        }
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Xác thực khóa bí mật Kiosk (Endpoint phẳng)
+    /// </summary>
+    [HttpPost("verify-token")]
+    public async Task<ActionResult<VerifyKioskTokenResponse>> VerifyTokenFlat(
+        [FromBody] VerifyKioskTokenRequest request)
+    {
+        if (request.EventId <= 0)
+        {
+            return BadRequest(new VerifyKioskTokenResponse
+            {
+                Success = false,
+                Message = "Mã sự kiện không hợp lệ."
+            });
+        }
+
+        var response = await _kioskService.VerifySecretTokenAsync(request.EventId, request.SecretToken, HttpContext.RequestAborted);
+        if (!response.Success)
+        {
+            return Unauthorized(response);
+        }
+
+        return Ok(response);
+    }
+
+    /// <summary>
     /// Điểm danh Face ID siêu tốc tại trạm Kiosk (UC14 - Bảng 6.4 &amp; 6.5 Hồ sơ SGU)
     /// </summary>
     [HttpPost("checkin")]
     [Consumes("multipart/form-data")]
-    public async Task<ActionResult<KioskCheckinResponse>> Checkin([FromForm] KioskCheckinFormRequest request)
+    public async Task<ActionResult<KioskCheckinResponse>> Checkin(
+        [FromForm] KioskCheckinFormRequest request,
+        [FromHeader(Name = "X-Kiosk-Secret-Key")] string? secretKey = null)
     {
         if (request.EventId <= 0)
         {
@@ -112,7 +165,9 @@ public class KioskController : ControllerBase
     /// Lấy thông tin cấu hình sự kiện cho màn hình Kiosk (Tên sự kiện, Cờ Face ID/QR, Số lượng vé)
     /// </summary>
     [HttpGet("events/{eventId}")]
-    public async Task<ActionResult<KioskEventInfoDto>> GetKioskEventInfo(int eventId)
+    public async Task<ActionResult<KioskEventInfoDto>> GetKioskEventInfo(
+        int eventId, 
+        [FromHeader(Name = "X-Kiosk-Secret-Key")] string? secretKey = null)
     {
         if (eventId <= 0)
             return BadRequest(new { Error = "Mã sự kiện không hợp lệ." });
@@ -128,7 +183,9 @@ public class KioskController : ControllerBase
     /// Điểm danh bằng Mã vé hoặc Quét mã QR (Cơ chế Cứu hộ kép khi mạng lag/Face ID gián đoạn)
     /// </summary>
     [HttpPost("checkin-code")]
-    public async Task<ActionResult<KioskCheckinResponse>> CheckinByCode([FromBody] KioskCodeCheckinRequest request)
+    public async Task<ActionResult<KioskCheckinResponse>> CheckinByCode(
+        [FromBody] KioskCodeCheckinRequest request,
+        [FromHeader(Name = "X-Kiosk-Secret-Key")] string? secretKey = null)
     {
         if (request.EventId <= 0 || string.IsNullOrWhiteSpace(request.TicketCode))
         {
@@ -168,7 +225,9 @@ public class KioskController : ControllerBase
     /// Đồng bộ trước giờ G: Tải toàn bộ danh sách vé của sự kiện về Local Cache / IndexedDB trên máy Kiosk
     /// </summary>
     [HttpGet("events/{eventId}/offline-tickets")]
-    public async Task<ActionResult<IEnumerable<OfflineTicketDto>>> GetOfflineTickets(int eventId)
+    public async Task<ActionResult<IEnumerable<OfflineTicketDto>>> GetOfflineTickets(
+        int eventId, 
+        [FromHeader(Name = "X-Kiosk-Secret-Key")] string? secretKey = null)
     {
         if (eventId <= 0)
             return BadRequest(new { Error = "Mã sự kiện không hợp lệ." });
@@ -189,7 +248,10 @@ public class KioskController : ControllerBase
     /// Đồng bộ ngầm (Background Sync): Đẩy các lượt quét ngoại tuyến từ Kiosk lên Server khi có mạng trở lại
     /// </summary>
     [HttpPost("events/{eventId}/sync-offline-logs")]
-    public async Task<IActionResult> SyncOfflineLogs(int eventId, [FromBody] SyncOfflineLogsRequest request)
+    public async Task<IActionResult> SyncOfflineLogs(
+        int eventId, 
+        [FromBody] SyncOfflineLogsRequest request,
+        [FromHeader(Name = "X-Kiosk-Secret-Key")] string? secretKey = null)
     {
         if (eventId <= 0)
             return BadRequest(new { Error = "Mã sự kiện không hợp lệ." });

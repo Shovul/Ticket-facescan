@@ -35,4 +35,9 @@ public interface IKioskService
     Task<KioskEventInfoDto?> GetEventInfoAsync(
         int eventId, 
         CancellationToken cancellationToken = default);
+
+    Task<VerifyKioskTokenResponse> VerifySecretTokenAsync(
+        int eventId, 
+        string secretToken, 
+        CancellationToken cancellationToken = default);
 }

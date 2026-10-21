@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<TicketDetail> TicketDetails => Set<TicketDetail>();
     public DbSet<CheckinLog> CheckinLogs => Set<CheckinLog>();
+    public DbSet<Kiosk> Kiosks => Set<Kiosk>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,6 +31,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Ticket>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<Order>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<TicketDetail>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<Kiosk>().HasQueryFilter(e => !e.IsDeleted);
 
         // Cấu hình cột vector(512)
         modelBuilder.Entity<TicketDetail>()
@@ -79,6 +81,18 @@ public class AppDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.EventId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure Kiosk
+        modelBuilder.Entity<Kiosk>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Event)
+                .WithMany(e => e.Kiosks)
+                .HasForeignKey(e => e.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.SecretToken).IsUnique();
         });
     }
 

@@ -13,6 +13,7 @@ public class KioskService : IKioskService
     private readonly IAiServiceClient _aiServiceClient;
     private readonly ITicketDetailRepository _ticketDetailRepo;
     private readonly ICheckinLogRepository _checkinLogRepo;
+    private readonly IKioskRepository _kioskRepo;
     private readonly IKioskNotificationService _notificationService;
     private readonly ILogger<KioskService> _logger;
 
@@ -23,12 +24,14 @@ public class KioskService : IKioskService
         IAiServiceClient aiServiceClient,
         ITicketDetailRepository ticketDetailRepo,
         ICheckinLogRepository checkinLogRepo,
+        IKioskRepository kioskRepo,
         IKioskNotificationService notificationService,
         ILogger<KioskService> logger)
     {
         _aiServiceClient = aiServiceClient;
         _ticketDetailRepo = ticketDetailRepo;
         _checkinLogRepo = checkinLogRepo;
+        _kioskRepo = kioskRepo;
         _notificationService = notificationService;
         _logger = logger;
     }
@@ -571,6 +574,45 @@ public class KioskService : IKioskService
             IsQrEnabled = ev.IsQrEnabled,
             TotalTickets = summary.TotalTickets,
             CheckedInCount = summary.CheckedInCount
+        };
+    }
+
+    /// <summary>
+    /// Xác thực khóa bí mật X-Kiosk-Secret-Key thực tế từ cơ sở dữ liệu (BR03 / BR05)
+    /// </summary>
+    public async Task<VerifyKioskTokenResponse> VerifySecretTokenAsync(
+        int eventId, 
+        string secretToken, 
+        CancellationToken cancellationToken = default)
+    {
+        if (eventId <= 0 || string.IsNullOrWhiteSpace(secretToken))
+        {
+            return new VerifyKioskTokenResponse
+            {
+                Success = false,
+                Message = "Thông tin mã sự kiện hoặc mã khóa bí mật Kiosk không hợp lệ."
+            };
+        }
+
+        var kiosk = await _kioskRepo.GetBySecretTokenAsync(eventId, secretToken, cancellationToken);
+        if (kiosk == null)
+        {
+            _logger.LogWarning("⚠️ Xác thực thất bại cho Kiosk sự kiện {EventId} với token '{Token}'", eventId, secretToken);
+            return new VerifyKioskTokenResponse
+            {
+                Success = false,
+                Message = "Mã bí mật Kiosk (X-Kiosk-Secret-Key) không chính xác hoặc trạm đã bị vô hiệu hóa."
+            };
+        }
+
+        _logger.LogInformation("✅ Kích hoạt thành công trạm Kiosk '{KioskName}' (ID: {KioskId}) cho sự kiện {EventId}", kiosk.Name, kiosk.Id, eventId);
+        return new VerifyKioskTokenResponse
+        {
+            Success = true,
+            KioskId = kiosk.Id,
+            KioskName = kiosk.Name,
+            EventTitle = kiosk.Event?.Title,
+            Message = $"Xác thực trạm '{kiosk.Name}' thành công."
         };
     }
 }
