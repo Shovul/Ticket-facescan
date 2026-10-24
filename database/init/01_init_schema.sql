@@ -1,3 +1,4 @@
+-- Không áp dụng nữa: schema chuyển sang EF Core Migration; giữ file làm tài liệu lịch sử của nhóm.
 -- ==============================================================================
 -- EVENTPASS DATABASE INITIALIZATION SCRIPT (PostgreSQL 16 + pgvector)
 -- Nhóm: 262701-DACN-18-Nhom1A | GVHD: ThS. Trần Đình Nghĩa (SGU)

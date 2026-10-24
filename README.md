@@ -37,15 +37,24 @@ eventpass/
 │       ├── components/           # UI Reusable Components
 │       ├── hooks/                # Custom React Hooks (useSignalR, useDebounce)
 │       ├── services/             # Axios API Client gọi về .NET Core
+│       ├── styles/               # CSS giao diện theo từng phân hệ
 │       └── types/                # TypeScript Interfaces & Models
 │
 ├── backend-core/                 # ASP.NET Core 8 Web API
 │   ├── src/
 │   │   ├── EventPass.Domain/     # Thực thể nghiệp vụ (Entities, Enums)
-│   │   ├── EventPass.Application/# Logic ứng dụng, DTOs, HTTP Client gọi AI Service
+│   │   ├── EventPass.Application/# Logic ứng dụng, DTOs, interface truy cập dữ liệu và AI
+│   │   │   ├── DTOs/            # Dữ liệu trao đổi theo nhóm chức năng
+│   │   │   ├── Interfaces/      # Hợp đồng repository và service
+│   │   │   └── Services/        # Logic nghiệp vụ
 │   │   ├── EventPass.Infrastructure/ # EF Core, PostgreSQL pgvector, Webhook VietQR
+│   │   │   ├── Migrations/      # EF Core Migration, Designer và ModelSnapshot
+│   │   │   ├── Persistence/     # AppDbContext, Factory và DatabaseSeeder
+│   │   │   ├── Repositories/    # Truy vấn và lưu dữ liệu
+│   │   │   └── ExternalServices/ # HTTP client AI, VietQR, email và bảo vệ ảnh
 │   │   └── EventPass.API/        # RESTful Controllers, SignalR Hubs, Middlewares
-│   └── EventPass.sln
+│   │       └── Services/        # Worker chạy nền và dịch vụ gắn với host API
+│   └── EventPass.slnx
 │
 ├── ai-service/                   # FastAPI Python (DeepFace Microservice)
 │   └── app/
@@ -126,7 +135,7 @@ Hệ thống sẽ chạy tại các cổng mặc định:
 | Frontend Web | http://localhost:3000 |
 | Backend API Swagger | http://localhost:5000/swagger |
 | AI Service OpenAPI Docs | http://localhost:8000/docs |
-| PostgreSQL | `localhost:5432` |
+| PostgreSQL | `localhost:5433` |
 
 ---
 

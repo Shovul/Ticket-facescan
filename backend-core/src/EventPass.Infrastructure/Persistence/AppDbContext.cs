@@ -17,10 +17,37 @@ public class AppDbContext : DbContext
     public DbSet<TicketDetail> TicketDetails => Set<TicketDetail>();
     public DbSet<CheckinLog> CheckinLogs => Set<CheckinLog>();
     public DbSet<Kiosk> Kiosks => Set<Kiosk>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        LegacySchemaConfiguration.Configure(modelBuilder);
+        modelBuilder.Entity<Ticket>().Property(t => t.IsActive).HasDefaultValue(true);
+        modelBuilder.Entity<Order>(entity =>
+        {
+            entity.Property(o => o.ReservationStatus).HasMaxLength(30);
+            entity.Property(o => o.RequestKey).HasMaxLength(64);
+            entity.Property(o => o.PaymentReference).HasMaxLength(100);
+            entity.HasIndex(o => new { o.UserId, o.RequestKey }).IsUnique();
+            entity.HasIndex(o => o.PaymentReference).IsUnique();
+            entity.HasIndex(o => new { o.ReservationStatus, o.ExpiresAt });
+        });
+        modelBuilder.Entity<OrderItem>(entity =>
+        {
+            entity.HasQueryFilter(i => !i.IsDeleted);
+            entity.Property(i => i.UnitPrice).HasPrecision(18, 2);
+            entity.Property(i => i.Status).HasMaxLength(30);
+            entity.Property(i => i.AttendeeName).HasMaxLength(100);
+            entity.Property(i => i.AttendeeEmail).HasMaxLength(255);
+            entity.Property(i => i.AttendeePhone).HasMaxLength(15);
+            entity.Property(i => i.FaceVector).HasColumnType("vector(512)");
+            entity.HasOne(i => i.Order).WithMany(o => o.Items).HasForeignKey(i => i.OrderId);
+            entity.HasOne(i => i.Ticket).WithMany().HasForeignKey(i => i.TicketId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(i => i.TicketDetail).WithMany().HasForeignKey(i => i.TicketDetailId).OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(i => i.TicketDetailId).IsUnique();
+            entity.HasIndex(i => new { i.TicketId, i.Status });
+        });
 
         // Kích hoạt extension pgvector
         modelBuilder.HasPostgresExtension("vector");
