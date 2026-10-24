@@ -11,6 +11,9 @@ public class Event : BaseEntity
     public string Location { get; set; } = string.Empty;
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
+    public DateTime? PublicTime { get; set; }
+    public DateTime? OpenTicketTime { get; set; }
+    public DateTime? CloseTicketTime { get; set; }
     public EventStatus Status { get; set; }
     public bool IsFaceRecognitionEnabled { get; set; } = false;
     public bool IsQrEnabled { get; set; } = false;
