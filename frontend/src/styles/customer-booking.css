@@ -1,0 +1,1053 @@
+  .customer-site .breadcrumb-nav {
+    max-width: 1180px;
+    margin: 16px auto 0 auto;
+    padding: 0 24px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .customer-site .breadcrumb-link {
+    color: var(--color-teal);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .customer-site .breadcrumb-link:hover { text-decoration: underline; }
+  .customer-site .detail-layout-container {
+    max-width: 1180px;
+    margin: 14px auto 60px auto;
+    padding: 0 24px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  .customer-site .event-info-panel { display: flex; flex-direction: column; gap: 22px; }
+  .customer-site .event-main-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(2, 56, 82, 0.04);
+  }
+  .customer-site .event-cover-hero {
+    width: 100%;
+    height: 290px;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
+  }
+  .customer-site .event-hero-body {
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .customer-site .event-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 800;
+    padding: 3px 12px;
+    border-radius: 20px;
+    background: #e6f7f3;
+    color: #0d7a60;
+    border: 1px solid #bcf0e2;
+    text-transform: uppercase;
+    width: fit-content;
+  }
+  .customer-site .event-title-h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--color-navy);
+    line-height: 1.3;
+    letter-spacing: -0.4px;
+  }
+
+  .customer-site .event-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    background: var(--bg-page);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .customer-site .meta-item { display: flex; align-items: flex-start; gap: 10px; }
+  .customer-site .meta-icon-box {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1.5px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-teal);
+    flex-shrink: 0;
+  }
+  .customer-site .meta-text-box div:first-child {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .customer-site .meta-text-box div:last-child {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--color-navy);
+    margin-top: 2px;
+  }
+
+  .customer-site .event-description-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    padding: 24px 28px;
+    box-shadow: 0 6px 18px rgba(2, 56, 82, 0.04);
+  }
+  .customer-site .section-heading-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16.5px;
+    font-weight: 800;
+    color: var(--color-navy);
+    padding-bottom: 12px;
+    border-bottom: 1.5px solid var(--hairline);
+    margin-bottom: 14px;
+  }
+  .customer-site .event-desc-text { font-size: 14px; color: #334155; line-height: 1.7; }
+  .customer-site .booking-flow-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: sticky;
+    top: 80px;
+  }
+  .customer-site .booking-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    padding: 24px 26px;
+    box-shadow: 0 8px 24px rgba(2, 56, 82, 0.06);
+  }
+  .customer-site .reservation-countdown-bar {
+    background: #fffbeb;
+    border: 1.5px solid var(--color-yellow);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    animation: ep-customer-fade-in 0.3s ease;
+  }
+  .customer-site .reservation-countdown-bar.active { display: flex; }
+  .customer-site .timer-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--danger);
+    background: #fee2e2;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 1px;
+  }
+  .customer-site .tier-ticket-list { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+  .customer-site .tier-booking-item {
+    border: 1.5px solid var(--card-border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-page);
+    transition: all 0.15s ease;
+  }
+  .customer-site .tier-booking-item.active-selected {
+    border-color: var(--color-teal);
+    background: #f0f9f7;
+  }
+  .customer-site .tier-left-info h4 { font-size: 13.5px; font-weight: 800; color: var(--color-navy); }
+  .customer-site .tier-left-info p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .customer-site .tier-left-info .slots-badge { font-size: 11px; color: var(--color-teal); font-weight: 700; margin-top: 4px; display: block; }
+  .customer-site .quantity-stepper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    padding: 2px 4px;
+  }
+  .customer-site .btn-step {
+    width: 26px;
+    height: 26px;
+    border: none;
+    background: transparent;
+    color: var(--color-navy);
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+  .customer-site .btn-step:hover:not(:disabled) { background: var(--bg-page); color: var(--color-teal); }
+  .customer-site .btn-step:disabled { color: #cbd5e1; cursor: not-allowed; }
+  .customer-site .step-value {
+    width: 22px;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--color-navy);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .customer-site .btn-start-reserve {
+    width: 100%;
+    padding: 12px;
+    background: var(--color-navy);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13.5px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s ease;
+  }
+  .customer-site .btn-start-reserve:hover:not(:disabled) { background: #034b6e; }
+  .customer-site .btn-start-reserve:disabled { background: #94a3b8; cursor: not-allowed; }
+  .customer-site .attendees-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1.5px dashed var(--card-border);
+  }
+  .customer-site .attendee-card-item {
+    background: var(--bg-page);
+    border: 1.5px solid var(--card-border);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: all 0.2s ease;
+  }
+  .customer-site .attendee-card-item.is-owner-card {
+    border-color: var(--color-teal);
+    background: #f4faf8;
+  }
+  .customer-site .attendee-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .customer-site .attendee-tier-tag {
+    font-size: 11px;
+    font-weight: 800;
+    color: #fff;
+    background: var(--color-teal);
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .customer-site .attendee-tier-tag.vip { background: var(--color-orange); }
+  .customer-site .method-switch-tabs {
+    display: flex;
+    gap: 6px;
+    background: #e2e8f0;
+    padding: 3px;
+    border-radius: 6px;
+  }
+  .customer-site .method-tab-btn {
+    flex: 1;
+    padding: 5px 8px;
+    border: none;
+    border-radius: 4px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .customer-site .method-tab-btn.active {
+    background: #fff;
+    color: var(--color-navy);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  }
+
+  .customer-site .attendee-input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .customer-site .att-control {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 12.5px;
+    font-family: inherit;
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    outline: none;
+    background: #fff;
+  }
+  .customer-site .att-control:focus { border-color: var(--color-teal); }
+  .customer-site .att-control[readonly] { background: #f1f5f9; color: #475569; }
+  .customer-site .att-face-upload-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fff;
+    border: 1px dashed var(--color-teal);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .customer-site .att-face-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: #e2f0ec;
+    border: 1.5px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .customer-site .att-face-meta {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .customer-site .btn-upload-single-face {
+    padding: 4px 10px;
+    background: var(--color-navy);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    width: fit-content;
+  }
+  .customer-site .btn-upload-single-face:hover { background: var(--color-teal); }
+  .customer-site .order-summary-box {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1.5px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .customer-site .btn-confirm-booking-all {
+    width: 100%;
+    padding: 13px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s ease;
+  }
+  .customer-site .btn-confirm-booking-all:hover:not(:disabled) { background: var(--color-teal-hover); }
+  .customer-site .btn-confirm-booking-all:disabled { background: #94a3b8; cursor: not-allowed; }
+
+
+  .customer-site .paid-tier-item {
+    border: 1.5px solid var(--card-border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-page);
+    margin-bottom: 12px;
+    transition: border-color 0.15s ease;
+  }
+  .customer-site .paid-tier-item.active-selected {
+    border-color: var(--color-teal);
+    background: #f0f9f7;
+  }
+  .customer-site .tier-info-wrap h4 { font-size: 14px; font-weight: 800; color: var(--color-navy); }
+  .customer-site .tier-price-tag {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: var(--color-teal);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 2px;
+  }
+  .customer-site .tier-slots-left { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .customer-site .quantity-stepper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    padding: 2px 4px;
+  }
+  .customer-site .btn-step {
+    width: 26px;
+    height: 26px;
+    border: none;
+    background: transparent;
+    color: var(--color-navy);
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+  .customer-site .btn-step:hover:not(:disabled) { background: var(--bg-page); color: var(--color-teal); }
+  .customer-site .btn-step:disabled { color: #cbd5e1; cursor: not-allowed; }
+  .customer-site .step-value {
+    width: 22px;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--color-navy);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .customer-site .price-calc-box {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .customer-site .calc-row { display: flex; justify-content: space-between; color: var(--text-muted); }
+  .customer-site .calc-row.total-row {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--color-navy);
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1.5px dashed var(--card-border);
+  }
+  .customer-site .total-amount-display {
+    color: var(--color-red);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .customer-site .btn-proceed-pay {
+    width: 100%;
+    padding: 13px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14.5px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+    transition: background 0.15s ease;
+  }
+  .customer-site .btn-proceed-pay:hover:not(:disabled) { background: var(--color-teal-hover); }
+  .customer-site .btn-proceed-pay:disabled { background: #94a3b8; cursor: not-allowed; }
+  .customer-site .vietqr-stage-box {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  .customer-site .vietqr-stage-box.active { display: flex; }
+
+  .customer-site .countdown-hold-box {
+    background: #fffbeb;
+    border: 1px solid var(--color-yellow);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--color-navy);
+  }
+  .customer-site .timer-digit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--danger);
+  }
+
+  .customer-site .qr-code-frame {
+    border: 2px dashed var(--color-teal);
+    border-radius: 12px;
+    padding: 16px;
+    background: #fff;
+    margin: 0 auto;
+    width: 240px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .customer-site .qr-code-img {
+    width: 190px;
+    height: 190px;
+    object-fit: contain;
+  }
+
+  .customer-site .bank-details-card {
+    background: var(--bg-page);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+  }
+  .customer-site .bank-row { display: flex; justify-content: space-between; align-items: center; }
+  .customer-site .bank-val { font-weight: 700; color: var(--color-navy); font-family: 'JetBrains Mono', monospace; }
+
+  .customer-site .payment-polling-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--color-teal);
+    font-weight: 700;
+    margin-top: 4px;
+  }
+  .customer-site .spinner-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--color-teal);
+    animation: ep-customer-pulse 1s infinite alternate;
+  }
+
+  .customer-site .success-banner {
+    background: #dcfce7;
+    border: 1.5px solid #86efac;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .customer-site .success-banner h3 { font-size: 16px; font-weight: 800; color: #166534; }
+  .customer-site .success-banner p { font-size: 12px; color: #15803d; margin-top: 3px; }
+
+  .customer-site .purchased-ticket-item {
+    background: var(--bg-page);
+    border: 1.5px solid var(--card-border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .customer-site .purchased-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .customer-site .ticket-code-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    background: #fff;
+    padding: 2px 6px;
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+  }
+  .customer-site .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 56, 82, 0.6);
+    backdrop-filter: blur(3px);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+  .customer-site .modal-backdrop.show { opacity: 1; visibility: visible; }
+  .customer-site .modal-box {
+    background: #fff;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 14px;
+    box-shadow: 0 20px 45px -10px rgba(2, 56, 82, 0.35);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.95);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .customer-site .modal-backdrop.show .modal-box { transform: scale(1); }
+
+  .customer-site .modal-header-styled {
+    padding: 18px 24px;
+    background: var(--bg-page);
+    border-bottom: 1.5px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .customer-site .modal-title-bold {
+    font-size: 16.5px;
+    font-weight: 800;
+    color: var(--color-navy);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .customer-site .modal-body-padded {
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .customer-site .review-item-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .customer-site .review-item-table th {
+    text-align: left;
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--card-border);
+  }
+  .customer-site .review-item-table td {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--hairline);
+    color: var(--color-navy);
+  }
+  .customer-site .review-item-table tr:last-child td { border-bottom: none; }
+
+  .customer-site .buyer-verify-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .customer-site .modal-footer-flex {
+    padding: 14px 24px;
+    background: var(--bg-page);
+    border-top: 1.5px solid var(--hairline);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+  .customer-site .btn-modal-back {
+    padding: 9px 18px;
+    background: #fff;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .customer-site .btn-modal-back:hover { border-color: var(--color-navy); }
+  .customer-site .btn-modal-confirm-pay {
+    padding: 9px 20px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .customer-site .btn-modal-confirm-pay:hover { background: var(--color-teal-hover); }
+
+  @keyframes ep-customer-pulse { from { opacity: 0.3; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
+
+
+  .customer-site .event-detail[data-kind="hybrid"] .tier-booking-item {
+    border: 1.5px solid var(--card-border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-page);
+    margin-bottom: 10px;
+    transition: all 0.15s ease;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .tier-booking-item.active-selected {
+    border-color: var(--color-teal);
+    background: #f0f9f7;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .tier-left-info h4 { font-size: 13.5px; font-weight: 800; color: var(--color-navy); }
+  .customer-site .event-detail[data-kind="hybrid"] .tier-badge-type {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .tier-badge-type.free { background: #dcfce7; color: #166534; }
+  .customer-site .event-detail[data-kind="hybrid"] .tier-badge-type.paid { background: #fee2e2; color: #991b1b; }
+
+  .customer-site .event-detail[data-kind="hybrid"] .tier-price-display {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--color-teal);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .customer-site .event-detail[data-kind="hybrid"] .tier-remaining-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .tier-remaining-badge strong {
+    color: var(--color-teal);
+  }
+
+  .customer-site .event-detail[data-kind="hybrid"] .quantity-stepper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fff;
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    padding: 2px 4px;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .btn-step {
+    width: 26px;
+    height: 26px;
+    border: none;
+    background: transparent;
+    color: var(--color-navy);
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .btn-step:hover:not(:disabled) { background: var(--bg-page); color: var(--color-teal); }
+  .customer-site .event-detail[data-kind="hybrid"] .btn-step:disabled { color: #cbd5e1; cursor: not-allowed; }
+  .customer-site .event-detail[data-kind="hybrid"] .step-value {
+    width: 22px;
+    text-align: center;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--color-navy);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .rule-notice-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: #166534;
+    margin-top: 12px;
+    line-height: 1.45;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .order-calc-box {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12.5px;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .calc-row { display: flex; justify-content: space-between; color: var(--text-muted); }
+  .customer-site .event-detail[data-kind="hybrid"] .calc-row.total-row {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--color-navy);
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1.5px dashed var(--card-border);
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .total-amount-display {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--color-red);
+    font-size: 16px;
+  }
+
+  .customer-site .event-detail[data-kind="hybrid"] .btn-action-main {
+    width: 100%;
+    padding: 12.5px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+    transition: background 0.15s ease;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .btn-action-main:hover:not(:disabled) { background: var(--color-teal-hover); }
+  .customer-site .event-detail[data-kind="hybrid"] .btn-action-main:disabled { background: #94a3b8; cursor: not-allowed; }
+
+  .customer-site .event-detail[data-kind="hybrid"] .countdown-hold-bar {
+    background: #fffbeb;
+    border: 1.5px solid var(--color-yellow);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-navy);
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .timer-digit {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--danger);
+  }
+
+  .customer-site .event-detail[data-kind="hybrid"] .attendee-card-item {
+    background: var(--bg-page);
+    border: 1.5px solid var(--card-border);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .attendee-card-item.owner { border-color: var(--color-teal); background: #f4faf8; }
+  .customer-site .event-detail[data-kind="hybrid"] .att-control {
+    width: 100%;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    outline: none;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .att-face-upload-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 1px dashed var(--color-teal);
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .att-face-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    background: #e2f0ec;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .btn-upload-face-tiny {
+    padding: 4px 8px;
+    background: var(--color-navy);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .customer-site .event-detail[data-kind="hybrid"] .banner-combined-alert {
+    background: #ecfeff;
+    border: 1px solid #a5f3fc;
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 12px;
+    color: #0e7490;
+    line-height: 1.5;
+  }
+
+  .customer-site .event-detail[data-kind="hybrid"] .qr-code-frame {
+    border: 2px dashed var(--color-teal);
+    border-radius: 12px;
+    padding: 14px;
+    background: #fff;
+    margin: 0 auto;
+    width: 220px;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .qr-code-img { width: 180px; height: 180px; object-fit: contain; }
+
+  .customer-site .event-detail[data-kind="hybrid"] .bank-details-card {
+    background: var(--bg-page);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 12px;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .bank-row { display: flex; justify-content: space-between; }
+  .customer-site .event-detail[data-kind="hybrid"] .bank-val { font-weight: 700; color: var(--color-navy); font-family: 'JetBrains Mono', monospace; }
+
+  .customer-site .event-detail[data-kind="hybrid"] .success-banner {
+    background: #dcfce7;
+    border: 1.5px solid #86efac;
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+  .customer-site .event-detail[data-kind="hybrid"] .success-banner h3 { font-size: 15px; font-weight: 800; color: #166534; }
+  .customer-site .event-detail[data-kind="hybrid"] .success-banner p { font-size: 12px; color: #15803d; margin-top: 2px; }
+
+
+
+.customer-site .event-detail { min-width: 0; }
+.customer-site .event-info-panel, .customer-site .booking-flow-panel { min-width: 0; }
+.customer-site .event-cover-hero.cover-fallback { background: #011420; color: var(--color-mint); display: flex; align-items: center; justify-content: center; }
+.customer-site .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #0d7a60; flex-shrink: 0; }
+.customer-site .preserve-lines { white-space: pre-line; }
+.customer-site .policy-box { background: #fff; border: 1.5px solid var(--card-border); border-radius: 14px; padding: 20px 24px; font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+.customer-site .policy-box h2 { font-size: 14px; font-weight: 800; color: var(--color-navy); margin-bottom: 10px; }
+.customer-site .policy-box ul { list-style: disc; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+.customer-site .booking-intro { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.customer-site .booking-help { font-size: 11.5px; color: var(--text-muted); line-height: 1.5; margin-top: 8px; }
+.customer-site .tier-remaining-badge { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+.customer-site .tier-remaining-badge strong { color: var(--color-teal); }
+.customer-site .tier-ticket-list { margin: 16px 0; }
+.customer-site .paid-tier-item { margin-bottom: 0; }
+.customer-site .quantity-stepper { flex-shrink: 0; }
+.customer-site .tier-left-info, .customer-site .tier-info-wrap { min-width: 0; padding-right: 8px; }
+.customer-site .modal-box { max-height: calc(100dvh - 40px); overflow-y: auto; }
+.customer-site .modal-title-bold { margin: 0; }
+.customer-site .modal-close { display: flex; border: 0; background: transparent; color: var(--text-muted); padding: 3px; }
+.customer-site .review-item-table th:last-child, .customer-site .review-item-table td:last-child { text-align: right; }
+.customer-site .review-event-name { font-size: 13px; font-weight: 700; }
+.customer-site .modal-body-padded > p { font-size: 13px; line-height: 1.6; }
+.customer-site .danger-button { background: var(--danger); }
+.customer-site .danger-button:hover { background: #b91c1c; }
+.customer-site .booking-order-code, .customer-site .issued-ticket-code code { overflow-wrap: anywhere; }
+.customer-site .attendees-title { font-size: 13px; font-weight: 800; color: var(--color-navy); }
+.customer-site .attendee-number { font-size: 12.5px; color: var(--color-navy); }
+.customer-site fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+.customer-site .field-label { display: flex; flex-direction: column; gap: 5px; font-size: 11.5px; font-weight: 600; color: var(--color-navy); }
+.customer-site .field-label.full-width { grid-column: 1 / -1; }
+.customer-site .method-tab-btn { display: flex; align-items: center; justify-content: center; gap: 4px; }
+.customer-site .btn-save-attendee { padding: 6px 10px; border: 1px solid var(--card-border); background: #fff; color: var(--color-navy); border-radius: 6px; font-size: 11.5px; font-weight: 700; margin-top: 10px; }
+.customer-site .btn-save-attendee:hover { border-color: var(--color-teal); color: var(--color-teal); }
+.customer-site .att-face-thumb { overflow: hidden; }
+.customer-site .att-face-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.customer-site .face-label { font-size: 11.5px; font-weight: 700; }
+.customer-site .face-hint { font-size: 10.5px; color: var(--text-muted); line-height: 1.4; }
+.customer-site .btn-upload-single-face input { display: none; }
+.customer-site .btn-upload-single-face.disabled { opacity: .45; cursor: not-allowed; }
+.customer-site .face-consent { display: flex; align-items: flex-start; gap: 7px; font-size: 10.5px; line-height: 1.5; color: var(--text-muted); }
+.customer-site .face-consent input { flex-shrink: 0; margin-top: 2px; accent-color: var(--color-teal); }
+.customer-site .issued-ticket-code { display: flex; align-items: flex-start; gap: 5px; color: var(--color-teal); font-size: 11px; }
+.customer-site .issued-ticket-code code { font-family: 'JetBrains Mono', monospace; }
+.customer-site .timer-label { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--color-navy); }
+.customer-site .timer-label .icon { color: var(--color-orange); }
+.customer-site .bank-row { gap: 8px; flex-wrap: wrap; }
+.customer-site .bank-val { overflow-wrap: anywhere; min-width: 0; }
+.customer-site .transfer-memo { font-size: 10.5px; }
+.customer-site .copy-memo { background: none; border: 0; padding: 3px; color: var(--color-teal); }
+.customer-site .banner-combined-alert { background: #ecfeff; border: 1px solid #a5f3fc; border-radius: 8px; padding: 10px 12px; text-align: left; font-size: 12px; color: #0e7490; line-height: 1.5; }
+.customer-site .success-banner h2 { font-size: 16px; font-weight: 800; color: #166534; }
+.customer-site .success-banner p { line-height: 1.5; }
+.customer-site .issued-pass-list { display: flex; flex-direction: column; gap: 12px; margin-top: 18px; }
+.customer-site .purchased-ticket-item summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; font-size: 12px; font-weight: 700; }
+.customer-site .purchased-ticket-item[open] > :not(summary) { margin-top: 10px; }
+.customer-site .ticket-code-tag { display: block; overflow-wrap: anywhere; }
+.customer-site .issued-qr { display: block; width: 150px; height: 150px; margin-left: auto; margin-right: auto; }
+.customer-site .expired-booking { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; color: var(--text-muted); font-size: 13px; }
+.customer-site .expired-booking h2 { font-size: 16px; font-weight: 800; color: var(--color-navy); }
+.customer-site .event-detail[data-kind="paid"] .event-cover-hero { height: 240px; }
+.customer-site .event-detail[data-kind="paid"] .event-hero-body { padding: 22px 26px; gap: 12px; }
+.customer-site .event-detail[data-kind="paid"] .event-title-h1 { font-size: 22px; }
+.customer-site .event-detail[data-kind="paid"] .event-meta-grid { gap: 12px; padding: 14px 16px; }
+.customer-site .event-detail[data-kind="paid"] .meta-item { align-items: center; }
+.customer-site .event-detail[data-kind="paid"] .meta-icon-box { width: 32px; height: 32px; border-radius: 6px; border-width: 1px; }
+.customer-site .event-detail[data-kind="paid"] .meta-text-box div:first-child { font-size: 11px; }
+.customer-site .event-detail[data-kind="paid"] .meta-text-box div:last-child { font-size: 12.5px; margin-top: 1px; }
+.customer-site .event-detail[data-kind="hybrid"] .att-face-meta { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.customer-site .event-detail[data-kind="hybrid"] .att-face-thumb img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 960px) {
+  .customer-site .detail-layout-container { grid-template-columns: 1fr; }
+  .customer-site .booking-flow-panel { position: static; }
+}
+@media (max-width: 680px) {
+  .customer-site .breadcrumb-nav { padding: 0 16px; flex-wrap: wrap; }
+  .customer-site .detail-layout-container { padding: 0 16px; gap: 20px; }
+  .customer-site .event-hero-body, .customer-site .event-description-card { padding: 20px; }
+  .customer-site .booking-card { padding: 20px 18px; }
+  .customer-site .event-meta-grid { grid-template-columns: 1fr; }
+  .customer-site .event-title-h1 { font-size: 23px; }
+  .customer-site .event-cover-hero { height: 220px; }
+  .customer-site .modal-body-padded { padding: 18px; }
+  .customer-site .modal-header-styled, .customer-site .modal-footer-flex { padding: 14px 18px; }
+  .customer-site .modal-footer-flex { flex-wrap: wrap; }
+}
+@media (max-width: 380px) { .customer-site .attendee-input-grid { grid-template-columns: 1fr; } .customer-site .attendee-header-row { gap: 8px; flex-wrap: wrap; } }
+.customer-site .section-title { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: var(--color-navy); padding-bottom: 10px; border-bottom: 1.5px solid var(--hairline); margin-bottom: 14px; text-align: left; }
+.customer-site .vietqr-stage-box .section-title { margin-bottom: 0; }
+@keyframes ep-customer-fade-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }

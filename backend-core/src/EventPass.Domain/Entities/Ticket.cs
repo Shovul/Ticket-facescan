@@ -7,6 +7,7 @@ public class Ticket : BaseEntity
     public decimal Price { get; set; }
     public int Quantity { get; set; }
     public int QuantitySold { get; set; } = 0;
+    public bool IsActive { get; set; } = true;
 
     public Event Event { get; set; } = null!;
     public ICollection<TicketDetail> TicketDetails { get; set; } = new List<TicketDetail>();
