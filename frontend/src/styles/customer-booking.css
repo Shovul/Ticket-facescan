@@ -1048,6 +1048,51 @@
   .customer-site .modal-footer-flex { flex-wrap: wrap; }
 }
 @media (max-width: 380px) { .customer-site .attendee-input-grid { grid-template-columns: 1fr; } .customer-site .attendee-header-row { gap: 8px; flex-wrap: wrap; } }
+
+.customer-site .claim-sent-notice { display: flex; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid #a5f3fc; border-radius: 8px; background: #ecfeff; color: #0e7490; }
+.customer-site .claim-sent-notice div { display: flex; flex-direction: column; gap: 2px; }
+.customer-site .claim-sent-notice strong { font-size: 12px; }
+.customer-site .claim-sent-notice span { font-size: 11px; line-height: 1.4; }
+
+/* Giao diện nhận vé từ liên kết dùng chung hệ màu và thành phần trang khách hàng. */
+.customer-site .claim-page { padding: 34px 24px 64px; }
+.customer-site .claim-card { width: min(100%, 760px); margin: 0 auto; background: var(--white); border: 1.5px solid var(--card-border); border-radius: 16px; padding: 28px; box-shadow: 0 10px 28px rgba(2, 56, 82, 0.08); }
+.customer-site .claim-card-heading { display: flex; align-items: center; gap: 13px; padding-bottom: 20px; border-bottom: 1.5px solid var(--hairline); }
+.customer-site .claim-heading-icon { width: 44px; height: 44px; border-radius: 11px; display: grid; place-items: center; background: #e5f7f3; color: var(--color-teal); flex: 0 0 auto; }
+.customer-site .claim-card-heading h1 { margin: 0; font-size: 21px; font-weight: 800; color: var(--color-navy); }
+.customer-site .claim-card-heading p { margin: 4px 0 0; color: var(--text-muted); font-size: 13px; }
+.customer-site .claim-event-summary { display: flex; align-items: center; gap: 13px; margin: 20px 0; padding: 16px; border: 1.5px solid #bdeae0; border-radius: 11px; background: #f3fbf8; }
+.customer-site .claim-ticket-icon { width: 40px; height: 40px; display: grid; place-items: center; flex: 0 0 auto; color: var(--color-teal); background: #dff5ee; border-radius: 9px; }
+.customer-site .claim-event-summary > div { min-width: 0; flex: 1; }
+.customer-site .claim-event-label { display: block; color: var(--color-teal); font-size: 10px; font-weight: 800; letter-spacing: .4px; }
+.customer-site .claim-event-summary h2 { margin: 3px 0 1px; color: var(--color-navy); font-size: 16px; font-weight: 800; line-height: 1.3; }
+.customer-site .claim-event-summary p { margin: 0; color: var(--text-muted); font-size: 12px; font-weight: 600; }
+.customer-site .claim-deadline { align-self: flex-start; display: inline-flex; align-items: center; gap: 5px; border-radius: 6px; padding: 5px 7px; background: #fff7ed; color: #b45309; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.customer-site .claim-form fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.customer-site .claim-form-title { display: flex; align-items: center; gap: 9px; color: var(--color-navy); }
+.customer-site .claim-form-title h2 { margin: 0; font-size: 15px; font-weight: 800; }
+.customer-site .claim-form-title p { margin: 2px 0 0; color: var(--text-muted); font-size: 11.5px; }
+.customer-site .claim-upload { display: flex; align-items: center; gap: 12px; padding: 13px; border: 1.5px dashed var(--color-teal); border-radius: 10px; background: #fbfefd; }
+.customer-site .claim-upload.selected { border-style: solid; border-color: #77c9b6; background: #f1fbf7; }
+.customer-site .claim-upload-icon { width: 44px; height: 44px; display: grid; place-items: center; flex: 0 0 auto; color: var(--color-teal); background: #e2f3ed; border-radius: 8px; }
+.customer-site .claim-upload > div { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+.customer-site .claim-upload strong { color: var(--color-navy); font-size: 12.5px; overflow-wrap: anywhere; }
+.customer-site .claim-upload span { color: var(--text-muted); font-size: 11px; line-height: 1.35; }
+.customer-site .claim-upload input { display: none; }
+.customer-site .claim-upload .btn-upload-single-face { margin-top: 4px; }
+.customer-site .face-upload-requirement { color: var(--text-muted); font-size: 10.5px; line-height: 1.35; }
+.customer-site .claim-upload-locked { display: flex; align-items: center; gap: 8px; padding: 12px; border: 1px dashed var(--card-border); border-radius: 9px; background: var(--bg-page); color: var(--text-muted); font-size: 12px; }
+.customer-site .claim-message { margin: 20px 0 0; padding: 13px 15px; border-radius: 9px; font-size: 13px; }
+.customer-site .claim-message.loading { color: var(--color-teal); background: #effcf8; border: 1px solid #bdeae0; }
+.customer-site .claim-message.error { color: #b91c1c; background: #fff1f2; border: 1px solid #fecdd3; }
+.customer-site .claim-message.expired { display: flex; align-items: flex-start; gap: 10px; color: #9a3412; background: #fff7ed; border: 1px solid #fed7aa; }
+.customer-site .claim-message.expired div { display: flex; flex-direction: column; gap: 2px; }
+.customer-site .claim-message.expired span { font-size: 12px; }
+.customer-site .claim-success { display: flex; gap: 14px; align-items: flex-start; margin-top: 20px; padding: 20px; border: 1.5px solid #86efac; border-radius: 11px; background: #f0fdf4; color: #166534; }
+.customer-site .claim-success h2 { margin: 0; font-size: 16px; font-weight: 800; }
+.customer-site .claim-success p { margin: 5px 0 14px; color: #166534; font-size: 13px; line-height: 1.55; }
+.customer-site .claim-success .btn-proceed-pay { display: inline-flex; width: auto; padding: 8px 13px; text-decoration: none; font-size: 12px; }
+@media (max-width: 640px) { .customer-site .claim-page { padding: 20px 14px 44px; } .customer-site .claim-card { padding: 20px 16px; } .customer-site .claim-event-summary { align-items: flex-start; flex-wrap: wrap; } .customer-site .claim-deadline { width: 100%; } }
 .customer-site .section-title { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: var(--color-navy); padding-bottom: 10px; border-bottom: 1.5px solid var(--hairline); margin-bottom: 14px; text-align: left; }
 .customer-site .vietqr-stage-box .section-title { margin-bottom: 0; }
 @keyframes ep-customer-fade-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }

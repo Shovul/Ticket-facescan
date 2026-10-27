@@ -15,6 +15,7 @@ public class OrderItem : BaseEntity
     public byte[]? ProtectedFaceImage { get; set; }
     public string? FaceImageContentType { get; set; }
     public DateTime? FaceConsentAt { get; set; }
+    public string? ClaimTokenHash { get; set; }
     public int? TicketDetailId { get; set; }
     public Order Order { get; set; } = null!;
     public Ticket Ticket { get; set; } = null!;

@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using EventPass.Application.DTOs.Bookings;
 using EventPass.Application.Interfaces;
 using EventPass.Domain.Entities;
@@ -91,6 +93,8 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
         WithOrder(userId, code, o =>
         {
             var item = EditableItem(o, itemId);
+            if (item.Status == "issued" && item.FaceVector != null)
+                throw new BookingException(409, "Chỉ được thay ảnh, không đổi người tham dự sau khi vé đã có Face ID.");
             item.AttendeeName = request.Name.Trim();
             item.AttendeeEmail = request.Email.Trim();
             item.AttendeePhone = request.Phone.Trim();
@@ -103,11 +107,21 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
             return Task.FromResult(ToDto(o));
         }, ct);
 
-    public async Task<BookingDto> UploadFaceAsync(int userId, string code, int itemId, byte[] image, string contentType, CancellationToken ct)
+    public async Task<BookingDto> UploadFaceAsync(int userId, string code, int itemId, AttendeeRequest attendee, byte[] image, string contentType, CancellationToken ct)
+        => await SaveFaceAsync(userId, code, itemId, image, contentType, ct, attendee: attendee);
+
+    private async Task<BookingDto> SaveFaceAsync(int userId, string code, int itemId, byte[] image, string contentType,
+        CancellationToken ct, string? claimHash = null, AttendeeRequest? attendee = null)
     {
         await WithOrder(userId, code, o =>
         {
             var item = EditableItem(o, itemId);
+            if (claimHash != null) ValidateClaim(o, item, claimHash);
+            if (attendee != null)
+            {
+                ValidateAttendee(attendee);
+                return Task.FromResult(true);
+            }
             if (string.IsNullOrWhiteSpace(item.AttendeeName) || string.IsNullOrWhiteSpace(item.AttendeeEmail) || string.IsNullOrWhiteSpace(item.AttendeePhone))
                 throw new BookingException(422, "Vui lòng lưu thông tin người tham dự trước khi nạp ảnh khuôn mặt.");
             return Task.FromResult(true);
@@ -121,6 +135,13 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
         return await WithOrder(userId, code, async o =>
         {
             var item = EditableItem(o, itemId);
+            if (claimHash != null) ValidateClaim(o, item, claimHash);
+            if (attendee != null)
+            {
+                item.AttendeeName = attendee.Name.Trim();
+                item.AttendeeEmail = attendee.Email.Trim();
+                item.AttendeePhone = attendee.Phone.Trim();
+            }
             var faces = await repository.OtherFacesAsync(o.EventId, itemId, DateTime.UtcNow, ct);
             if (faces.Any(v => CosineDistance(v, result.Embedding.ToArray()) <= 0.35))
                 throw new BookingException(409, "Khuôn mặt này đã được đăng ký cho vé khác trong cùng sự kiện.");
@@ -128,10 +149,20 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
             item.ProtectedFaceImage = imageProtector.Protect(image);
             item.FaceImageContentType = contentType;
             item.FaceConsentAt = DateTime.UtcNow;
+            item.ClaimTokenHash = null;
             if (item.TicketDetail != null)
             {
+                item.TicketDetail.AttendeeName = item.AttendeeName!;
+                item.TicketDetail.AttendeeEmail = item.AttendeeEmail!;
+                item.TicketDetail.AttendeePhone = item.AttendeePhone;
                 item.TicketDetail.FaceVector = item.FaceVector;
                 item.TicketDetail.AttendeeFaceData = $"booking-item:{item.Id}";
+            }
+            if (claimHash != null && item.UnitPrice == 0 && item.Status == "reserved")
+            {
+                Issue(o, item);
+                if (o.TotalAmount == 0) o.PaymentStatus = PaymentStatus.Success;
+                if (o.Items.All(i => i.Status != "reserved")) o.ReservationStatus = "completed";
             }
             return ToDto(o);
         }, ct);
@@ -215,6 +246,141 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
             }, ct);
     }
 
+
+    // Trả hai khu vực đơn giữ chỗ và vé chính thức, phân trang bốn vé theo bộ lọc.
+    public async Task<CustomerTicketsDto> GetTicketsAsync(int userId, int page, string filter, CancellationToken ct)
+    {
+        if (page < 1 || filter is not ("all" or "free" or "paid" or "pending"))
+            throw new BookingException(400, "Bộ lọc hoặc số trang không hợp lệ.");
+        await GetCustomerAsync(userId, ct);
+        var orders = await repository.GetCustomerOrdersAsync(userId, ct);
+        foreach (var order in orders.Where(o => o.ReservationStatus is "holding" or "awaiting_faces"))
+            await GetAsync(userId, order.OrderCode, ct);
+        orders = await repository.GetCustomerOrdersAsync(userId, ct);
+        var tickets = orders.SelectMany(o => o.Items.Where(i => i.Status == "issued" && i.TicketDetail != null)
+            .Select(i => TicketDto(o, i))).ToList();
+        var filtered = tickets.Where(t => filter switch
+        {
+            "free" => t.Price == 0, "paid" => t.Price > 0,
+            "pending" => !t.HasFaceId && t.Status == "valid", _ => true
+        }).ToList();
+        var pages = Math.Max(1, (filtered.Count + 3) / 4);
+        page = Math.Min(page, pages);
+        return new(orders.Where(o => o.Items.Any(i => i.Status == "reserved")).Select(ToDto).ToList(),
+            filtered.Skip((page - 1) * 4).Take(4).ToList(), page, pages, filtered.Count, tickets.Count,
+            tickets.Count(t => t.Price == 0), tickets.Count(t => t.Price > 0),
+            tickets.Count(t => !t.HasFaceId && t.Status == "valid"), DateTime.UtcNow);
+    }
+
+    public Task<DigitalPassDto> GetPassAsync(int userId, string code, int itemId, CancellationToken ct) =>
+        WithOrder(userId, code, o =>
+        {
+            var item = o.Items.SingleOrDefault(i => i.Id == itemId && i.Status == "issued" && i.TicketDetail != null)
+                ?? throw new BookingException(404, "Không tìm thấy thẻ vé.");
+            var image = item.ProtectedFaceImage == null ? null
+                : "data:" + item.FaceImageContentType + ";base64," + Convert.ToBase64String(imageProtector.Unprotect(item.ProtectedFaceImage));
+            return Task.FromResult(new DigitalPassDto(TicketDto(o, item), image));
+        }, ct);
+
+    // Chỉ hủy các suất chưa phát hành; vé đã mua luôn được bảo lưu.
+    public Task<BookingDto> CancelPartAsync(int userId, string code, string part, CancellationToken ct) =>
+        WithOrder(userId, code, o =>
+        {
+            if (part is not ("free" or "paid")) throw new BookingException(400, "Phần đơn không hợp lệ.");
+            if (part == "paid" && (o.PaidAt != null || o.Items.Any(i => i.UnitPrice > 0 && i.Status == "issued")))
+                throw new BookingException(409, "Vé đã thanh toán không được hoàn hoặc hủy vì lý do cá nhân.");
+            var pending = o.Items.Where(i => i.Status == "reserved" && (part == "free" ? i.UnitPrice == 0 : i.UnitPrice > 0)).ToList();
+            if (pending.Count == 0) throw new BookingException(409, "Không còn suất giữ chỗ có thể hủy.");
+            foreach (var item in pending) { item.Status = "cancelled"; item.ClaimTokenHash = null; }
+            if (o.PaidAt == null)
+            {
+                o.TotalAmount = o.Items.Where(i => i.Status == "reserved").Sum(i => i.UnitPrice);
+                if (o.TotalAmount == 0)
+                {
+                    o.PaymentExpiresAt = null;
+                    o.PaymentMethod = "Free";
+                    var freeDeadline = o.CreatedAt.AddMinutes(5);
+                    if (o.ExpiresAt > freeDeadline) o.ExpiresAt = freeDeadline;
+                }
+                else if (!o.Items.Any(i => i.Status == "reserved" && i.UnitPrice == 0)) o.ExpiresAt = o.PaymentExpiresAt;
+            }
+            o.ReservationStatus = o.Items.Any(i => i.Status == "reserved") ? o.PaidAt == null ? "holding" : "awaiting_faces"
+                : o.Items.Any(i => i.Status == "issued") ? "completed" : "cancelled";
+            Expire(o, DateTime.UtcNow);
+            return Task.FromResult(ToDto(o));
+        }, ct);
+
+    public Task<ClaimLinkDto> CreateClaimAsync(int userId, string code, int itemId, CancellationToken ct) =>
+        WithOrder(userId, code, o =>
+        {
+            var item = EditableItem(o, itemId);
+            if (item.FaceVector != null) throw new BookingException(409, "Vé đã có Face ID; không thể chuyển người nhận.");
+            if (item.UnitPrice > 0 && o.PaidAt == null) throw new BookingException(409, "Cần thanh toán trước khi gửi liên kết nhận vé.");
+            var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+            item.ClaimTokenHash = HashToken(token);
+            return Task.FromResult(new ClaimLinkDto(token, ClaimDeadline(o, item)));
+        }, ct);
+
+    public async Task<ClaimTicketDto> GetClaimAsync(string token, CancellationToken ct)
+    {
+        var hash = HashToken(token);
+        var order = await repository.GetClaimOrderAsync(hash, ct) ?? throw new BookingException(404, "Liên kết nhận vé không còn hiệu lực.");
+        return await WithOrder(order.UserId, order.OrderCode, o =>
+        {
+            var item = o.Items.SingleOrDefault(i => i.ClaimTokenHash == hash) ?? throw new BookingException(404, "Liên kết đã được thay mới.");
+            ValidateClaim(o, item, hash);
+            return Task.FromResult(new ClaimTicketDto(o.Event.Title, item.Ticket.Name, ClaimDeadline(o, item), DateTime.UtcNow));
+        }, ct);
+    }
+
+    public async Task<ClaimTicketDto> CompleteClaimAsync(string token, AttendeeRequest attendee, byte[] image, string contentType, CancellationToken ct)
+    {
+        var hash = HashToken(token);
+        var order = await repository.GetClaimOrderAsync(hash, ct) ?? throw new BookingException(404, "Liên kết nhận vé không còn hiệu lực.");
+        var item = order.Items.Single(i => i.ClaimTokenHash == hash);
+        var result = await SaveFaceAsync(order.UserId, order.OrderCode, item.Id, image, contentType, ct, hash, attendee);
+        await SendEmail(order.UserId, order.OrderCode, ct);
+        return new(result.EventTitle, item.Ticket.Name, ClaimDeadline(order, item), DateTime.UtcNow);
+    }
+
+    private static string HashToken(string token)
+    {
+        if (token.Length != 64 || token.Any(c => !Uri.IsHexDigit(c))) throw new BookingException(404, "Liên kết nhận vé không hợp lệ.");
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+    }
+
+    private static void ValidateAttendee(AttendeeRequest attendee)
+    {
+        var name = attendee.Name.Trim();
+        var email = attendee.Email.Trim();
+        var phone = attendee.Phone.Trim();
+        if (name.Length is < 2 or > 100 || email.Length is 0 or > 255 || !email.Contains('@') || phone.Length != 10 || !phone.All(char.IsDigit))
+            throw new BookingException(422, "Thông tin người tham dự không hợp lệ.");
+    }
+
+    private static DateTime ClaimDeadline(Order order, OrderItem item) => item.UnitPrice == 0
+        ? order.ExpiresAt ?? order.Event.StartTime : order.Event.StartTime;
+
+    private static void ValidateClaim(Order order, OrderItem item, string hash)
+    {
+        EditableItem(order, item.Id);
+        if (item.ClaimTokenHash != hash || item.FaceVector != null || ClaimDeadline(order, item) <= DateTime.UtcNow
+            || (order.TotalAmount > 0 && order.PaidAt == null))
+            throw new BookingException(410, "Liên kết đã hết hạn, được thay mới hoặc vé đã nhận.");
+    }
+
+    private static CustomerTicketDto TicketDto(Order order, OrderItem item)
+    {
+        var ticket = item.TicketDetail!;
+        var status = order.Event.Status == EventStatus.Cancelled ? "cancelled"
+            : ticket.Status == TicketDetailStatus.CheckedIn ? "checkedin"
+            : ticket.Status == TicketDetailStatus.Cancelled ? "cancelled"
+            : ticket.Status == TicketDetailStatus.Expired || order.Event.EndTime <= DateTime.UtcNow ? "expired" : "valid";
+        return new(order.OrderCode, item.Id, order.Event.Title, order.Event.Location, order.Event.StartTime, order.Event.EndTime,
+            string.Join(" • ", order.Event.Kiosks.Where(k => k.IsActive).Select(k => k.Name)), item.Ticket.Name, item.UnitPrice,
+            ticket.TicketCode, ticket.QrCodeUrl, item.AttendeeName, item.FaceVector != null, status, ticket.CheckedInAt);
+    }
+
     private async Task<T> WithOrder<T>(int userId, string code, Func<Order, Task<T>> action, CancellationToken ct)
     {
         var eventId = await repository.GetOrderEventIdAsync(code, ct);
@@ -246,7 +412,7 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
         if (item == null) throw new BookingException(404, "Không tìm thấy vé trong đơn.");
         if (item.Status is "expired" or "cancelled" || o.Event.Status == EventStatus.Cancelled || o.Event.StartTime <= DateTime.UtcNow)
             throw new BookingException(409, "Vé không còn được cập nhật thông tin.");
-        if (item.TicketDetail != null && (item.TicketDetail.Status != TicketDetailStatus.Valid || item.TicketDetail.FaceVector != null))
+        if (item.TicketDetail != null && item.TicketDetail.Status != TicketDetailStatus.Valid)
             throw new BookingException(409, "Thông tin nhận diện vé đã được chốt. Vui lòng liên hệ hỗ trợ.");
         return item;
     }
@@ -269,6 +435,7 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
         o.ConfirmationEmailSentAt = null;
         item.TicketDetail = ticket;
         item.Status = "issued";
+        item.ClaimTokenHash = null;
         item.Ticket.QuantitySold++;
     }
 
@@ -276,7 +443,7 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
         o.Event.StartTime, o.ReservationStatus ?? "unknown", o.TotalAmount, DateTime.UtcNow, o.ExpiresAt,
         o.PaymentExpiresAt, o.PaidAt, o.Items.OrderBy(i => i.Id).Select(i => new BookingItemDto(i.Id, i.TicketId,
             i.Ticket.Name, i.UnitPrice, i.Status, i.AttendeeName, i.AttendeeEmail, i.AttendeePhone,
-            i.FaceVector != null, i.TicketDetail?.TicketCode, i.TicketDetail?.QrCodeUrl)).ToList(),
+            i.FaceVector != null, i.TicketDetail?.TicketCode, i.TicketDetail?.QrCodeUrl, i.ClaimTokenHash != null)).ToList(),
         o.TotalAmount > 0 && o.PaidAt == null && o.ReservationStatus == "holding" && paymentDetails.IsConfigured
             ? paymentDetails.Create(o.OrderCode, o.TotalAmount) : null, o.ConfirmationEmailSentAt != null);
 

@@ -4,6 +4,8 @@ namespace EventPass.Application.Interfaces;
 
 public interface IBookingRepository
 {
+    Task<List<Order>> GetCustomerOrdersAsync(int userId, CancellationToken ct);
+    Task<Order?> GetClaimOrderAsync(string tokenHash, CancellationToken ct);
     Task<int> CountCustomerTicketsAsync(int userId, DateTime now, CancellationToken ct);
     Task<T> InEventTransactionAsync<T>(int eventId, Func<Task<T>> action, CancellationToken ct);
     Task<Event?> GetEventAsync(int eventId, CancellationToken ct);

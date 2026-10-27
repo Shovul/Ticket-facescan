@@ -1,4 +1,4 @@
-import { Booking, CustomerSummary, PublicEvent, PublicEventPage } from "../types/customer";
+import { Booking, CustomerSummary, PublicEvent, PublicEventPage, CustomerTickets, DigitalPass, ClaimLink, ClaimTicket } from "../types/customer";
 import axios from "axios";
 
 const base = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5162").replace(/\/$/, "").replace(/\/api\/v1$/, "");
@@ -55,11 +55,22 @@ export const customerApi = {
   booking: (code: string, signal?: AbortSignal) => request<Booking>(`/bookings/${encodeURIComponent(code)}`, { signal }, true),
   attendee: (code: string, id: number, data: { name: string; email: string; phone: string }) =>
     request<Booking>(`/bookings/${encodeURIComponent(code)}/items/${id}/attendee`, { method: "PUT", body: JSON.stringify(data) }, true),
-  face: (code: string, id: number, image: File, consent: boolean) => {
-    const body = new FormData(); body.append("Image", image); body.append("Consent", String(consent));
+  face: (code: string, id: number, attendee: { name: string; email: string; phone: string }, image: File, consent: boolean) => {
+    const body = new FormData(); Object.entries(attendee).forEach(([key, value]) => body.append(key, value)); body.append("Image", image); body.append("Consent", String(consent));
     return request<Booking>(`/bookings/${encodeURIComponent(code)}/items/${id}/face`, { method: "POST", body }, true);
   },
   confirmFree: (code: string) => request<Booking>(`/bookings/${encodeURIComponent(code)}/confirm-free`, { method: "POST" }, true),
+  tickets: (page: number, filter: string, signal?: AbortSignal) => request<CustomerTickets>(
+    `/bookings/my-tickets?${new URLSearchParams({ page: String(page), filter })}`, { signal }, true),
+  pass: (code: string, id: number) => request<DigitalPass>(`/bookings/${encodeURIComponent(code)}/items/${id}/pass`, {}, true),
+  cancelPart: (code: string, part: "free" | "paid") => request<Booking>(`/bookings/${encodeURIComponent(code)}/cancel/${part}`, { method: "POST" }, true),
+  claimLink: (code: string, id: number) => request<ClaimLink>(`/bookings/${encodeURIComponent(code)}/items/${id}/claim-link`, { method: "POST" }, true),
+  claim: (token: string, signal?: AbortSignal) => request<ClaimTicket>(`/bookings/claims/${encodeURIComponent(token)}`, { signal }),
+  completeClaim: (token: string, attendee: { name: string; email: string; phone: string }, image: File) => {
+    const body = new FormData(); Object.entries(attendee).forEach(([key, value]) => body.append(key, value));
+    body.append("Image", image); body.append("Consent", "true");
+    return request<ClaimTicket>(`/bookings/claims/${encodeURIComponent(token)}`, { method: "POST", body });
+  },
   cancel: (code: string) => request<Booking>(`/bookings/${encodeURIComponent(code)}/cancel`, { method: "POST" }, true),
 };
 

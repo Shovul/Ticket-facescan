@@ -36,6 +36,8 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<OrderItem>(entity =>
         {
             entity.HasQueryFilter(i => !i.IsDeleted);
+            entity.Property(i => i.ClaimTokenHash).HasMaxLength(64);
+            entity.HasIndex(i => i.ClaimTokenHash).IsUnique();
             entity.Property(i => i.UnitPrice).HasPrecision(18, 2);
             entity.Property(i => i.Status).HasMaxLength(30);
             entity.Property(i => i.AttendeeName).HasMaxLength(100);

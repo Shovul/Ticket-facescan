@@ -8,6 +8,11 @@ namespace EventPass.Infrastructure.Repositories;
 
 public class BookingRepository(AppDbContext db) : IBookingRepository
 {
+    public Task<List<Order>> GetCustomerOrdersAsync(int userId, CancellationToken ct) => Orders
+        .Where(o => o.UserId == userId && o.ReservationStatus != null).OrderByDescending(o => o.CreatedAt).ToListAsync(ct);
+    public Task<Order?> GetClaimOrderAsync(string tokenHash, CancellationToken ct) => Orders
+        .SingleOrDefaultAsync(o => o.Items.Any(i => i.ClaimTokenHash == tokenHash), ct);
+
     public Task<int> CountCustomerTicketsAsync(int userId, DateTime now, CancellationToken ct) => db.TicketDetails
         .CountAsync(t => t.Order.UserId == userId && !t.Order.IsDeleted && t.Event.EndTime > now
             && t.Status != TicketDetailStatus.Cancelled && t.Status != TicketDetailStatus.Expired, ct);
@@ -27,7 +32,8 @@ public class BookingRepository(AppDbContext db) : IBookingRepository
     public Task<Event?> GetEventAsync(int id, CancellationToken ct) => db.Events.Include(e => e.Tickets.Where(t => t.IsActive)).SingleOrDefaultAsync(e => e.Id == id, ct);
     public Task<User?> GetUserAsync(int id, CancellationToken ct) => db.Users.SingleOrDefaultAsync(u => u.Id == id, ct);
     private IQueryable<Order> Orders => db.Orders.Include(o => o.Event).Include(o => o.User)
-        .Include(o => o.Items).ThenInclude(i => i.Ticket).Include(o => o.Items).ThenInclude(i => i.TicketDetail);
+        .Include(o => o.Items).ThenInclude(i => i.Ticket).Include(o => o.Items).ThenInclude(i => i.TicketDetail)
+        .Include(o => o.Event).ThenInclude(e => e.Kiosks);
     public Task<Order?> GetOrderAsync(string code, CancellationToken ct) => Orders.SingleOrDefaultAsync(o => o.OrderCode == code, ct);
     public Task<Order?> GetRequestAsync(int userId, string key, CancellationToken ct) => Orders.SingleOrDefaultAsync(o => o.UserId == userId && o.RequestKey == key, ct);
     public Task<int> GetOrderEventIdAsync(string code, CancellationToken ct) => db.Orders.Where(o => o.OrderCode == code).Select(o => o.EventId).SingleOrDefaultAsync(ct);
@@ -38,7 +44,7 @@ public class BookingRepository(AppDbContext db) : IBookingRepository
 
     public async Task<List<float[]>> OtherFacesAsync(int eventId, int itemId, DateTime now, CancellationToken ct)
     {
-        var issued = await db.TicketDetails.Where(t => t.EventId == eventId && t.Status != TicketDetailStatus.Cancelled && t.Status != TicketDetailStatus.Expired && t.FaceVector != null)
+        var issued = await db.TicketDetails.Where(t => t.EventId == eventId && !db.OrderItems.Any(i => i.Id == itemId && i.TicketDetailId == t.Id) && t.Status != TicketDetailStatus.Cancelled && t.Status != TicketDetailStatus.Expired && t.FaceVector != null)
             .Select(t => t.FaceVector!).ToListAsync(ct);
         var pending = await db.Set<OrderItem>().Where(i => !i.IsDeleted && i.Order.EventId == eventId && !i.Order.IsDeleted
             && i.Id != itemId && i.Status == "reserved" && i.FaceVector != null && i.Order.ExpiresAt > now
