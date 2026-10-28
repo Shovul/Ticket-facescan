@@ -373,6 +373,11 @@ namespace EventPass.Infrastructure.Migrations
                         .HasColumnType("character varying(15)")
                         .HasColumnName("attendee_phone");
 
+                    b.Property<string>("ClaimTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("claim_token_hash");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -430,6 +435,10 @@ namespace EventPass.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_order_items");
+
+                    b.HasIndex("ClaimTokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_order_items_claim_token_hash");
 
                     b.HasIndex("OrderId")
                         .HasDatabaseName("ix_order_items_order_id");

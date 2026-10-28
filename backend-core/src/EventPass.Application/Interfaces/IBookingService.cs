@@ -8,9 +8,15 @@ public interface IBookingService
     Task<BookingDto> ReserveAsync(int userId, ReserveTicketsRequest request, CancellationToken ct);
     Task<BookingDto> GetAsync(int userId, string code, CancellationToken ct);
     Task<BookingDto> UpdateAttendeeAsync(int userId, string code, int itemId, AttendeeRequest request, CancellationToken ct);
-    Task<BookingDto> UploadFaceAsync(int userId, string code, int itemId, byte[] image, string contentType, CancellationToken ct);
+    Task<BookingDto> UploadFaceAsync(int userId, string code, int itemId, AttendeeRequest attendee, byte[] image, string contentType, CancellationToken ct);
     Task<BookingDto> ConfirmFreeAsync(int userId, string code, CancellationToken ct);
     Task<BookingDto> CancelAsync(int userId, string code, CancellationToken ct);
+    Task<CustomerTicketsDto> GetTicketsAsync(int userId, int page, string filter, CancellationToken ct);
+    Task<DigitalPassDto> GetPassAsync(int userId, string code, int itemId, CancellationToken ct);
+    Task<BookingDto> CancelPartAsync(int userId, string code, string part, CancellationToken ct);
+    Task<ClaimLinkDto> CreateClaimAsync(int userId, string code, int itemId, CancellationToken ct);
+    Task<ClaimTicketDto> GetClaimAsync(string token, CancellationToken ct);
+    Task<ClaimTicketDto> CompleteClaimAsync(string token, AttendeeRequest attendee, byte[] image, string contentType, CancellationToken ct);
     Task ExpireAsync(CancellationToken ct);
 }
 
@@ -28,6 +34,7 @@ public interface IBookingPaymentDetails
 public interface IBookingFaceImageProtector
 {
     byte[] Protect(byte[] image);
+    byte[] Unprotect(byte[] image);
 }
 
 public interface IBookingEmailSender

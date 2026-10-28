@@ -8,7 +8,7 @@ import { customerApi, customerToken } from "../../services/customerApi";
 import { CustomerSummary } from "../../types/customer";
 import { useNotification } from "../shared/NotificationProvider";
 
-type HeaderKind = "catalog" | "free" | "paid" | "hybrid";
+type HeaderKind = "catalog" | "free" | "paid" | "hybrid" | "tickets";
 const HeaderContext = createContext<{ kind: HeaderKind; setKind: (kind: HeaderKind) => void }>({ kind: "catalog", setKind: () => {} });
 
 export function CustomerPageProvider({ children }: { children: React.ReactNode }) {
@@ -18,9 +18,9 @@ export function CustomerPageProvider({ children }: { children: React.ReactNode }
 }
 
 // Giữ đúng nhãn và thanh tiện ích của từng mẫu trang miễn phí, có phí hoặc kết hợp.
-export function useCustomerHeaderKind(kind: HeaderKind) {
+export function useCustomerHeaderKind(kind: HeaderKind, enabled = true) {
   const { setKind } = useContext(HeaderContext);
-  useEffect(() => { setKind(kind); return () => setKind("catalog"); }, [kind, setKind]);
+  useEffect(() => { if (!enabled) return; setKind(kind); return () => setKind("catalog"); }, [kind, setKind, enabled]);
 }
 
 export default function CustomerHeader() {
@@ -29,7 +29,7 @@ export default function CustomerHeader() {
   const params = useSearchParams();
   const { kind } = useContext(HeaderContext);
   const catalog = pathname === "/events" || kind === "catalog";
-  const tag = catalog ? "TICKET" : kind === "paid" ? "CHECKOUT" : kind === "hybrid" ? "HYBRID" : "FREE";
+  const tag = kind === "tickets" ? "PASS" : catalog ? "TICKET" : kind === "paid" ? "CHECKOUT" : kind === "hybrid" ? "HYBRID" : "FREE";
   const utility = catalog ? "Cổng phát hành vé điện tử & Điểm danh khuôn mặt siêu tốc • Chuẩn hội trường thông minh"
     : kind === "free" ? "Sự kiện Miễn Phí • Điểm danh tự động qua cổng Kiosk Face ID < 1 giây"
       : kind === "paid" ? "Cổng thanh toán tự động VietQR • Thanh toán chuyển khoản tức thì qua mọi ứng dụng ngân hàng"
@@ -94,12 +94,12 @@ export default function CustomerHeader() {
         <button className="btn-guest-login" onClick={() => destination(process.env.NEXT_PUBLIC_LOGIN_URL)}><LogIn className="icon" /><span>Đăng nhập</span></button>
         <button className="btn-guest-register" onClick={() => destination(process.env.NEXT_PUBLIC_REGISTER_URL)}>Đăng ký</button>
       </div> : <div className="logged-nav-actions">
-        <button className="nav-action-link" onClick={() => destination(process.env.NEXT_PUBLIC_MY_TICKETS_URL)}><Ticket className="icon" /><span>Vé của tôi</span><span className="badge-tag-count" aria-label={`${identity.ticketCount} vé còn hiệu lực`}>{identity.ticketCount}</span></button>
+        <button className="nav-action-link" onClick={() => router.push("/my-tickets")}><Ticket className="icon" /><span>Vé của tôi</span><span className="badge-tag-count" aria-label={`${identity.ticketCount} vé còn hiệu lực`}>{identity.ticketCount}</span></button>
         <div className="user-menu-wrapper" ref={wrapper}><button className="user-dropdown-trigger" aria-expanded={menu} aria-controls="customer-user-menu" onClick={() => setMenu(v => !v)}>
           <span className="user-avatar-tiny"><UserRound size={22} />{identity.avatarUrl && <img src={identity.avatarUrl} alt="" onError={e => { e.currentTarget.style.display = "none"; }} />}</span><span className="user-name-text">{identity.fullName}</span>{catalog && <ChevronDown className="icon" size={13} />}
         </button>{menu && <ul className="user-dropdown-menu" id="customer-user-menu">
           <li><button className="dropdown-item-link" onClick={() => { setMenu(false); destination(process.env.NEXT_PUBLIC_PROFILE_URL); }}><UserRound className="icon" />Hồ sơ &amp; Đổi mật khẩu</button></li>
-          <li><button className="dropdown-item-link" onClick={() => { setMenu(false); destination(process.env.NEXT_PUBLIC_MY_TICKETS_URL); }}><Ticket className="icon" />Danh sách vé đã đặt</button></li>
+          <li><button className="dropdown-item-link" onClick={() => { setMenu(false); router.push("/my-tickets"); }}><Ticket className="icon" />Danh sách vé đã đặt</button></li>
           <li><button className="dropdown-item-link danger" onClick={logout}><LogOut className="icon" />Đăng xuất tài khoản</button></li>
         </ul>}</div>
       </div>}</div>
