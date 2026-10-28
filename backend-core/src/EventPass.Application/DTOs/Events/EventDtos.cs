@@ -39,4 +39,25 @@ namespace EventPass.Application.DTOs.Events
         public string Name { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
     }
+
+    public class EventSummaryDto
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string StatusText { get; set; } = string.Empty;
+        public DateTime StartTime { get; set; }
+        public string Location { get; set; } = string.Empty;
+        public string CoverImage { get; set; } = string.Empty;
+        public int Sold { get; set; }
+        public int Total { get; set; }
+    }
+
+    public class PaginatedEventResponse
+    {
+        public List<EventSummaryDto> Items { get; set; } = new();
+        public int TotalCount { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+    }
 }

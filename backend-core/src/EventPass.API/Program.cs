@@ -53,6 +53,8 @@ builder.Services.AddScoped<IKioskRepository, KioskRepository>();
 builder.Services.AddScoped<IPublicEventRepository, PublicEventRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<BookingService>();
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<IBookingService>(sp => sp.GetRequiredService<BookingService>());
 builder.Services.AddScoped<IBookingPaymentReceiver>(sp => sp.GetRequiredService<BookingService>());
 builder.Services.AddScoped<IBookingPaymentDetails, BookingPaymentDetails>();

@@ -89,4 +89,9 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
     {
         return await _context.SaveChangesAsync();
     }
+
+    public IQueryable<T> AsQueryable()
+    {
+        return _dbSet.AsQueryable();
+    }
 }

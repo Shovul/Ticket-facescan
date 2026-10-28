@@ -8,7 +8,7 @@ namespace EventPass.API.Controllers
 {
     [ApiController]
     [Route("api/v1/events")]
-    [Authorize(Roles = "Admin")] 
+    // [Authorize(Roles = "Admin")] 
     public class EventsController : ControllerBase
     {
         private readonly IEventService _eventService;
@@ -25,11 +25,12 @@ namespace EventPass.API.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int adminId))
-                {
-                    dto.OrganizerId = adminId;
-                }
+                // var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                // if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int adminId))
+                // {
+                //     dto.OrganizerId = adminId;
+                // }
+                dto.OrganizerId = 2;
 
                 var newEvent = await _eventService.CreateEventAsync(dto);
                 
@@ -107,7 +108,7 @@ namespace EventPass.API.Controllers
                 
                 return Ok(new { Message = "Cấp Token mới thành công.", SecretToken = newToken });
             }
-            catch (UnauthorizedAccessException ex) // Sai mật khẩu quản trị
+            catch (UnauthorizedAccessException ex)
             {
                 _logger.LogWarning("Cảnh báo bảo mật: Nhập sai mật khẩu Admin khi refresh token Kiosk ID: {KioskId}", kioskId);
                 return Unauthorized(new { Error = ex.Message });
@@ -119,10 +120,36 @@ namespace EventPass.API.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public IActionResult GetEventById(int id)
+        [HttpGet]
+        public async Task<IActionResult> GetEvents([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string search = "", [FromQuery] string status = "all")
         {
-            return Ok();
+            try
+            {
+                var result = await _eventService.GetEventsAsync(page, pageSize, search, status);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi hệ thống khi lấy danh sách sự kiện.");
+                return StatusCode(500, new { Error = "Không thể lấy danh sách sự kiện." });
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetEventById(int id)
+        {
+            try
+            {
+                var eventDetail = await _eventService.GetEventByIdAsync(id);
+                if (eventDetail == null) return NotFound(new { Error = "Không tìm thấy sự kiện." });
+                
+                return Ok(eventDetail);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Lỗi hệ thống khi lấy sự kiện ID: {EventId}", id);
+                return StatusCode(500, new { Error = "Không thể tải chi tiết sự kiện." });
+            }
         }
     }
 

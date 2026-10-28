@@ -67,7 +67,16 @@ public static class DatabaseSeeder
                 Tickets = definition.Tickets.Select(t => new Ticket
                 {
                     Name = t.Name, Price = t.Price, Quantity = t.Quantity, QuantitySold = 0, IsActive = t.IsActive
-                }).ToList()
+                }).ToList(),
+                Kiosks = new List<Kiosk> 
+                { 
+                    new Kiosk 
+                    { 
+                        Name = "Kiosk Cổng Chính (Face ID)", 
+                        SecretToken = $"stk_live_{Guid.NewGuid():N}"[..12], 
+                        IsActive = true 
+                    } 
+                }
             };
             db.Events.Add(ev);
             eventsAdded++;
