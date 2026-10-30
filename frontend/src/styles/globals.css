@@ -1,5 +1,1 @@
 @import "tailwindcss";
-@import "./kiosk.css";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;

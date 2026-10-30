@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { eventService } from '../../../../services/eventService';
 import { EventDetailResponse } from '../../../../types/event';
-import '../events.css';
+import '../../../../styles/event.css';
 
 export default function EventDetailPage() {
   const params = useParams();

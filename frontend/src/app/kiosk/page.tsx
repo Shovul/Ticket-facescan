@@ -27,6 +27,7 @@ import {
 } from "../../components/kiosk";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5162";
+import "../../styles/kiosk.css";
 
 export default function KioskPage() {
   const [isMounted, setIsMounted] = useState(false);
@@ -372,7 +373,7 @@ export default function KioskPage() {
   }
 
   return (
-    <div style={{ height: "100vh", width: "100vw", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+    <div className="kiosk-app-wrapper" style={{ height: "100vh", width: "100vw", overflow: "hidden", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
       {/* 1. MÀN HÌNH KHÓA BAN ĐẦU */}
       {isLocked && <KioskLockModal onUnlock={handleUnlockKiosk} />}
 

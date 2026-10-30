@@ -15,9 +15,9 @@ using Microsoft.AspNetCore.Identity;
 var seedOnly = args.Any(a => a.Equals("--seed", StringComparison.OrdinalIgnoreCase));
 var builder = WebApplication.CreateBuilder(args.Where(a => !a.Equals("--seed", StringComparison.OrdinalIgnoreCase)).ToArray());
 
-// Khóa phiên thử chỉ tồn tại trong lần chạy Development, không dùng cho môi trường triển khai.
+// KhÃ³a phiÃªn thá»­ chá»‰ tá»“n táº¡i trong láº§n cháº¡y Development, khÃ´ng dÃ¹ng cho mÃ´i trÆ°á»ng triá»ƒn khai.
 
-// 1. Cấu hình Database PostgreSQL 16 + pgvector HNSW
+// 1. Cáº¥u hÃ¬nh Database PostgreSQL 16 + pgvector HNSW
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -29,7 +29,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
-// 2. Cấu hình CORS phục vụ Frontend Next.js và Kiosk Native App
+// 2. Cáº¥u hÃ¬nh CORS phá»¥c vá»¥ Frontend Next.js vÃ  Kiosk Native App
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -41,10 +41,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 3. Đăng ký HttpClient cho FastAPI AI Service
+// 3. ÄÄƒng kÃ½ HttpClient cho FastAPI AI Service
 builder.Services.AddHttpClient<IAiServiceClient, AiServiceClient>();
 
-// 4. Đăng ký Repositories (Data Access Layer)
+// 4. ÄÄƒng kÃ½ Repositories (Data Access Layer)
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITicketDetailRepository, TicketDetailRepository>();
@@ -63,7 +63,7 @@ builder.Services.AddScoped<IBookingEmailSender, BookingEmailSender>();
 builder.Services.AddDataProtection();
 builder.Services.AddHostedService<BookingExpirationWorker>();
 
-// Scheme riêng cho đặt vé; không tự xây dựng đăng nhập hay cấp token của phân hệ tài khoản.
+// Scheme riÃªng cho Ä‘áº·t vÃ©; khÃ´ng tá»± xÃ¢y dá»±ng Ä‘Äƒng nháº­p hay cáº¥p token cá»§a phÃ¢n há»‡ tÃ i khoáº£n.
 builder.Services.AddAuthentication().AddJwtBearer("BookingCustomer", options =>
 {
     var key = builder.Configuration["Jwt:Key"] ?? builder.Configuration["JWT_SECRET"] ?? "";
@@ -78,45 +78,39 @@ builder.Services.AddAuthentication().AddJwtBearer("BookingCustomer", options =>
     };
 });
 
-// 5. Đăng ký Application Services (Business Logic Layer)
+// 5. ÄÄƒng kÃ½ Application Services (Business Logic Layer)
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IKioskService, KioskService>();
 builder.Services.AddScoped<IKioskNotificationService, KioskNotificationService>();
+builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IAuthService, AuthenticationService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
-// 6. Đăng ký SignalR (Realtime Notification)
+// 6. ÄÄƒng kÃ½ SignalR (Realtime Notification)
 builder.Services.AddSignalR();
 
-// 7. Đăng ký Web API Controllers & Swagger UI
+// 7. ÄÄƒng kÃ½ Web API Controllers & Swagger UI
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("BookingBearer", new Microsoft.OpenApi.OpenApiSecurityScheme
-    {
-        Type = Microsoft.OpenApi.SecuritySchemeType.Http, Scheme = "bearer", BearerFormat = "JWT",
-        Description = "Token đăng nhập khách hàng dùng cho API đặt vé."
-    });
-    options.AddSecurityRequirement(document => new Microsoft.OpenApi.OpenApiSecurityRequirement
-    {
-        [new Microsoft.OpenApi.OpenApiSecuritySchemeReference("BookingBearer", document)] = []
-    });
-});
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Seed dữ liệu local sau khi đã cập nhật migration, không tự thay đổi schema database.
+// Seed dá»¯ liá»‡u local sau khi Ä‘Ã£ cáº­p nháº­t migration, khÃ´ng tá»± thay Ä‘á»•i schema database.
 if (seedOnly && !app.Environment.IsDevelopment())
-    throw new InvalidOperationException("Chỉ chạy seed dữ liệu mẫu trong môi trường Development.");
+    throw new InvalidOperationException("Chá»‰ cháº¡y seed dá»¯ liá»‡u máº«u trong mÃ´i trÆ°á»ng Development.");
 if (app.Environment.IsDevelopment() && (seedOnly || app.Configuration.GetValue<bool>("DatabaseSeed:Enabled")))
 {
     await using var scope = app.Services.CreateAsyncScope();
     var hasher = new PasswordHasher<User>();
     var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), hasher.HashPassword);
-    app.Logger.LogInformation("Seed hoàn tất: thêm {UsersAdded} tài khoản, {EventsAdded} sự kiện.", result.UsersAdded, result.EventsAdded);
+    app.Logger.LogInformation("Seed hoÃ n táº¥t: thÃªm {UsersAdded} tÃ i khoáº£n, {EventsAdded} sá»± kiá»‡n.", result.UsersAdded, result.EventsAdded);
 }
 if (seedOnly) return;
 
-// Cấu hình Swagger UI trực quan
+// Cáº¥u hÃ¬nh Swagger UI trá»±c quan
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -135,3 +129,4 @@ app.MapControllers();
 app.MapHub<KioskHub>("/hubs/kiosk");
 
 app.Run();
+

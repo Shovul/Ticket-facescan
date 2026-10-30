@@ -1,46 +1,135 @@
-# Environment variables & secrets
+# ============================================================
+# EVENTPASS — GLOBAL .GITIGNORE
+# Hệ thống Điểm danh Khuôn mặt & Vé điện tử SGU
+# ============================================================
+
+# ------------------------------------------------------------
+# 1. Environment variables & Secrets
+# ------------------------------------------------------------
 .env
 .env.local
 .env.*.local
 *.pem
 *.key
+*.pfx
+*.crt
 
-# .NET / C# build outputs
+# ------------------------------------------------------------
+# 2. .NET / C# (backend-core)
+# ------------------------------------------------------------
 bin/
 obj/
+**/bin/
+**/obj/
+.vs/
+**/[Bb]in/
+**/[Oo]bj/
 *.user
 *.userosscache
 *.sln.docstates
-.vs/
+*.suo
 _ReSharper*/
+TestResults/
+[Tt]est[Rr]esults/
+*.db
+*.db-shm
+*.db-wal
+# User uploads (Face images, avatars)
+backend-core/**/Uploads/
+backend-core/**/uploads/
+backend-core/**/wwwroot/uploads/
 
-# Node.js / Next.js
+# ------------------------------------------------------------
+# 3. Node.js & Next.js 14+ (frontend)
+# ------------------------------------------------------------
 node_modules/
+**/node_modules/
 frontend/.next/
 frontend/out/
+frontend/build/
+frontend/dist/
+.next/
+out/
+build/
+dist/
+.turbo/
+**/[Tt]urbo/
 *.tsbuildinfo
+next-env.d.ts
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
-# Python / AI Service
+# ------------------------------------------------------------
+# 4. Python & AI Service (ai-service / DeepFace)
+# ------------------------------------------------------------
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
-ai-service/venv/
-ai-service/.venv/
+*.so
+.Python
 env/
 venv/
 ENV/
+.venv/
+ai-service/venv/
+ai-service/.venv/
+ai-service/env/
+ai-service/.deepface/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+# AI Models & Weights (rất nặng, tải tự động lúc run)
 *.weights
 *.h5
+*.pkl
+*.pickle
+*.onnx
+*.pt
+*.pth
+*.tflite
 
-# OS & Editor generated files
-.DS_Store
-Thumbs.db
-*.log
+# ------------------------------------------------------------
+# 5. Database & Docker local mounts
+# ------------------------------------------------------------
+database/data/
+database/pgdata/
+*.dump
+*.backup
+*.sql.gz
+
+# ------------------------------------------------------------
+# 6. IDEs, Editors & OS Files
+# ------------------------------------------------------------
+.idea/
+**/.idea/
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Logs
+*.log
+logs/
+**/logs/
