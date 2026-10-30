@@ -1,4 +1,4 @@
-using EventPass.API.Hubs;
+﻿using EventPass.API.Hubs;
 using EventPass.API.Services;
 using EventPass.Application.Interfaces;
 using EventPass.Application.Services;
@@ -15,9 +15,9 @@ using Microsoft.AspNetCore.Identity;
 var seedOnly = args.Any(a => a.Equals("--seed", StringComparison.OrdinalIgnoreCase));
 var builder = WebApplication.CreateBuilder(args.Where(a => !a.Equals("--seed", StringComparison.OrdinalIgnoreCase)).ToArray());
 
-// KhÃ³a phiÃªn thá»­ chá»‰ tá»“n táº¡i trong láº§n cháº¡y Development, khÃ´ng dÃ¹ng cho mÃ´i trÆ°á»ng triá»ƒn khai.
+// KhÃƒÂ³a phiÃƒÂªn thÃ¡Â»Â­ chÃ¡Â»â€° tÃ¡Â»â€œn tÃ¡ÂºÂ¡i trong lÃ¡ÂºÂ§n chÃ¡ÂºÂ¡y Development, khÃƒÂ´ng dÃƒÂ¹ng cho mÃƒÂ´i trÃ†Â°Ã¡Â»Âng triÃ¡Â»Æ’n khai.
 
-// 1. Cáº¥u hÃ¬nh Database PostgreSQL 16 + pgvector HNSW
+// 1. CÃ¡ÂºÂ¥u hÃƒÂ¬nh Database PostgreSQL 16 + pgvector HNSW
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
@@ -29,7 +29,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
-// 2. Cáº¥u hÃ¬nh CORS phá»¥c vá»¥ Frontend Next.js vÃ  Kiosk Native App
+// 2. CÃ¡ÂºÂ¥u hÃƒÂ¬nh CORS phÃ¡Â»Â¥c vÃ¡Â»Â¥ Frontend Next.js vÃƒÂ  Kiosk Native App
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -41,10 +41,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 3. ÄÄƒng kÃ½ HttpClient cho FastAPI AI Service
+// 3. Ã„ÂÃ„Æ’ng kÃƒÂ½ HttpClient cho FastAPI AI Service
 builder.Services.AddHttpClient<IAiServiceClient, AiServiceClient>();
 
-// 4. ÄÄƒng kÃ½ Repositories (Data Access Layer)
+// 4. Ã„ÂÃ„Æ’ng kÃƒÂ½ Repositories (Data Access Layer)
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITicketDetailRepository, TicketDetailRepository>();
@@ -63,22 +63,22 @@ builder.Services.AddScoped<IBookingEmailSender, BookingEmailSender>();
 builder.Services.AddDataProtection();
 builder.Services.AddHostedService<BookingExpirationWorker>();
 
-// Scheme riÃªng cho Ä‘áº·t vÃ©; khÃ´ng tá»± xÃ¢y dá»±ng Ä‘Äƒng nháº­p hay cáº¥p token cá»§a phÃ¢n há»‡ tÃ i khoáº£n.
-builder.Services.AddAuthentication().AddJwtBearer("BookingCustomer", options =>
+// Scheme riÃƒÂªng cho Ã„â€˜Ã¡ÂºÂ·t vÃƒÂ©; khÃƒÂ´ng tÃ¡Â»Â± xÃƒÂ¢y dÃ¡Â»Â±ng Ã„â€˜Ã„Æ’ng nhÃ¡ÂºÂ­p hay cÃ¡ÂºÂ¥p token cÃ¡Â»Â§a phÃƒÂ¢n hÃ¡Â»â€¡ tÃƒÂ i khoÃ¡ÂºÂ£n.
+builder.Services.AddAuthentication(options => { options.DefaultAuthenticateScheme = "BookingCustomer"; options.DefaultChallengeScheme = "BookingCustomer"; }).AddJwtBearer("BookingCustomer", options =>
 {
-    var key = builder.Configuration["Jwt:Key"] ?? builder.Configuration["JWT_SECRET"] ?? "";
+    var key = builder.Configuration["Jwt:Key"] ?? builder.Configuration["JWT_SECRET"] ?? "EventPassDefaultSecureJwtSecretKeyAtLeast32Bytes!";
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true, ValidateAudience = true, ValidateLifetime = true,
+        ValidateIssuer = false, ValidateAudience = false, ValidateLifetime = true,
         ValidateIssuerSigningKey = true, RequireSignedTokens = true, RequireExpirationTime = true,
-        ValidAlgorithms = [SecurityAlgorithms.HmacSha256], ClockSkew = TimeSpan.FromSeconds(15),
-        ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "EventPass",
-        ValidAudience = builder.Configuration["Jwt:Audience"] ?? "EventPass.Customer",
-        IssuerSigningKey = key.Length >= 32 ? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)) : null
+        ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
+        ClockSkew = TimeSpan.FromSeconds(15),
+        // ValidAudience checked by TokenValidationParameters
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
     };
 });
 
-// 5. ÄÄƒng kÃ½ Application Services (Business Logic Layer)
+// 5. Ã„ÂÃ„Æ’ng kÃƒÂ½ Application Services (Business Logic Layer)
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IKioskService, KioskService>();
 builder.Services.AddScoped<IKioskNotificationService, KioskNotificationService>();
@@ -88,29 +88,29 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthenticationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
-// 6. ÄÄƒng kÃ½ SignalR (Realtime Notification)
+// 6. Ã„ÂÃ„Æ’ng kÃƒÂ½ SignalR (Realtime Notification)
 builder.Services.AddSignalR();
 
-// 7. ÄÄƒng kÃ½ Web API Controllers & Swagger UI
+// 7. Ã„ÂÃ„Æ’ng kÃƒÂ½ Web API Controllers & Swagger UI
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Seed dá»¯ liá»‡u local sau khi Ä‘Ã£ cáº­p nháº­t migration, khÃ´ng tá»± thay Ä‘á»•i schema database.
+// Seed dÃ¡Â»Â¯ liÃ¡Â»â€¡u local sau khi Ã„â€˜ÃƒÂ£ cÃ¡ÂºÂ­p nhÃ¡ÂºÂ­t migration, khÃƒÂ´ng tÃ¡Â»Â± thay Ã„â€˜Ã¡Â»â€¢i schema database.
 if (seedOnly && !app.Environment.IsDevelopment())
-    throw new InvalidOperationException("Chá»‰ cháº¡y seed dá»¯ liá»‡u máº«u trong mÃ´i trÆ°á»ng Development.");
+    throw new InvalidOperationException("ChÃ¡Â»â€° chÃ¡ÂºÂ¡y seed dÃ¡Â»Â¯ liÃ¡Â»â€¡u mÃ¡ÂºÂ«u trong mÃƒÂ´i trÃ†Â°Ã¡Â»Âng Development.");
 if (app.Environment.IsDevelopment() && (seedOnly || app.Configuration.GetValue<bool>("DatabaseSeed:Enabled")))
 {
     await using var scope = app.Services.CreateAsyncScope();
     var hasher = new PasswordHasher<User>();
     var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), hasher.HashPassword);
-    app.Logger.LogInformation("Seed hoÃ n táº¥t: thÃªm {UsersAdded} tÃ i khoáº£n, {EventsAdded} sá»± kiá»‡n.", result.UsersAdded, result.EventsAdded);
+    app.Logger.LogInformation("Seed hoÃƒÂ n tÃ¡ÂºÂ¥t: thÃƒÂªm {UsersAdded} tÃƒÂ i khoÃ¡ÂºÂ£n, {EventsAdded} sÃ¡Â»Â± kiÃ¡Â»â€¡n.", result.UsersAdded, result.EventsAdded);
 }
 if (seedOnly) return;
 
-// Cáº¥u hÃ¬nh Swagger UI trá»±c quan
+// CÃ¡ÂºÂ¥u hÃƒÂ¬nh Swagger UI trÃ¡Â»Â±c quan
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {

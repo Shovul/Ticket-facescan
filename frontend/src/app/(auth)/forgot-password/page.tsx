@@ -18,23 +18,23 @@ export default function ForgotPasswordPage() {
     setBannerError(null);
     setSuccessMessage(null);
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!email.trim()) {
-      setError('Vui lòng nhập địa chỉ email của bạn.');
+      setError('Vui lòng nhập địa chỉ email của bạn');
       return;
     }
     if (!emailRegex.test(email.trim())) {
-      setError('Địa chỉ email không hợp lệ (ví dụ: name@domain.com).');
+      setError('Vui lòng nhập địa chỉ email hợp lệ (ví dụ: name@domain.com)');
       return;
     }
 
     setLoading(true);
-
     try {
       const res = await authApi.forgotPassword({ email: email.trim() });
       if (res.success) {
         setSuccessMessage(
-          res.message || 'Liên kết đặt lại mật khẩu đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư (hiệu lực trong 15 phút).'
+          res.message ||
+            'Hệ thống đã gửi liên kết khôi phục mật khẩu đến hộp thư của bạn. Vui lòng kiểm tra email!'
         );
       } else {
         setBannerError(res.message || 'Không thể gửi email đặt lại mật khẩu.');
@@ -47,126 +47,54 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--bg-page)] text-[var(--text-primary)]">
-      {/* Simulation Toolbar */}
-      <div className="sim-bar">
-        <div>
-          <span className="sim-title">EventPass Sandbox:</span> Thử nghiệm Quên mật khẩu (UC03)
-        </div>
-        <div className="sim-actions">
-          <button
-            type="button"
-            className="sim-btn"
-            onClick={() => {
-              setError(null);
-              setBannerError(null);
-              setEmail('thaison@example.com');
-            }}
-          >
-            Fill Email mẫu
-          </button>
-          <button
-            type="button"
-            className="sim-btn"
-            onClick={() => {
-              setError(null);
-              setEmail('chuadangky@domain.com');
-              setBannerError('Email này chưa được đăng ký trong hệ thống EventPass.');
-            }}
-          >
-            Lỗi Email không tồn tại
-          </button>
-          <button
-            type="button"
-            className="sim-btn"
-            onClick={() => {
-              setError(null);
-              setEmail('thaison@example.com');
-              setBannerError('Bạn đã yêu cầu vượt quá 3 lần trong 15 phút. Vui lòng thử lại sau.');
-            }}
-          >
-            Lỗi Rate Limit (3 lần/15p)
-          </button>
-          <button
-            type="button"
-            className="sim-btn"
-            onClick={() => {
-              setEmail('');
-              setError(null);
-              setBannerError(null);
-              setSuccessMessage(null);
-            }}
-          >
-            Làm mới
-          </button>
-        </div>
-      </div>
-
+    <div className="auth-page-container">
       {/* Top Bar */}
       <div className="top-bar">
         <span>Cổng phát hành vé điện tử và Điểm danh nhận diện khuôn mặt</span>
-        <span>Hệ thống sự kiện thông minh SGU</span>
+        <span>Hệ thống sự kiện thông minh</span>
       </div>
 
       {/* Header */}
       <header className="header">
         <Link href="/events" className="brand-name">
-          EventPass<span className="pass-tag">TICKET</span><span className="accent-dot"></span>
+          EventPass<span className="pass-tag">TICKET</span>
+          <span className="accent-dot"></span>
         </Link>
       </header>
 
       {/* Main Content */}
       <main className="main-wrapper">
-        <div className="login-card" style={{ minHeight: '520px' }}>
-          {/* Cột trái: Thông tin quy định an toàn */}
+        <div className="recover-card">
+          {/* CỘT TRÁI: THÔNG TIN QUY ĐỊNH AN TOÀN */}
           <div className="visual-column">
             <div>
-              <span className="badge-kicker">Bảo mật tài khoản</span>
-              <h1 className="hero-title">Khôi phục mật khẩu dễ dàng & bảo mật</h1>
+              <span className="badge-kicker">Khôi phục quyền truy cập</span>
+              <h1 className="hero-title">Lấy lại mật khẩu dễ dàng và an toàn</h1>
               <p className="hero-desc">
-                EventPass áp dụng cơ chế xác thực an toàn một chiều. Liên kết khôi phục sẽ được gửi trực tiếp đến hộp thư cá nhân đã đăng ký.
+                Hệ thống sẽ gửi một mã token bảo mật và liên kết đặt lại mật khẩu đến địa chỉ email đã đăng ký của bạn.
               </p>
             </div>
 
-            <div className="security-rules" style={{
-              background: 'rgba(255, 255, 255, 0.08)',
-              border: '1px dashed rgba(159, 216, 197, 0.4)',
-              borderRadius: '10px',
-              padding: '16px',
-              marginTop: '24px',
-              fontSize: '12.5px',
-              color: '#d1e7f0',
-              lineHeight: '1.65'
-            }}>
-              <strong style={{ color: 'var(--color-yellow)', display: 'block', marginBottom: '8px' }}>
-                Quy tắc an toàn hệ thống (BR05 / NFR08):
-              </strong>
-              <ul style={{ listStyle: 'none', paddingLeft: 0 }}>
-                <li style={{ position: 'relative', paddingLeft: '16px', marginBottom: '6px' }}>
-                  • Liên kết khôi phục có hiệu lực trong chính xác 15 phút.
-                </li>
-                <li style={{ position: 'relative', paddingLeft: '16px', marginBottom: '6px' }}>
-                  • Giới hạn tối đa 3 lần yêu cầu liên tiếp trong vòng 15 phút.
-                </li>
-                <li style={{ position: 'relative', paddingLeft: '16px' }}>
-                  • Mật khẩu mới bắt buộc tối thiểu 6 ký tự, gồm chữ hoa, chữ thường và số.
-                </li>
-              </ul>
+            <div>
+              <div className="security-rules">
+                <strong>Quy tắc an toàn hệ thống (BR05 / NFR08):</strong>
+                <ul>
+                  <li>Liên kết khôi phục có hiệu lực trong chính xác 15 phút.</li>
+                  <li>Giới hạn tối đa 3 lần yêu cầu liên tiếp trong vòng 15 phút.</li>
+                  <li>Mật khẩu mới bắt buộc tối thiểu 6 ký tự, gồm chữ hoa, chữ thường và số.</li>
+                </ul>
+              </div>
             </div>
           </div>
 
-          {/* Cột phải: Form nhập email */}
+          {/* CỘT PHẢI: FORM NHẬP EMAIL */}
           <div className="form-column">
             <h2 className="form-title">Quên mật khẩu?</h2>
             <p className="form-subtitle">
               Nhập địa chỉ email đăng ký tài khoản của bạn để nhận liên kết khôi phục mật khẩu mới.
             </p>
 
-            {bannerError && (
-              <div className="banner-alert show error">
-                {bannerError}
-              </div>
-            )}
+            {bannerError && <div className="banner-alert show error">{bannerError}</div>}
 
             {successMessage && (
               <div
@@ -196,7 +124,7 @@ export default function ForgotPasswordPage() {
                     type="email"
                     id="forgotEmail"
                     className={`form-input ${error ? 'is-invalid' : ''}`}
-                    placeholder="ví dụ: yourname@domain.com"
+                    placeholder="name@domain.com"
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
@@ -207,13 +135,8 @@ export default function ForgotPasswordPage() {
                   {error && <div className="error-message">{error}</div>}
                 </div>
 
-                <button
-                  type="submit"
-                  className="btn-submit"
-                  disabled={loading}
-                  style={{ marginTop: '10px' }}
-                >
-                  {loading ? 'Đang gửi mã xác nhận...' : 'Gửi liên kết khôi phục'}
+                <button type="submit" className="btn-submit" disabled={loading}>
+                  <span>{loading ? 'Đang gửi mã xác nhận...' : 'Gửi liên kết khôi phục'}</span>
                 </button>
               </form>
             ) : (
@@ -234,9 +157,12 @@ export default function ForgotPasswordPage() {
               </div>
             )}
 
-            <div style={{ marginTop: '24px', fontSize: '13px', textAlign: 'center' }}>
-              <Link href="/login" className="form-link">
-                ← Quay lại trang Đăng nhập
+            <div className="form-bottom-row">
+              <Link href="/login" className="back-link">
+                <svg className="icon" viewBox="0 0 24 24">
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+                <span>Quay lại trang Đăng nhập</span>
               </Link>
             </div>
           </div>

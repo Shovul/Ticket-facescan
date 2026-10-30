@@ -3,15 +3,13 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { UserRole, RegisterRequest, RegisterFormErrors } from '../../types/auth';
+import { RegisterRequest, RegisterFormErrors } from '../../types/auth';
 import { authApi } from '../../services/authApi';
 import { GoogleAuthButton } from './GoogleAuthButton';
 import { RegisterVisualBanner } from './RegisterVisualBanner';
-import { SimulationToolbar } from './SimulationToolbar';
 
 export const RegisterForm: React.FC = () => {
   const router = useRouter();
-  const [role, setRole] = useState<UserRole>('customer');
   const [loading, setLoading] = useState<boolean>(false);
 
   // Form state
@@ -43,15 +41,15 @@ export const RegisterForm: React.FC = () => {
     const errs: RegisterFormErrors = {};
 
     if (!fullName.trim()) {
-      errs.fullName = role === 'customer' ? 'Vui lòng nhập họ và tên của bạn' : 'Vui lòng nhập tên công ty / đơn vị tổ chức';
+      errs.fullName = 'Vui lòng nhập họ và tên của bạn';
     } else if (fullName.trim().length < 2 || fullName.trim().length > 100) {
       errs.fullName = 'Họ và tên phải có độ dài từ 2 đến 100 ký tự';
     }
 
     if (!username.trim()) {
       errs.username = 'Tên đăng nhập không được để trống';
-    } else if (username.trim().length < 3 || username.trim().length > 50) {
-      errs.username = 'Tên đăng nhập từ 3 đến 50 ký tự';
+    } else if (username.trim().length < 4 || username.trim().length > 50) {
+      errs.username = 'Tên đăng nhập từ 4 đến 50 ký tự';
     } else if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
       errs.username = 'Tên đăng nhập chỉ gồm chữ cái, số và dấu gạch dưới';
     }
@@ -59,24 +57,25 @@ export const RegisterForm: React.FC = () => {
     if (!phone.trim()) {
       errs.phoneNumber = 'Số điện thoại liên hệ là bắt buộc';
     } else if (!/^(0[3|5|7|8|9])[0-9]{8}$/.test(phone.trim())) {
-      errs.phoneNumber = 'Số điện thoại phải gồm 10 chữ số chuẩn Việt Nam (03, 05, 07, 08, 09)';
+      errs.phoneNumber = 'Số điện thoại phải có 10 chữ số chuẩn định dạng Việt Nam (ví dụ 0912345678)';
     }
 
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!email.trim()) {
       errs.email = 'Địa chỉ email không được để trống';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      errs.email = 'Email không đúng định dạng thư điện tử';
+    } else if (!emailRegex.test(email.trim())) {
+      errs.email = 'Email không hợp lệ (ví dụ: yourname@domain.com)';
     }
 
     if (!password) {
       errs.password = 'Mật khẩu không được để trống';
     } else if (password.length < 6) {
-      errs.password = 'Mật khẩu phải từ 6 ký tự trở lên (BR02)';
+      errs.password = 'Mật khẩu phải có độ dài tối thiểu 6 ký tự';
     }
 
     if (!confirmPassword) {
-      errs.confirmPassword = 'Vui lòng xác nhận mật khẩu';
-    } else if (password !== confirmPassword) {
+      errs.confirmPassword = 'Vui lòng xác nhận lại mật khẩu';
+    } else if (confirmPassword !== password) {
       errs.confirmPassword = 'Mật khẩu xác nhận không trùng khớp';
     }
 
@@ -111,7 +110,6 @@ export const RegisterForm: React.FC = () => {
           router.push('/login');
         }, 1800);
       } else {
-        // Xử lý lỗi trả về từ Backend (ví dụ trùng email hoặc username - E2)
         const errMsg = result.message || 'Đăng ký không thành công. Vui lòng thử lại.';
         showToast(errMsg, true);
 
@@ -121,102 +119,37 @@ export const RegisterForm: React.FC = () => {
           setErrors((prev) => ({ ...prev, username: errMsg }));
         }
       }
-    } catch (err: any) {
+    } catch {
       showToast('Đã xảy ra sự cố kết nối máy chủ. Vui lòng thử lại sau ít phút.', true);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleAuth = async () => {
-    showToast('Đang kết nối xác thực Google OAuth 2.0 (A1)...');
-    // Luồng test mẫu Google OAuth gọi endpoint backend
+  const handleGoogleSuccessToken = async (idToken: string) => {
+    showToast('Đang kết nối xác thực Google OAuth 2.0...');
     try {
-      const dummyGoogleToken = 'google_test_token_oauth2';
-      const result = await authApi.googleLogin({ idToken: dummyGoogleToken });
-      if (result.success) {
+      const result = await authApi.googleLogin({ idToken });
+      if (result.success && result.data) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('accessToken', result.data.accessToken);
+          localStorage.setItem('access_token', result.data.accessToken);
+          localStorage.setItem('refreshToken', result.data.refreshToken);
+          localStorage.setItem('user', JSON.stringify(result.data));
+          window.dispatchEvent(new Event('auth-state-change'));
+        }
         showToast('Đăng nhập nhanh Google thành công! Đang chuyển hướng...');
-        setTimeout(() => router.push('/events'), 1500);
+        setTimeout(() => router.push('/events'), 1200);
       } else {
-        showToast(result.message || 'Google Auth thất bại trong môi trường thử nghiệm.', true);
+        showToast(result.message || 'Google Auth không thành công.', true);
       }
     } catch {
-      showToast('Không thể kết nối đến cổng Google Identity Service.', true);
+      showToast('Không thể kết nối đến máy chủ xác thực.', true);
     }
-  };
-
-  // Các phương thức Sandbox / Simulation
-  const handleSimFillCustomer = () => {
-    setRole('customer');
-    const rand = Math.floor(Math.random() * 900) + 100;
-    setFullName('Nguyễn Văn Khách ' + rand);
-    setUsername('khachhang_' + rand);
-    setPhone('0912345' + rand);
-    setEmail(`customer${rand}@eventpass.vn`);
-    setPassword('Khach@123');
-    setConfirmPassword('Khach@123');
-    setErrors({});
-    showToast('Đã nạp dữ liệu mẫu Khách hàng!');
-  };
-
-  const handleSimFillOrganizer = () => {
-    setRole('organizer');
-    const rand = Math.floor(Math.random() * 900) + 100;
-    setFullName('Đoàn Trường ĐH Sài Gòn ' + rand);
-    setUsername('btc_sgu_' + rand);
-    setPhone('0988776' + rand);
-    setEmail(`organizer${rand}@sgu.edu.vn`);
-    setPassword('Btc@123456');
-    setConfirmPassword('Btc@123456');
-    setErrors({});
-    showToast('Đã nạp dữ liệu mẫu Ban Tổ Chức!');
-  };
-
-  const handleSimTriggerE1 = () => {
-    setFullName('');
-    setUsername('ab');
-    setPhone('0123');
-    setEmail('sai-dinh-dang-email');
-    setPassword('123');
-    setConfirmPassword('999');
-    validateForm();
-    showToast('Đã mô phỏng lỗi dữ liệu không hợp lệ (E1).', true);
-  };
-
-  const handleSimTriggerE2 = () => {
-    setFullName('Trùng Email Test');
-    setUsername('user_duplicate');
-    setPhone('0912345678');
-    setEmail('customer@eventpass.local'); // Email đã seed sẵn trong DB
-    setPassword('Pass@123');
-    setConfirmPassword('Pass@123');
-    setErrors({});
-    showToast('Đã điền email customer@eventpass.local sẵn có để test lỗi E2!');
-  };
-
-  const handleResetForm = () => {
-    setFullName('');
-    setUsername('');
-    setPhone('');
-    setEmail('');
-    setPassword('');
-    setConfirmPassword('');
-    setErrors({});
-    showToast('Đã làm mới form!');
   };
 
   return (
     <div className="auth-page-container">
-      {/* Simulation Toolbar */}
-      <SimulationToolbar
-        onFillCustomer={handleSimFillCustomer}
-        onFillOrganizer={handleSimFillOrganizer}
-        onTriggerE1={handleSimTriggerE1}
-        onTriggerE2={handleSimTriggerE2}
-        onTriggerGoogleAuth={handleGoogleAuth}
-        onReset={handleResetForm}
-      />
-
       {/* Top Banner */}
       <div className="auth-top-bar">
         <span>Cổng phát hành vé điện tử và Điểm danh nhận diện khuôn mặt</span>
@@ -227,7 +160,7 @@ export const RegisterForm: React.FC = () => {
 
       {/* Header */}
       <header className="auth-header">
-        <Link href="/" className="auth-brand">
+        <Link href="/events" className="auth-brand">
           EventPass<span className="pass-tag">TICKET</span>
           <span className="accent-dot"></span>
         </Link>
@@ -237,35 +170,17 @@ export const RegisterForm: React.FC = () => {
       <main className="flex-1 flex items-center justify-center p-6 md:p-12">
         <div className="register-card">
           {/* CỘT TRÁI: Visual Hero */}
-          <RegisterVisualBanner role={role} />
+          <RegisterVisualBanner />
 
           {/* CỘT PHẢI: Form đăng ký */}
           <div className="form-column">
             <div className="form-header">
-              <h2 className="form-title">Tạo tài khoản mới</h2>
-              <p className="form-subtitle">Lựa chọn loại đối tượng tài khoản để bắt đầu sử dụng</p>
-            </div>
-
-            {/* Segmented Control chọn vai trò */}
-            <div className="role-segmented">
-              <button
-                type="button"
-                className={`role-btn ${role === 'customer' ? 'active' : ''}`}
-                onClick={() => setRole('customer')}
-              >
-                Khách hàng / Người tham dự
-              </button>
-              <button
-                type="button"
-                className={`role-btn ${role === 'organizer' ? 'active' : ''}`}
-                onClick={() => setRole('organizer')}
-              >
-                Ban tổ chức sự kiện
-              </button>
+              <h2 className="form-title">Tạo tài khoản thành viên</h2>
+              <p className="form-subtitle">Đăng ký tài khoản để tra cứu vé và điểm danh nhận diện khuôn mặt</p>
             </div>
 
             {/* Nút Đăng ký nhanh bằng Google */}
-            <GoogleAuthButton onGoogleClick={handleGoogleAuth} disabled={loading} />
+            <GoogleAuthButton onSuccessToken={handleGoogleSuccessToken} disabled={loading} label="Đăng ký nhanh bằng Google" />
 
             <div className="divider">hoặc nhập thông tin chi tiết</div>
 
@@ -276,7 +191,7 @@ export const RegisterForm: React.FC = () => {
                 <div className={`form-group full-width ${errors.fullName ? 'has-error' : ''}`}>
                   <label className="form-label" htmlFor="fullName">
                     <span>
-                      {role === 'customer' ? 'Họ và tên người tham dự' : 'Tên cơ quan / Đơn vị tổ chức'}
+                      Họ và tên người tham dự
                       <span className="req">*</span>
                     </span>
                   </label>
@@ -284,7 +199,7 @@ export const RegisterForm: React.FC = () => {
                     type="text"
                     id="fullName"
                     className={`form-input ${errors.fullName ? 'is-invalid' : ''}`}
-                    placeholder={role === 'customer' ? 'Nguyễn Văn A' : 'Đoàn Trường ĐH Sài Gòn'}
+                    placeholder="ví dụ: Hà Thái Sơn"
                     value={fullName}
                     onChange={(e) => {
                       setFullName(e.target.value);
@@ -305,7 +220,7 @@ export const RegisterForm: React.FC = () => {
                     type="text"
                     id="username"
                     className={`form-input ${errors.username ? 'is-invalid' : ''}`}
-                    placeholder="username"
+                    placeholder="ví dụ: thaison_2026"
                     value={username}
                     onChange={(e) => {
                       setUsername(e.target.value);
@@ -319,14 +234,14 @@ export const RegisterForm: React.FC = () => {
                 <div className={`form-group ${errors.phoneNumber ? 'has-error' : ''}`}>
                   <label className="form-label" htmlFor="phone">
                     <span>
-                      Số điện thoại liên hệ <span className="req">*</span>
+                      Số điện thoại <span className="req">*</span>
                     </span>
                   </label>
                   <input
                     type="tel"
                     id="phone"
                     className={`form-input ${errors.phoneNumber ? 'is-invalid' : ''}`}
-                    placeholder="09xx xxx xxx"
+                    placeholder="ví dụ: 0912345678"
                     value={phone}
                     onChange={(e) => {
                       setPhone(e.target.value);
@@ -347,7 +262,7 @@ export const RegisterForm: React.FC = () => {
                     type="email"
                     id="email"
                     className={`form-input ${errors.email ? 'is-invalid' : ''}`}
-                    placeholder="name@domain.com"
+                    placeholder="name@example.com"
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
@@ -400,25 +315,23 @@ export const RegisterForm: React.FC = () => {
                 </div>
               </div>
 
-              <button type="submit" className="btn-submit" disabled={loading}>
-                {loading
-                  ? 'Đang kết nối xử lý...'
-                  : role === 'customer'
-                  ? 'Hoàn tất đăng ký Khách hàng'
-                  : 'Hoàn tất đăng ký Ban tổ chức'}
+              {/* Submit */}
+              <button type="submit" className="btn-submit" disabled={loading} style={{ marginTop: '20px' }}>
+                {loading ? 'Đang tạo tài khoản...' : 'Hoàn tất Đăng ký Thành viên'}
               </button>
             </form>
 
-            <div className="form-footer">
+            <p className="form-footer">
               Đã có tài khoản?
               <Link href="/login">Đăng nhập ngay</Link>
-            </div>
+            </p>
           </div>
         </div>
       </main>
 
       {/* Toast Notification */}
       <div className={`auth-toast ${toast.show ? 'show' : ''} ${toast.isError ? 'error' : ''}`}>
+        <span>{toast.isError ? '⚠️' : '✓'}</span>
         <span>{toast.message}</span>
       </div>
     </div>

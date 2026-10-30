@@ -45,10 +45,8 @@ export const LoginVisualBanner: React.FC = () => {
           </li>
         </ul>
 
-        <div className="account-hints">
-          <strong>Tài khoản thử nghiệm hệ thống (Mật khẩu: <code>123456</code>)</strong>
-          Khách hàng: <code>sonha</code> hoặc <code>thaison@example.com</code><br />
-          Ban tổ chức: <code>organizer_sgu</code> hoặc <code>admin</code>
+        <div className="notice-box" id="sideNotice">
+          <strong>Lưu ý:</strong> Sử dụng tài khoản chính chủ để quản lý vé điện tử và đồng bộ nhận diện Face ID tại cổng Kiosk.
         </div>
       </div>
     </div>

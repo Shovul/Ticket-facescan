@@ -1,30 +1,31 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace EventPass.Application.DTOs.Auth;
 
 public class RegisterRequestDto
 {
-    [Required(ErrorMessage = "TÃªn Ä‘Äƒng nháº­p khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
-    [StringLength(50, MinimumLength = 3, ErrorMessage = "TÃªn Ä‘Äƒng nháº­p tá»« 3 Ä‘áº¿n 50 kÃ½ tá»±.")]
+    [Required(ErrorMessage = "Tên đăng nhập không được để trống.")]
+    [StringLength(50, MinimumLength = 4, ErrorMessage = "Tên đăng nhập từ 4 đến 50 ký tự.")]
+    [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "Tên đăng nhập chỉ gồm chữ cái, số và dấu gạch dưới, không dấu.")]
     public string Username { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Email khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
-    [EmailAddress(ErrorMessage = "Äá»‹a chá»‰ email khÃ´ng Ä‘Ãºng Ä‘á»‹nh dáº¡ng.")]
+    [Required(ErrorMessage = "Email không được để trống.")]
+    [EmailAddress(ErrorMessage = "Địa chỉ email không đúng định dạng.")]
     public string Email { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Há» vÃ  tÃªn khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
-    [StringLength(100, ErrorMessage = "Há» vÃ  tÃªn tá»‘i Ä‘a 100 kÃ½ tá»±.")]
+    [Required(ErrorMessage = "Họ và tên không được để trống.")]
+    [StringLength(100, MinimumLength = 2, ErrorMessage = "Họ và tên phải có độ dài từ 2 đến 100 ký tự.")]
     public string FullName { get; set; } = string.Empty;
 
-    [RegularExpression(@"^(0[3|5|7|8|9])[0-9]{8}$", ErrorMessage = "Sá»‘ Ä‘iá»‡n thoáº¡i pháº£i cÃ³ 10 chá»¯ sá»‘ chuáº©n Viá»‡t Nam.")]
+    [Required(ErrorMessage = "Số điện thoại là bắt buộc.")]
+    [RegularExpression(@"^(0[3|5|7|8|9])[0-9]{8}$", ErrorMessage = "Số điện thoại phải có 10 chữ số chuẩn định dạng Việt Nam.")]
     public string? PhoneNumber { get; set; }
 
-    [Required(ErrorMessage = "Máº­t kháº©u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
-    [MinLength(6, ErrorMessage = "Máº­t kháº©u tá»‘i thiá»ƒu 6 kÃ½ tá»±.")]
+    [Required(ErrorMessage = "Mật khẩu không được để trống.")]
+    [MinLength(6, ErrorMessage = "Mật khẩu tối thiểu 6 ký tự.")]
     public string Password { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "XÃ¡c nháº­n máº­t kháº©u khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
-    [Compare("Password", ErrorMessage = "Máº­t kháº©u xÃ¡c nháº­n khÃ´ng trÃ¹ng khá»›p.")]
+    [Required(ErrorMessage = "Xác nhận mật khẩu không được để trống.")]
+    [Compare("Password", ErrorMessage = "Mật khẩu xác nhận không trùng khớp.")]
     public string ConfirmPassword { get; set; } = string.Empty;
 }
-

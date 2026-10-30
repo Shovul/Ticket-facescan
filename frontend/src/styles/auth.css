@@ -619,4 +619,165 @@
     right: 16px;
     bottom: 16px;
   }
+  .recover-card {
+    flex-direction: column;
+    width: 100%;
+    min-height: auto;
+  }
+  .recover-card .visual-column, .recover-card .form-column {
+    padding: 32px 24px;
+  }
+}
+
+/* ============================================================
+   RECOVER CARD, SECURITY RULES, PASSWORD METER & EYE TOGGLE
+   ============================================================ */
+.recover-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1.5px solid var(--card-border);
+  box-shadow: 0 20px 45px -15px rgba(2, 56, 82, 0.16);
+  display: flex;
+  width: 980px;
+  max-width: 100%;
+  min-height: 540px;
+  overflow: hidden;
+}
+
+.recover-card .visual-column {
+  flex: 0 0 42%;
+  background: linear-gradient(155deg, var(--color-navy) 0%, #044b6e 100%);
+  color: #fff;
+  padding: 44px 38px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.recover-card .form-column {
+  flex: 1;
+  padding: 44px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.input-password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-password-wrap .form-input {
+  padding-right: 42px;
+}
+
+.btn-toggle-eye {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: color 0.15s ease;
+}
+
+.btn-toggle-eye:hover {
+  color: var(--color-teal);
+}
+
+.password-meter-bar {
+  width: 100%;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  width: 0%;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+.meter-fill.weak { width: 33%; background-color: var(--color-red); }
+.meter-fill.medium { width: 66%; background-color: var(--color-orange); }
+.meter-fill.strong { width: 100%; background-color: var(--color-teal); }
+
+.security-rules {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px dashed rgba(159, 216, 197, 0.4);
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 24px;
+  font-size: 12.5px;
+  color: #d1e7f0;
+  line-height: 1.65;
+}
+
+.security-rules strong {
+  color: var(--color-yellow);
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.security-rules ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.security-rules li {
+  position: relative;
+  padding-left: 16px;
+  margin-bottom: 6px;
+}
+
+.security-rules li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--color-teal);
+  font-weight: bold;
+}
+
+.form-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  font-size: 13px;
+}
+
+.back-link {
+  color: var(--color-teal);
+  text-decoration: none;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+  color: var(--color-navy);
+}
+
+.icon {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }

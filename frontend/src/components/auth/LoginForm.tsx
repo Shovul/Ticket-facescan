@@ -12,13 +12,14 @@ interface LoginFormProps {
   setIdentifier: (val: string) => void;
   password: string;
   setPassword: (val: string) => void;
-  rememberMe: boolean;
-  setRememberMe: (val: boolean) => void;
+  rememberMe?: boolean;
+  setRememberMe?: (val: boolean) => void;
   errors: LoginFormErrors;
   setErrors: React.Dispatch<React.SetStateAction<LoginFormErrors>>;
   bannerError: string | null;
   setBannerError: (val: string | null) => void;
-  onGoogleAuth: () => void;
+  onGoogleAuth?: () => void;
+  onGoogleSuccessToken?: (idToken: string) => void;
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({
@@ -33,9 +34,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   bannerError,
   setBannerError,
   onGoogleAuth,
+  onGoogleSuccessToken,
 }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,6 +76,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       // Lưu trữ thông tin đăng nhập
       if (typeof window !== 'undefined') {
         localStorage.setItem('accessToken', res.data.accessToken);
+        localStorage.setItem('access_token', res.data.accessToken);
         localStorage.setItem('refreshToken', res.data.refreshToken);
         localStorage.setItem('user', JSON.stringify({
           userId: res.data.userId,
@@ -81,6 +85,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           fullName: res.data.fullName,
           role: res.data.role,
         }));
+        window.dispatchEvent(new Event('auth-state-change'));
       }
 
       setToastMessage(`Xin chào ${res.data.fullName || res.data.username}! Đang đăng nhập...`);
@@ -112,7 +117,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       )}
 
       {/* Đăng nhập nhanh Google */}
-      <GoogleAuthButton onClick={onGoogleAuth} label="Đăng nhập nhanh bằng Google" />
+      <GoogleAuthButton
+        onClick={onGoogleAuth}
+        onSuccessToken={onGoogleSuccessToken}
+        label="Đăng nhập nhanh bằng Google"
+      />
 
       <div className="divider">
         <span>hoặc dùng tài khoản hệ thống</span>
@@ -142,31 +151,35 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           <label className="form-label" htmlFor="loginPassword">
             Mật khẩu <span className="req">*</span>
           </label>
-          <input
-            type="password"
-            id="loginPassword"
-            className={`form-input ${errors.password ? 'is-invalid' : ''}`}
-            placeholder="Nhập mật khẩu của bạn"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
-              if (bannerError) setBannerError(null);
-            }}
-          />
+          <div className="input-password-wrap">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="loginPassword"
+              className={`form-input ${errors.password ? 'is-invalid' : ''}`}
+              placeholder="Nhập mật khẩu của bạn"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+                if (bannerError) setBannerError(null);
+              }}
+            />
+            <button
+              type="button"
+              className="btn-toggle-eye"
+              onClick={() => setShowPassword(!showPassword)}
+              title="Ẩn/Hiện mật khẩu"
+            >
+              <svg className="icon" viewBox="0 0 24 24">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            </button>
+          </div>
           {errors.password && <div className="error-message">{errors.password}</div>}
         </div>
 
-        <div className="form-options">
-          <label className="remember-box">
-            <input
-              type="checkbox"
-              id="rememberMe"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-            />{' '}
-            Ghi nhớ đăng nhập
-          </label>
+        <div className="form-options" style={{ justifyContent: 'flex-end' }}>
           <Link href="/forgot-password" className="forgot-link">
             Quên mật khẩu?
           </Link>

@@ -1,1 +1,33 @@
 @import "tailwindcss";
+
+:root {
+  --color-navy: #023852;
+  --color-teal: #079FA0;
+  --color-mint: #9FD8C5;
+  --color-yellow: #FAC005;
+  --color-orange: #F58B01;
+  --color-red: #DC2E2F;
+
+  --bg-page: #f2f7f5;
+  --card-border: #cfe5dc;
+  --text-primary: #023852;
+  --text-muted: #537583;
+  --hairline: #e3efea;
+  --white: #ffffff;
+  --danger: #dc2626;
+  --danger-bg: #fff5f5;
+  --success: #15803d;
+}
+
+html, body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+input, button, select, textarea {
+  font-family: inherit;
+}

@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using EventPass.Application.DTOs.Auth;
 using EventPass.Application.DTOs.Common;
@@ -8,7 +8,7 @@ using EventPass.Domain.Enums;
 
 namespace EventPass.Application.Services;
 
-public class AuthenticationService : IAuthService
+public partial class AuthenticationService : IAuthService
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
@@ -208,85 +208,4 @@ public class AuthenticationService : IAuthService
         return ApiResponse<bool>.Ok(true, "Đăng xuất thành công.");
     }
 
-    public async Task<ApiResponse<LoginResponseDto>> GoogleLoginAsync(GoogleLoginRequestDto request)
-    {
-        using var http = new HttpClient();
-        HttpResponseMessage googleResponse;
-        try
-        {
-            googleResponse = await http.GetAsync($"https://oauth2.googleapis.com/tokeninfo?id_token={request.IdToken}");
-        }
-        catch
-        {
-            return ApiResponse<LoginResponseDto>.Fail("Không thể kết nối đến máy chủ xác thực Google.");
-        }
-
-        if (!googleResponse.IsSuccessStatusCode)
-            return ApiResponse<LoginResponseDto>.Fail("Google Token không hợp lệ.");
-
-        var json = await googleResponse.Content.ReadAsStringAsync();
-        using var doc = JsonDocument.Parse(json);
-        var root = doc.RootElement;
-
-        var email = root.TryGetProperty("email", out var emailProp) ? emailProp.GetString() : null;
-        var googleId = root.TryGetProperty("sub", out var subProp) ? subProp.GetString() : null;
-        var name = root.TryGetProperty("name", out var nameProp) ? nameProp.GetString() : "Google User";
-        var picture = root.TryGetProperty("picture", out var picProp) ? picProp.GetString() : null;
-
-        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(googleId))
-            return ApiResponse<LoginResponseDto>.Fail("Không thể lấy thông tin định danh từ Google.");
-
-        var user = await _userRepository.GetByGoogleIdAsync(googleId)
-                   ?? await _userRepository.GetByEmailAsync(email);
-
-        if (user == null)
-        {
-            var baseUsername = email.Split('@')[0];
-            var finalUsername = baseUsername;
-            var counter = 1;
-            while (!await _userRepository.IsUsernameUniqueAsync(finalUsername))
-            {
-                finalUsername = $"{baseUsername}{counter++}";
-            }
-
-            user = new User
-            {
-                Username = finalUsername,
-                Email = email.ToLower(),
-                FullName = name ?? "Google User",
-                GoogleId = googleId,
-                AvatarUrl = picture,
-                Role = UserRole.User
-            };
-            await _userRepository.AddAsync(user);
-        }
-        else if (string.IsNullOrEmpty(user.GoogleId))
-        {
-            user.GoogleId = googleId;
-            if (string.IsNullOrEmpty(user.AvatarUrl) && !string.IsNullOrEmpty(picture))
-                user.AvatarUrl = picture;
-            await _userRepository.UpdateAsync(user);
-        }
-
-        var accessToken = _tokenService.GenerateAccessToken(user);
-        var refreshToken = _tokenService.GenerateRefreshToken();
-
-        user.RefreshToken = refreshToken;
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-        await _userRepository.UpdateAsync(user);
-
-        var response = new LoginResponseDto
-        {
-            UserId = user.Id,
-            Username = user.Username,
-            Email = user.Email,
-            FullName = user.FullName,
-            Role = user.Role.ToString(),
-            HasPassword = user.HasPassword,
-            AccessToken = accessToken,
-            RefreshToken = refreshToken
-        };
-
-        return ApiResponse<LoginResponseDto>.Ok(response, "Đăng nhập Google thành công!");
     }
-}

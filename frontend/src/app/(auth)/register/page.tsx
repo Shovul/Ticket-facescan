@@ -1,12 +1,15 @@
-import { Metadata } from 'next';
-import { RegisterForm } from '../../../components/auth/RegisterForm';
-import '../../../styles/auth.css';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Đăng ký tài khoản — EventPass Ticket',
-  description: 'Đăng ký tài khoản EventPass để giữ chỗ vé điện tử và kích hoạt điểm danh khuôn mặt Face ID siêu tốc.',
-};
+import React from 'react';
+import Link from 'next/link';
+import '../../../styles/auth.css';
+import { RegisterForm } from '../../../components/auth/RegisterForm';
+import { GoogleAuthProviderWrapper } from '../../../components/auth/GoogleAuthProviderWrapper';
 
 export default function RegisterPage() {
-  return <RegisterForm />;
+  return (
+    <GoogleAuthProviderWrapper>
+      <RegisterForm />
+    </GoogleAuthProviderWrapper>
+  );
 }

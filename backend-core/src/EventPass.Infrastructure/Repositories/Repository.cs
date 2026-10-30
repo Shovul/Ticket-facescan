@@ -62,13 +62,14 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
     {
         entity.CreatedAt = DateTime.UtcNow;
         await _dbSet.AddAsync(entity);
+        await _context.SaveChangesAsync();
     }
 
     public virtual async Task UpdateAsync(T entity)
     {
         entity.UpdatedAt = DateTime.UtcNow;
         _dbSet.Update(entity);
-        await Task.CompletedTask;
+        await _context.SaveChangesAsync();
     }
 
     public virtual async Task SoftDeleteAsync(T entity)
