@@ -15,6 +15,7 @@ public class TicketDetail : BaseEntity
     public string? AttendeePhone { get; set; }
     public string? AttendeeFaceData { get; set; }
     public Vector? FaceVector { get; set; }
+    public bool HasFaceScan => FaceVector != null;
     public TicketDetailStatus Status { get; set; }
     public DateTime? CheckedInAt { get; set; }
 

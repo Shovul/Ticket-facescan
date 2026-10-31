@@ -19,8 +19,15 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
         // Switched to PostgreSQL
-        builder.UseNpgsql(connectionString);
+        builder.UseNpgsql(connectionString, npgsqlOptions =>
+        {
+            npgsqlOptions.UseVector();
+        })
+        .UseSnakeCaseNamingConvention();
 
         return new AppDbContext(builder.Options);
+        //builder.UseNpgsql(connectionString);
+
+        //return new AppDbContext(builder.Options);
     }
 }

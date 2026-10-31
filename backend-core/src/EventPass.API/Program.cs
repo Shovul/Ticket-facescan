@@ -49,6 +49,9 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IKioskService, KioskService>();
 builder.Services.AddScoped<IKioskNotificationService, KioskNotificationService>();
 
+builder.Services.AddScoped<IAttendeeService, TicketDetailRepository>();
+builder.Services.AddScoped<ITransactionService, TransactionRepository>();
+
 // 6. Đăng ký SignalR (Realtime Notification)
 builder.Services.AddSignalR();
 
@@ -75,5 +78,6 @@ app.MapControllers();
 
 // Map SignalR Hub
 app.MapHub<KioskHub>("/hubs/kiosk");
+app.MapHub<TransactionHub>("/hubs/transactions");
 
 app.Run();
