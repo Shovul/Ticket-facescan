@@ -20,4 +20,5 @@ public interface IRepository<T> where T : class
     Task SoftDeleteAsync(T entity);
     Task PermanentDeleteAsync(T entity);
     Task<int> SaveChangesAsync();
+    IQueryable<T> AsQueryable();
 }

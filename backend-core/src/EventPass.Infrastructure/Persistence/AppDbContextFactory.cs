@@ -23,7 +23,8 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
         {
             npgsqlOptions.UseVector();
         })
-        .UseSnakeCaseNamingConvention();
+        .UseSnakeCaseNamingConvention()
+        .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 
         return new AppDbContext(builder.Options);
         //builder.UseNpgsql(connectionString);

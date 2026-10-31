@@ -1,0 +1,489 @@
+
+.customer-site .my-tickets-page .workspace-main {
+    max-width: 1180px;
+    margin: 24px auto 60px auto;
+    padding: 0 24px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+.customer-site .my-tickets-page .page-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+.customer-site .my-tickets-page .page-header-text h1 { font-size: 24px; font-weight: 800; color: var(--color-navy); }
+.customer-site .my-tickets-page .page-header-text p { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+.customer-site .my-tickets-page .pending-reservations-container { display: flex; flex-direction: column; gap: 14px; }
+.customer-site .my-tickets-page .reservation-banner-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1.5px solid var(--color-yellow);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    box-shadow: 0 4px 14px rgba(250, 192, 5, 0.12);
+    position: relative;
+    overflow: hidden;
+  }
+.customer-site .my-tickets-page .reservation-banner-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: var(--color-yellow);
+  }
+.customer-site .my-tickets-page .reservation-banner-card.paid-type { border-color: var(--color-orange); }
+.customer-site .my-tickets-page .reservation-banner-card.paid-type::before { background: var(--color-orange); }
+.customer-site .my-tickets-page .reservation-banner-card.hybrid-type { border-color: var(--color-teal); }
+.customer-site .my-tickets-page .reservation-banner-card.hybrid-type::before { background: var(--color-teal); }
+.customer-site .my-tickets-page .res-left-info { display: flex; align-items: center; gap: 14px; }
+.customer-site .my-tickets-page .res-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #fffbeb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-orange);
+    flex-shrink: 0;
+  }
+.customer-site .my-tickets-page .res-text-block h4 { font-size: 14px; font-weight: 800; color: var(--color-navy); }
+.customer-site .my-tickets-page .res-text-block p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.customer-site .my-tickets-page .res-right-actions { display: flex; align-items: center; gap: 12px; }
+.customer-site .my-tickets-page .timer-pill-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+  }
+.customer-site .my-tickets-page .timer-item-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+.customer-site .my-tickets-page .res-timer-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--danger);
+    background: #fee2e2;
+    padding: 2px 7px;
+    border-radius: 5px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+.customer-site .my-tickets-page .res-timer-badge.free-timer {
+    color: #0369a1;
+    background: #e0f2fe;
+  }
+.customer-site .my-tickets-page .hybrid-cancel-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    align-items: flex-start;
+  }
+.customer-site .my-tickets-page .btn-resume-action {
+    padding: 8px 16px;
+    background: var(--color-teal);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+.customer-site .my-tickets-page .btn-resume-action:hover { background: var(--color-teal-hover); }
+.customer-site .my-tickets-page .btn-cancel-link {
+    background: none;
+    border: none;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: underline;
+    white-space: nowrap;
+    padding: 0;
+  }
+.customer-site .my-tickets-page .btn-cancel-link:hover { color: var(--danger); }
+.customer-site .my-tickets-page .btn-cancel-link.danger { color: var(--danger); }
+.customer-site .my-tickets-page .tickets-filter-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 12px;
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 14px rgba(2, 56, 82, 0.04);
+    flex-wrap: wrap;
+  }
+.customer-site .my-tickets-page .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.customer-site .my-tickets-page .tab-btn {
+    padding: 6px 14px;
+    background: var(--bg-page);
+    border: 1.5px solid var(--card-border);
+    border-radius: 20px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+.customer-site .my-tickets-page .tab-btn:hover { border-color: var(--color-teal); color: var(--color-teal); }
+.customer-site .my-tickets-page .tab-btn.active { background: var(--color-teal); border-color: var(--color-teal); color: #fff; }
+.customer-site .my-tickets-page .tickets-grid-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+.customer-site .my-tickets-page .ticket-card {
+    background: var(--white);
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 6px 18px rgba(2, 56, 82, 0.04);
+    transition: all 0.2s ease;
+  }
+.customer-site .my-tickets-page .ticket-card:hover {
+    border-color: var(--color-teal);
+    box-shadow: 0 10px 26px rgba(7, 159, 160, 0.12);
+  }
+.customer-site .my-tickets-page .ticket-card-top {
+    padding: 16px 20px 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px dashed var(--hairline);
+    background: #fafdfc;
+  }
+.customer-site .my-tickets-page .event-badge-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.customer-site .my-tickets-page .type-badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+.customer-site .my-tickets-page .type-badge.free { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+.customer-site .my-tickets-page .type-badge.paid { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.customer-site .my-tickets-page .type-badge.hybrid { background: #ecfeff; color: #0e7490; border: 1px solid #a5f3fc; }
+.customer-site .my-tickets-page .status-badge {
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+.customer-site .my-tickets-page .status-badge.active { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.customer-site .my-tickets-page .status-badge.pending { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.customer-site .my-tickets-page .ticket-card-body {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+.customer-site .my-tickets-page .ticket-event-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--color-navy);
+    line-height: 1.35;
+  }
+.customer-site .my-tickets-page .ticket-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg-page);
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--hairline);
+  }
+.customer-site .my-tickets-page .meta-col div:first-child { font-size: 10px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); }
+.customer-site .my-tickets-page .meta-col div:last-child { font-size: 12px; font-weight: 700; color: var(--color-navy); margin-top: 2px; }
+.customer-site .my-tickets-page .ticket-attendee-strip {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: #fff;
+  }
+.customer-site .my-tickets-page .attendee-face-preview {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1.5px solid var(--card-border);
+    background: #e6f0ed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+.customer-site .my-tickets-page .attendee-face-preview.missing {
+    border-style: dashed;
+    border-color: var(--danger);
+    background: var(--danger-bg);
+    color: var(--danger);
+  }
+.customer-site .my-tickets-page .attendee-details { flex: 1; min-width: 0; }
+.customer-site .my-tickets-page .attendee-name-txt {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--color-navy);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+.customer-site .my-tickets-page .attendee-sub-txt { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.customer-site .my-tickets-page .ticket-card-footer {
+    padding: 12px 20px;
+    background: var(--bg-page);
+    border-top: 1px solid var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+.customer-site .my-tickets-page .btn-view-pass {
+    padding: 7px 12px;
+    background: var(--color-navy);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s ease;
+  }
+.customer-site .my-tickets-page .btn-view-pass:hover { background: var(--color-teal); }
+.customer-site .my-tickets-page .ticket-action-btns { display: flex; gap: 6px; }
+.customer-site .my-tickets-page .btn-ticket-sub {
+    padding: 6px 10px;
+    background: #fff;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+.customer-site .my-tickets-page .btn-ticket-sub:hover { border-color: var(--color-teal); color: var(--color-teal); }
+.customer-site .my-tickets-page .catalog-pagination-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: #fff;
+    border: 1.5px solid var(--card-border);
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
+    box-shadow: 0 4px 12px rgba(2, 56, 82, 0.03);
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+  }
+.customer-site .my-tickets-page .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--color-navy);
+  }
+.customer-site .my-tickets-page .pagination-nav-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1.5px solid var(--card-border);
+    background: #fff;
+    color: var(--color-navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+.customer-site .my-tickets-page .pagination-nav-btn:hover:not(:disabled) {
+    background: var(--color-teal);
+    color: #fff;
+    border-color: var(--color-teal);
+  }
+.customer-site .my-tickets-page .pagination-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.customer-site .my-tickets-page .page-indicator-wrap { display: flex; align-items: center; gap: 6px; }
+.customer-site .my-tickets-page .input-current-page {
+    width: 48px;
+    height: 32px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    color: var(--color-navy);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    outline: none;
+  }
+.customer-site .my-tickets-page .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 56, 82, 0.6);
+    backdrop-filter: blur(3px);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+.customer-site .my-tickets-page .modal-backdrop.show { opacity: 1; visibility: visible; }
+.customer-site .my-tickets-page .simple-modal-box {
+    background: #fff;
+    border-radius: 14px;
+    max-width: 580px;
+    width: 100%;
+    padding: 22px 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+.customer-site .my-tickets-page .modal-header-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1.5px solid var(--hairline);
+  }
+.customer-site .my-tickets-page .modal-header-line h3 { font-size: 16px; font-weight: 800; color: var(--color-navy); }
+.customer-site .my-tickets-page .att-card-mini {
+    background: var(--bg-page);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+.customer-site .my-tickets-page .att-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.customer-site .my-tickets-page .att-control {
+    width: 100%;
+    padding: 7px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+    outline: none;
+    background: #fff;
+  }
+.customer-site .my-tickets-page .pass-modal-box {
+    background: linear-gradient(160deg, #023852 0%, #011e2d 100%);
+    color: #fff;
+    width: 100%;
+    max-width: 440px;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.35);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border: 1.5px solid rgba(159, 216, 197, 0.2);
+  }
+.customer-site .my-tickets-page .pass-header-top {
+    padding: 20px 24px 16px 24px;
+    border-bottom: 1.5px dashed rgba(255, 255, 255, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+.customer-site .my-tickets-page .pass-body-content {
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+.customer-site .my-tickets-page .pass-face-qr-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 14px 18px;
+  }
+.customer-site .my-tickets-page .pass-face-large {
+    width: 76px;
+    height: 76px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 2px solid var(--color-yellow);
+    background: #fff;
+  }
+.customer-site .my-tickets-page .pass-qr-box {
+    background: #fff;
+    border-radius: 8px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+.customer-site .my-tickets-page .pass-footer-btn {
+    padding: 14px 24px;
+    background: rgba(0,0,0,0.25);
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  @media (max-width: 860px) {
+.customer-site .my-tickets-page .tickets-grid-list { grid-template-columns: 1fr; }
+.customer-site .my-tickets-page .reservation-banner-card { flex-direction: column; align-items: flex-start; }
+.customer-site .my-tickets-page .res-right-actions { width: 100%; justify-content: space-between; }
+  }
+
+.customer-site .my-tickets-page .booking-modal-content { width: 100%; }
+.customer-site .my-tickets-page .booking-modal-content .booking-flow-panel { width: 100%; position: static; }
+.customer-site .my-tickets-page .ticket-card-top code { font-size: 11px; overflow-wrap: anywhere; }
+.customer-site .my-tickets-page .pass-qr-box code { color: var(--color-navy); overflow-wrap: anywhere; }
+.customer-site .my-tickets-page .pass-modal-box { max-height: 90vh; overflow-y: auto; }
+
+.customer-site .my-tickets-page .pass-body-content h2 { font-size: 18px; font-weight: 800; line-height: 1.3; color: #fff; }
+.customer-site .my-tickets-page .pass-body-content > p { font-size: 12px; color: #cde5f0; }
+.customer-site .my-tickets-page .ticket-card-top { gap: 8px; }
+
+.customer-site .my-tickets-page .res-left-info, .customer-site .my-tickets-page .res-text-block { min-width: 0; }
+.customer-site .my-tickets-page .res-text-block p { overflow-wrap: anywhere; }

@@ -1,0 +1,39 @@
+# .NET Core Build outputs
+bin/
+obj/
+**/bin/
+**/obj/
+
+# Visual Studio & JetBrains Rider
+.vs/
+.idea/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+_ReSharper*/
+
+# Test results
+TestResults/
+[Tt]est[Rr]esults/
+
+# Local databases
+*.db
+*.db-shm
+*.db-wal
+
+# Uploaded face photos / static temp
+**/Uploads/
+**/uploads/
+**/wwwroot/uploads/
+
+# Secrets
+*.pfx
+*.pem
+*.key
+appsettings.Production.json
+appsettings.Local.json
+
+# OS
+Thumbs.db
+.DS_Store

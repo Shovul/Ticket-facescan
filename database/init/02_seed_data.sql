@@ -1,3 +1,4 @@
+-- Không tự động áp dụng nữa do chuyển schema sang EF Core Migration; giữ dữ liệu mẫu cũ để nhóm tham khảo.
 -- ==============================================================================
 -- EVENTPASS SEED DATA FOR TESTING KIOSK CHECK-IN (< 1S)
 -- Nhóm: 262701-DACN-18-Nhom1A | GVHD: ThS. Trần Đình Nghĩa (SGU)

@@ -18,7 +18,7 @@ namespace EventPass.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "9.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "vector");
@@ -34,8 +34,10 @@ namespace EventPass.Infrastructure.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CapturedAt")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("captured_at");
+                        .HasColumnName("captured_at")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("EventId")
                         .HasColumnType("integer")
@@ -46,8 +48,8 @@ namespace EventPass.Infrastructure.Migrations
                         .HasColumnName("face_confidence");
 
                     b.Property<string>("KioskName")
-                        .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("kiosk_name");
 
                     b.Property<double?>("MatchDistance")
@@ -60,7 +62,8 @@ namespace EventPass.Infrastructure.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("status");
 
                     b.Property<int?>("TicketDetailId")
@@ -87,6 +90,10 @@ namespace EventPass.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CloseTicketTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("close_ticket_time");
 
                     b.Property<string>("CoverImage")
                         .HasColumnType("text")
@@ -126,12 +133,21 @@ namespace EventPass.Infrastructure.Migrations
 
                     b.Property<string>("Location")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("location");
+
+                    b.Property<DateTime?>("OpenTicketTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("open_ticket_time");
 
                     b.Property<int>("OrganizerId")
                         .HasColumnType("integer")
                         .HasColumnName("organizer_id");
+
+                    b.Property<DateTime?>("PublicTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("public_time");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("timestamp with time zone")
@@ -143,7 +159,8 @@ namespace EventPass.Infrastructure.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("title");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -152,6 +169,9 @@ namespace EventPass.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_events");
+
+                    b.HasIndex("OrganizerId")
+                        .HasDatabaseName("ix_events_organizer_id");
 
                     b.ToTable("events", (string)null);
                 });
@@ -225,6 +245,10 @@ namespace EventPass.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("ConfirmationEmailSentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("confirmation_email_sent_at");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -237,26 +261,61 @@ namespace EventPass.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("event_id");
 
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
-                    b.Property<string>("PaymentMethod")
+                    b.Property<string>("OrderCode")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("order_code");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("paid_at");
+
+                    b.Property<DateTime?>("PaymentExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("payment_expires_at");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("payment_method");
+
+                    b.Property<string>("PaymentReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("payment_reference");
 
                     b.Property<int>("PaymentStatus")
                         .HasColumnType("integer")
-                        .HasColumnName("payment_status");
+                        .HasColumnName("status");
+
+                    b.Property<string>("RequestKey")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("request_key");
+
+                    b.Property<string>("ReservationStatus")
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("reservation_status");
 
                     b.Property<decimal>("TotalAmount")
-                        .HasColumnType("numeric")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
                         .HasColumnName("total_amount");
 
                     b.Property<string>("TransactionCode")
-                        .HasColumnType("text")
-                        .HasColumnName("transaction_code");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("transaction_id");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
@@ -272,10 +331,126 @@ namespace EventPass.Infrastructure.Migrations
                     b.HasIndex("EventId")
                         .HasDatabaseName("ix_orders_event_id");
 
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_orders_user_id");
+                    b.HasIndex("OrderCode")
+                        .IsUnique()
+                        .HasDatabaseName("ix_orders_order_code");
+
+                    b.HasIndex("PaymentReference")
+                        .IsUnique()
+                        .HasDatabaseName("ix_orders_payment_reference");
+
+                    b.HasIndex("ReservationStatus", "ExpiresAt")
+                        .HasDatabaseName("ix_orders_reservation_status_expires_at");
+
+                    b.HasIndex("UserId", "RequestKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_orders_user_id_request_key");
 
                     b.ToTable("orders", (string)null);
+                });
+
+            modelBuilder.Entity("EventPass.Domain.Entities.OrderItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AttendeeEmail")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("attendee_email");
+
+                    b.Property<string>("AttendeeName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("attendee_name");
+
+                    b.Property<string>("AttendeePhone")
+                        .HasMaxLength(15)
+                        .HasColumnType("character varying(15)")
+                        .HasColumnName("attendee_phone");
+
+                    b.Property<string>("ClaimTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("claim_token_hash");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<DateTime?>("FaceConsentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("face_consent_at");
+
+                    b.Property<string>("FaceImageContentType")
+                        .HasColumnType("text")
+                        .HasColumnName("face_image_content_type");
+
+                    b.Property<Vector>("FaceVector")
+                        .HasColumnType("vector(512)")
+                        .HasColumnName("face_vector");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("integer")
+                        .HasColumnName("order_id");
+
+                    b.Property<byte[]>("ProtectedFaceImage")
+                        .HasColumnType("bytea")
+                        .HasColumnName("protected_face_image");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.Property<int?>("TicketDetailId")
+                        .HasColumnType("integer")
+                        .HasColumnName("ticket_detail_id");
+
+                    b.Property<int>("TicketId")
+                        .HasColumnType("integer")
+                        .HasColumnName("ticket_id");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("unit_price");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_order_items");
+
+                    b.HasIndex("ClaimTokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_order_items_claim_token_hash");
+
+                    b.HasIndex("OrderId")
+                        .HasDatabaseName("ix_order_items_order_id");
+
+                    b.HasIndex("TicketDetailId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_order_items_ticket_detail_id");
+
+                    b.HasIndex("TicketId", "Status")
+                        .HasDatabaseName("ix_order_items_ticket_id_status");
+
+                    b.ToTable("order_items", (string)null);
                 });
 
             modelBuilder.Entity("EventPass.Domain.Entities.Ticket", b =>
@@ -299,17 +474,25 @@ namespace EventPass.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("event_id");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("numeric")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
                         .HasColumnName("price");
 
                     b.Property<int>("Quantity")
@@ -344,7 +527,8 @@ namespace EventPass.Infrastructure.Migrations
 
                     b.Property<string>("AttendeeEmail")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("attendee_email");
 
                     b.Property<string>("AttendeeFaceData")
@@ -353,11 +537,13 @@ namespace EventPass.Infrastructure.Migrations
 
                     b.Property<string>("AttendeeName")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("attendee_name");
 
                     b.Property<string>("AttendeePhone")
-                        .HasColumnType("text")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("attendee_phone");
 
                     b.Property<DateTime?>("CheckedInAt")
@@ -389,7 +575,6 @@ namespace EventPass.Infrastructure.Migrations
                         .HasColumnName("order_id");
 
                     b.Property<string>("QrCodeUrl")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("qr_code_url");
 
@@ -399,7 +584,8 @@ namespace EventPass.Infrastructure.Migrations
 
                     b.Property<string>("TicketCode")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
                         .HasColumnName("ticket_code");
 
                     b.Property<int>("TicketId")
@@ -417,14 +603,26 @@ namespace EventPass.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_ticket_details");
 
-                    b.HasIndex("EventId")
-                        .HasDatabaseName("ix_ticket_details_event_id");
+                    b.HasIndex("FaceVector")
+                        .HasDatabaseName("idx_ticket_details_face_vector")
+                        .HasAnnotation("Npgsql:StorageParameter:ef_construction", 64)
+                        .HasAnnotation("Npgsql:StorageParameter:m", 16);
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("FaceVector"), "hnsw");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("FaceVector"), new[] { "vector_cosine_ops" });
 
                     b.HasIndex("OrderId")
                         .HasDatabaseName("ix_ticket_details_order_id");
 
+                    b.HasIndex("TicketCode")
+                        .IsUnique()
+                        .HasDatabaseName("ix_ticket_details_ticket_code");
+
                     b.HasIndex("TicketId")
                         .HasDatabaseName("ix_ticket_details_ticket_id");
+
+                    b.HasIndex("EventId", "Status")
+                        .HasDatabaseName("idx_ticket_details_event");
 
                     b.ToTable("ticket_details", (string)null);
                 });
@@ -452,7 +650,8 @@ namespace EventPass.Infrastructure.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("email");
 
                     b.Property<Vector>("FaceVector")
@@ -461,21 +660,43 @@ namespace EventPass.Infrastructure.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("full_name");
+
+                    b.Property<string>("GoogleId")
+                        .HasColumnType("text")
+                        .HasColumnName("google_id");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
                     b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("password_hash");
 
-                    b.Property<string>("Phone")
+                    b.Property<string>("PasswordResetToken")
                         .HasColumnType("text")
+                        .HasColumnName("password_reset_token");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
                         .HasColumnName("phone");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text")
+                        .HasColumnName("refresh_token");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("refresh_token_expiry_time");
+
+                    b.Property<DateTime?>("ResetTokenExpires")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reset_token_expires");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer")
@@ -485,8 +706,25 @@ namespace EventPass.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("username");
+
                     b.HasKey("Id")
                         .HasName("pk_users");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("ix_users_email");
+
+                    b.HasIndex("FaceVector")
+                        .HasDatabaseName("idx_users_face_vector")
+                        .HasAnnotation("Npgsql:StorageParameter:ef_construction", 64)
+                        .HasAnnotation("Npgsql:StorageParameter:m", 16);
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("FaceVector"), "hnsw");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("FaceVector"), new[] { "vector_cosine_ops" });
 
                     b.ToTable("users", (string)null);
                 });
@@ -509,6 +747,16 @@ namespace EventPass.Infrastructure.Migrations
                     b.Navigation("Event");
 
                     b.Navigation("TicketDetail");
+                });
+
+            modelBuilder.Entity("EventPass.Domain.Entities.Event", b =>
+                {
+                    b.HasOne("EventPass.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_events_users_organizer_id");
                 });
 
             modelBuilder.Entity("EventPass.Domain.Entities.Kiosk", b =>
@@ -542,6 +790,35 @@ namespace EventPass.Infrastructure.Migrations
                     b.Navigation("Event");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EventPass.Domain.Entities.OrderItem", b =>
+                {
+                    b.HasOne("EventPass.Domain.Entities.Order", "Order")
+                        .WithMany("Items")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_order_items_orders_order_id");
+
+                    b.HasOne("EventPass.Domain.Entities.TicketDetail", "TicketDetail")
+                        .WithMany()
+                        .HasForeignKey("TicketDetailId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_order_items_ticket_details_ticket_detail_id");
+
+                    b.HasOne("EventPass.Domain.Entities.Ticket", "Ticket")
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_order_items_tickets_ticket_id");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Ticket");
+
+                    b.Navigation("TicketDetail");
                 });
 
             modelBuilder.Entity("EventPass.Domain.Entities.Ticket", b =>
@@ -599,6 +876,8 @@ namespace EventPass.Infrastructure.Migrations
 
             modelBuilder.Entity("EventPass.Domain.Entities.Order", b =>
                 {
+                    b.Navigation("Items");
+
                     b.Navigation("TicketDetails");
                 });
 

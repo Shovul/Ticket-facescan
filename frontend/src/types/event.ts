@@ -1,19 +1,16 @@
-export interface TicketDto {
-  id?: number;
+export interface CreateTicketDto {
   name: string;
   price: number;
   quantity: number;
 }
 
-export interface KioskDto {
-  id?: number;
+export interface CreateKioskDto {
   name: string;
   location: string;
-  secretToken?: string;
 }
 
 export interface CreateEventDto {
-  organizerId?: number;
+  organizerId?: number; 
   organizerName: string;
   organizerEmail: string;
   organizerHotline: string;
@@ -27,12 +24,33 @@ export interface CreateEventDto {
   openKioskTime: string;
   startTime: string;
   endTime: string;
-  tickets: TicketDto[];
-  kiosks: KioskDto[];
+  tickets: CreateTicketDto[];
+  kiosks: CreateKioskDto[];
 }
 
-export interface EventResponse extends CreateEventDto {
+export interface EventSummaryDto {
+  id: number;
+  title: string;
+  status: 'open' | 'upcoming' | 'ended' | 'cancelled';
+  statusText: string;
+  startTime: string;
+  location: string;
+  coverImage: string;
+  sold: number;
+  total: number;
+}
+
+export interface PaginatedEventResponse {
+  items: EventSummaryDto[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface EventDetailResponse extends CreateEventDto {
   id: number;
   status: number;
   createdAt: string;
+  tickets: (CreateTicketDto & { id: number; quantitySold: number })[];
+  kiosks: (CreateKioskDto & { id: number; secretToken: string; isActive: boolean })[];
 }
