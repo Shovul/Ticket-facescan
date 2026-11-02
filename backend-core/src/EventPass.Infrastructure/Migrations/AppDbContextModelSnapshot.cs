@@ -111,6 +111,14 @@ namespace EventPass.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
+                    b.Property<string>("EmailCheckinNote")
+                        .HasColumnType("text")
+                        .HasColumnName("email_checkin_note");
+
+                    b.Property<string>("EmailSubject")
+                        .HasColumnType("text")
+                        .HasColumnName("email_subject");
+
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_time");
@@ -118,6 +126,10 @@ namespace EventPass.Infrastructure.Migrations
                     b.Property<string>("EventImages")
                         .HasColumnType("text")
                         .HasColumnName("event_images");
+
+                    b.Property<string>("EventSpeakers")
+                        .HasColumnType("text")
+                        .HasColumnName("event_speakers");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
@@ -137,13 +149,44 @@ namespace EventPass.Infrastructure.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("location");
 
+                    b.Property<DateTime?>("OpenKioskTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("open_kiosk_time");
+
                     b.Property<DateTime?>("OpenTicketTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("open_ticket_time");
 
+                    b.Property<string>("OrganizerEmail")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("organizer_email");
+
+                    b.Property<string>("OrganizerHotline")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("organizer_hotline");
+
                     b.Property<int>("OrganizerId")
                         .HasColumnType("integer")
                         .HasColumnName("organizer_id");
+
+                    b.Property<string>("OrganizerLegalId")
+                        .HasColumnType("text")
+                        .HasColumnName("organizer_legal_id");
+
+                    b.Property<string>("OrganizerLogo")
+                        .HasColumnType("text")
+                        .HasColumnName("organizer_logo");
+
+                    b.Property<string>("OrganizerName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("organizer_name");
+
+                    b.Property<string>("OrganizerWebsite")
+                        .HasColumnType("text")
+                        .HasColumnName("organizer_website");
 
                     b.Property<DateTime?>("PublicTime")
                         .HasColumnType("timestamp with time zone")
@@ -469,6 +512,10 @@ namespace EventPass.Infrastructure.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text")
+                        .HasColumnName("description");
 
                     b.Property<int>("EventId")
                         .HasColumnType("integer")

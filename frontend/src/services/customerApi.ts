@@ -1,7 +1,7 @@
 import { Booking, CustomerSummary, PublicEvent, PublicEventPage, CustomerTickets, DigitalPass, ClaimLink, ClaimTicket } from "../types/customer";
 import axios from "axios";
 
-const base = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5162").replace(/\/$/, "").replace(/\/api\/v1$/, "");
+const base = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "").replace(/\/api\/v1$/, "");
 
 // Mở phiên customer mẫu trước khi hiển thị các trang thử, không ghi đè token đăng nhập thật.
 

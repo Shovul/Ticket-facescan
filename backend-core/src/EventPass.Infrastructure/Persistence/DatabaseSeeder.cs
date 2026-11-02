@@ -38,7 +38,7 @@ public static class DatabaseSeeder
         await db.SaveChangesAsync(ct);
 
         var now = DateTime.UtcNow;
-        var kioskSeed = await EnsureKioskDataAsync(db, admin, now, ct);
+        var kioskSeed = await EnsureKioskDataAsync(db, admin, hashPassword, now, ct);
         usersAdded += kioskSeed.UsersAdded;
         var eventsAdded = kioskSeed.EventsAdded;
         foreach (var definition in Definitions())
@@ -88,7 +88,7 @@ public static class DatabaseSeeder
     }
 
     // Giữ dữ liệu thử kiosk tương đương SQL cũ; không đặt lại vé đã điểm danh hoặc sửa sự kiện có sẵn.
-    private static async Task<SeedDatabaseResult> EnsureKioskDataAsync(AppDbContext db, User admin, DateTime now, CancellationToken ct)
+    private static async Task<SeedDatabaseResult> EnsureKioskDataAsync(AppDbContext db, User admin, Func<User, string, string> hashPassword, DateTime now, CancellationToken ct)
     {
         var usersAdded = 0;
         var eventsAdded = 0;
@@ -132,9 +132,19 @@ public static class DatabaseSeeder
         var guest = await db.Users.IgnoreQueryFilters().SingleOrDefaultAsync(u => u.Email == "guest@eventpass.vn", ct);
         if (guest == null)
         {
-            guest = new User { Email = "guest@eventpass.vn", FullName = "Người Tham Dự Mẫu", Phone = "0912345678" };
+            guest = new User 
+            { 
+                Email = "guest@eventpass.vn", 
+                FullName = "Người Tham Dự Mẫu", 
+                Phone = "0912345678",
+                Role = UserRole.User 
+            };
+            guest.PasswordHash = hashPassword(guest, "Guest@123");
             db.Users.Add(guest);
             usersAdded++;
+            // guest = new User { Email = "guest@eventpass.vn", FullName = "Người Tham Dự Mẫu", Phone = "0912345678" };
+            // db.Users.Add(guest);
+            // usersAdded++;
         }
         var ticket = await db.Tickets.IgnoreQueryFilters()
             .FirstOrDefaultAsync(t => t.EventId == ev.Id && t.Name == "Vé VIP - Khách Mời Danh Dự", ct);

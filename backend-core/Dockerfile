@@ -1,9 +1,9 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /app
 
 # Copy toàn bộ mã nguồn backend-core vào container
-COPY . .
-
+COPY backend-core/ .
+COPY database/ /database/
 # Chỉ định rõ file .csproj của API để restore thư viện
 RUN dotnet restore src/EventPass.API/EventPass.API.csproj
 

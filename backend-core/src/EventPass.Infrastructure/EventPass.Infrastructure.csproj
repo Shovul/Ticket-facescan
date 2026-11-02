@@ -1,10 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Dropbox.Api" Version="7.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.3.13" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.0" />
     <ProjectReference Include="..\EventPass.Application\EventPass.Application.csproj" />
     <ProjectReference Include="..\EventPass.Domain\EventPass.Domain.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>  
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,37 +1,86 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CreateEventDto, CreateTicketDto, CreateKioskDto } from '../types/event';
 import { eventService } from '../services/eventService';
+import { useNotification } from '../components/shared/NotificationProvider';
 
 export const useCreateEvent = () => {
+  const notify = useNotification();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState<CreateEventDto>({
+  const [formData, setFormData] = useState({
     organizerName: '',
     organizerEmail: '',
     organizerHotline: '',
+    organizerWebsite: '',
+    organizerLegalId: '',
+    organizerLogo: '', 
+    organizerLogoFile: null as File | null, 
     title: '',
     description: '',
+    eventSpeakers: '',
     location: '',
-    eventImages: [],
+    eventImages: [] as string[], 
+    eventImageFiles: [] as File[], 
     publicTime: '',
     openTicketTime: '',
     closeTicketTime: '',
     openKioskTime: '',
     startTime: '',
     endTime: '',
-    tickets: [{ name: '', price: 0, quantity: 100 }],
-    kiosks: [{ name: '', location: '' }], 
+    emailSubject: '[SGU TechDay 2026] Thẻ vé tham dự chính thức của bạn',
+    emailCheckinNote: 'Quý khách vui lòng bước tới làn quét khuôn mặt...',
+    tickets: [{ name: '', price: 0, quantity: 100, description: '' }],
+    kiosks: [{ name: 'Trạm 1 - Lối vào cổng', location: 'Lối vào cổng', secretToken: `` }],
   });
+
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      kiosks: prev.kiosks.map((k, idx) => ({
+        ...k,
+        secretToken: k.secretToken || `stk_live_${Math.random().toString(36).substring(2, 8)}`,
+      })),
+    }));
+  }, []);
 
   const updateField = (field: keyof CreateEventDto, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const previewUrl = URL.createObjectURL(file);
+      setFormData((prev) => ({
+        ...prev,
+        organizerLogo: previewUrl,
+        organizerLogoFile: file,
+      }));
+      notify("Đã tải lên logo thành công", "success");
+    }
+  };
+
+  const handleImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      if (formData.eventImages.length + files.length > 20) {
+        notify("Chỉ được phép chọn tối đa 20 hình ảnh", "error");
+        return;
+      }
+      const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+      setFormData((prev) => ({
+        ...prev,
+        eventImages: [...prev.eventImages, ...newPreviewUrls],
+        eventImageFiles: [...prev.eventImageFiles, ...files],
+      }));
+      notify(`Đã thêm ${files.length} ảnh minh họa`, "success");
+    }
+  };
+
   const addTicket = () => {
     setFormData((prev) => ({
       ...prev,
-      tickets: [...prev.tickets, { name: '', price: 0, quantity: 100 }],
+      tickets: [...prev.tickets, { name: '', price: 0, quantity: 100, description: '' }],
     }));
   };
 
@@ -42,16 +91,22 @@ export const useCreateEvent = () => {
   };
 
   const removeTicket = (index: number) => {
-    if (formData.tickets.length <= 1) return; 
+    if (formData.tickets.length <= 1) {
+      notify("Cần duy trì tối thiểu 1 phân hạng vé", "error");
+      return;
+    }
     const updatedTickets = formData.tickets.filter((_, i) => i !== index);
     setFormData((prev) => ({ ...prev, tickets: updatedTickets }));
   };
 
-  // Quản lý Kiosk
   const addKiosk = () => {
     setFormData((prev) => ({
       ...prev,
-      kiosks: [...prev.kiosks, { name: '', location: '' }],
+      kiosks: [...prev.kiosks, { 
+        name: `Trạm ${prev.kiosks.length + 1} - Lối vào cổng`, 
+        location: '', 
+        secretToken: `stk_live_${Math.random().toString(36).substring(2, 8)}` 
+      }],
     }));
   };
 
@@ -62,62 +117,55 @@ export const useCreateEvent = () => {
   };
 
   const removeKiosk = (index: number) => {
-    if (formData.kiosks.length <= 1) return; 
+    if (formData.kiosks.length <= 1) {
+      notify("Cần có ít nhất 1 trạm kiểm soát", "error");
+      return;
+    }
     const updatedKiosks = formData.kiosks.filter((_, i) => i !== index);
     setFormData((prev) => ({ ...prev, kiosks: updatedKiosks }));
   };
 
   const validateTimeline = () => {
-    const { publicTime, openTicketTime, closeTicketTime, openKioskTime, startTime, endTime } = formData;
-    const tPublic = new Date(publicTime);
-    const tOpenTicket = new Date(openTicketTime);
-    const tCloseTicket = new Date(closeTicketTime);
-    const tOpenKiosk = new Date(openKioskTime);
-    const tStart = new Date(startTime);
-    const tEnd = new Date(endTime);
+    const tPublic = new Date(formData.publicTime);
+    const tOpenTicket = new Date(formData.openTicketTime);
+    const tCloseTicket = new Date(formData.closeTicketTime);
+    const tOpenKiosk = new Date(formData.openKioskTime);
+    const tStart = new Date(formData.startTime);
+    const tEnd = new Date(formData.endTime);
 
-    if (tOpenTicket < tPublic) return 'E1: Thời gian Mở bán vé không được trước thời gian Công khai Web.';
-    if (tCloseTicket < tOpenTicket) return 'E1: Thời gian Đóng bán vé không được trước thời gian Mở bán vé.';
-    if (tOpenKiosk < tCloseTicket) return 'E1: Thời gian Mở Kiosk check-in không được trước thời gian Đóng bán vé.';
-    if (tStart < tOpenKiosk) return 'E1: Thời gian Bắt đầu sự kiện không được trước thời gian Mở Kiosk.';
-    if (tEnd <= tStart) return 'E1: Thời gian Kết thúc phải diễn ra sau Thời gian Bắt đầu sự kiện.';
-    
+    if (tOpenTicket < tPublic) return 'Thời gian Mở bán vé không được trước ngày công khai sự kiện.';
+    if (tCloseTicket <= tOpenTicket) return 'Ngày đóng bán vé phải diễn ra sau ngày mở bán vé.';
+    if (tOpenKiosk < tCloseTicket) return 'Thời gian Mở Kiosk check-in phải sau khi đóng bán vé.';
+    if (tStart < tOpenKiosk) return 'Bắt đầu sự kiện phải diễn ra sau khi mở Kiosk đón khách.';
+    if (tEnd <= tStart) return 'Bế mạc sự kiện phải diễn ra sau khi bắt đầu.';
     return null;
   };
 
   const submitForm = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
 
     const validationError = validateTimeline();
     if (validationError) {
-      setError(validationError);
+      notify(validationError, "error");
       setLoading(false);
       return;
     }
 
     try {
       await eventService.createEvent(formData);
-      alert('Sự kiện được khởi tạo và xuất bản thành công.');
+      notify("Sự kiện được khởi tạo và xuất bản thành công!", "success");
+      setTimeout(() => window.location.href = '/admin/events', 1000);
     } catch (err: any) {
-      setError(err.response?.data?.Error || 'Lỗi hệ thống khi tạo sự kiện.');
+      notify(err.response?.data?.Error || 'Lỗi hệ thống khi tạo sự kiện.', "error");
     } finally {
       setLoading(false);
     }
   };
 
   return {
-    formData,
-    loading,
-    error,
-    updateField,
-    addTicket,
-    updateTicket,
-    removeTicket,
-    addKiosk,
-    updateKiosk,
-    removeKiosk,
-    submitForm,
+    formData, loading, updateField, handleLogoUpload, handleImagesUpload,
+    addTicket, updateTicket, removeTicket,
+    addKiosk, updateKiosk, removeKiosk, submitForm,
   };
 };

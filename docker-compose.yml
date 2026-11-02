@@ -45,8 +45,10 @@ services:
   # 3. Backend Core (.NET 8 Clean Architecture)
   backend-core:
     build:
-      context: ./backend-core
-      dockerfile: Dockerfile
+      # context: ./backend-core
+      # dockerfile: Dockerfile
+      context: .
+      dockerfile: ./backend-core/Dockerfile
     container_name: eventpass-backend
     restart: unless-stopped
     ports:

@@ -11,23 +11,30 @@ namespace EventPass.Application.Services
         private readonly IEventRepository _eventRepo;
         private readonly IRepository<Ticket> _ticketRepo;
         private readonly IRepository<TicketDetail> _ticketDetailRepo;
-
+        private readonly IUserRepository _userRepo;
+        private readonly IFileStorageService _fileStorageService;
 
         public EventService(
             IEventRepository eventRepo,
             IRepository<Ticket> ticketRepo,
-            IRepository<TicketDetail> ticketDetailRepo)
+            IRepository<TicketDetail> ticketDetailRepo,
+            IUserRepository userRepo,
+            IFileStorageService fileStorageService)
 
         {
             _eventRepo = eventRepo;
             _ticketRepo = ticketRepo;
             _ticketDetailRepo = ticketDetailRepo;
+            _userRepo = userRepo;
+            _fileStorageService = fileStorageService;
         }
-
-
 
         public async Task<Event> CreateEventAsync(CreateEventDto dto)
         {
+            var userExists = await _userRepo.GetByIdAsync(dto.OrganizerId);
+                if (userExists == null) 
+                    throw new ArgumentException("Organizer ID không tồn tại trong hệ thống.");
+                    
             if (string.IsNullOrWhiteSpace(dto.OrganizerName) || 
                 string.IsNullOrWhiteSpace(dto.OrganizerEmail) || 
                 string.IsNullOrWhiteSpace(dto.OrganizerHotline))
@@ -42,17 +49,52 @@ namespace EventPass.Application.Services
 
             if (!dto.Kiosks.Any()) throw new ArgumentException("E4: Cần duy trì tối thiểu 1 trạm Kiosk.");
 
+            string? logoUrl = null;
+            if (dto.OrganizerLogo != null && dto.OrganizerLogo.Length > 0)
+            {
+                logoUrl = await _fileStorageService.SaveFileAsync(dto.OrganizerLogo, "Events/Logos");
+            }
+
+            var uploadedImageUrls = new List<string>();
+            foreach (var imageFile in dto.EventImages)
+            {
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    string url = await _fileStorageService.SaveFileAsync(imageFile, "Events/Gallery");
+                    uploadedImageUrls.Add(url);
+                }
+            }
+
             var newEvent = new Event
             {
                 OrganizerId = dto.OrganizerId,
+                OrganizerName = dto.OrganizerName,
+                OrganizerEmail = dto.OrganizerEmail,
+                OrganizerHotline = dto.OrganizerHotline,
+                OrganizerWebsite = dto.OrganizerWebsite,
+                OrganizerLegalId = dto.OrganizerLegalId,
+                OrganizerLogo = logoUrl,
+                
                 Title = dto.Title,
                 Description = dto.Description,
+                EventSpeakers = dto.EventSpeakers,
                 Location = dto.Location,
-                StartTime = dto.StartTime,
-                EndTime = dto.EndTime,
+                CoverImage = uploadedImageUrls.FirstOrDefault(),
+                
+                StartTime = dto.StartTime.ToUniversalTime(),
+                EndTime = dto.EndTime.ToUniversalTime(),
+                PublicTime = dto.PublicTime.ToUniversalTime(),
+                OpenTicketTime = dto.OpenTicketTime.ToUniversalTime(),
+                CloseTicketTime = dto.CloseTicketTime.ToUniversalTime(),
+                OpenKioskTime = dto.OpenKioskTime.ToUniversalTime(),
+                
+                EmailSubject = dto.EmailSubject,
+                EmailCheckinNote = dto.EmailCheckinNote,
+                
                 Status = EventStatus.Upcoming,
-                EventImages = dto.EventImages 
+                EventImages = uploadedImageUrls
             };
+
             foreach (var t in dto.Tickets)
             {
                 newEvent.Tickets.Add(new Ticket
@@ -60,6 +102,7 @@ namespace EventPass.Application.Services
                     Name = t.Name,   
                     Price = t.Price, 
                     Quantity = t.Quantity,
+                    Description = t.Description,
                     QuantitySold = 0 
                 });
             }
@@ -70,7 +113,7 @@ namespace EventPass.Application.Services
                 { 
                     Name = string.IsNullOrWhiteSpace(k.Name) ? "Kiosk Cổng 1" : k.Name,
                     Location = k.Location,
-                    SecretToken = $"stk_{Guid.NewGuid():N}"[..12], 
+                    SecretToken = !string.IsNullOrEmpty(k.SecretToken) ? k.SecretToken : $"stk_{Guid.NewGuid():N}"[..12], 
                     IsActive = true
                 });
             }
@@ -85,20 +128,58 @@ namespace EventPass.Application.Services
 
         public async Task<Event> UpdateEventAsync(int eventId, CreateEventDto dto)
         {
-            var existingEvent = await _eventRepo.GetByIdAsync(eventId);
+            var existingEvent = await _eventRepo.GetEventWithDetailsAsync(eventId);
 
             if (existingEvent == null) throw new KeyNotFoundException("Không tìm thấy sự kiện.");
 
+            existingEvent.OrganizerName = dto.OrganizerName;
+            existingEvent.OrganizerEmail = dto.OrganizerEmail;
+            existingEvent.OrganizerHotline = dto.OrganizerHotline;
+            existingEvent.OrganizerWebsite = dto.OrganizerWebsite;
+            existingEvent.OrganizerLegalId = dto.OrganizerLegalId;
+
+            if (dto.OrganizerLogo != null && dto.OrganizerLogo.Length > 0)
+            {
+                if (!string.IsNullOrEmpty(existingEvent.OrganizerLogo)) { await _fileStorageService.DeleteFileAsync(existingEvent.OrganizerLogo); }
+
+                existingEvent.OrganizerLogo = await _fileStorageService.SaveFileAsync(dto.OrganizerLogo, "Events/Logos");
+            }
+
             ValidateTimeline(dto);
 
-            if (dto.EventImages.Count > 20) throw new ArgumentException("E2: Vượt quá 20 ảnh.");
+            if (dto.EventImages != null && dto.EventImages.Count > 0)
+            {
+                if (dto.EventImages.Count > 20) 
+                    throw new ArgumentException("E2: Vượt quá 20 ảnh.");
+
+                var uploadedImageUrls = new List<string>();
+                foreach (var imageFile in dto.EventImages)
+                {
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        string url = await _fileStorageService.SaveFileAsync(imageFile, "Events/Gallery");
+                        uploadedImageUrls.Add(url);
+                    }
+                }
+
+                existingEvent.EventImages = uploadedImageUrls;
+                existingEvent.CoverImage = uploadedImageUrls.FirstOrDefault();
+            }
 
             existingEvent.Title = dto.Title;
             existingEvent.Description = dto.Description;
+            existingEvent.EventSpeakers = dto.EventSpeakers;
             existingEvent.Location = dto.Location;
-            existingEvent.StartTime = dto.StartTime;
-            existingEvent.EndTime = dto.EndTime;
-            existingEvent.EventImages = dto.EventImages;
+            existingEvent.StartTime = dto.StartTime.ToUniversalTime();
+            existingEvent.EndTime = dto.EndTime.ToUniversalTime();
+            
+            if (dto.PublicTime != default) existingEvent.PublicTime = dto.PublicTime.ToUniversalTime();
+            if (dto.OpenTicketTime != default) existingEvent.OpenTicketTime = dto.OpenTicketTime.ToUniversalTime();
+            if (dto.CloseTicketTime != default) existingEvent.CloseTicketTime = dto.CloseTicketTime.ToUniversalTime();
+            if (dto.OpenKioskTime != default) existingEvent.OpenKioskTime = dto.OpenKioskTime.ToUniversalTime();
+
+            existingEvent.EmailSubject = dto.EmailSubject;
+            existingEvent.EmailCheckinNote = dto.EmailCheckinNote;
 
             await _eventRepo.UpdateAsync(existingEvent);
             await _eventRepo.SaveChangesAsync();

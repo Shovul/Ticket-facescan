@@ -1,4 +1,5 @@
 using EventPass.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace EventPass.Application.DTOs.Events
 {
@@ -8,12 +9,15 @@ namespace EventPass.Application.DTOs.Events
         public string OrganizerName { get; set; } = string.Empty;
         public string OrganizerEmail { get; set; } = string.Empty;
         public string OrganizerHotline { get; set; } = string.Empty;
-
+        public string? OrganizerWebsite { get; set; }
+        public string? OrganizerLegalId { get; set; }
+        public IFormFile? OrganizerLogo { get; set; }
+        
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string? EventSpeakers { get; set; }
         public string Location { get; set; } = string.Empty;
-        
-        public List<string> EventImages { get; set; } = new List<string>();
+        public List<IFormFile> EventImages { get; set; } = new List<IFormFile>();
 
         public DateTime PublicTime { get; set; }
         public DateTime OpenTicketTime { get; set; }
@@ -22,9 +26,11 @@ namespace EventPass.Application.DTOs.Events
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
 
-        public List<CreateTicketDto> Tickets { get; set; } = new List<CreateTicketDto>();
+        public string? EmailSubject { get; set; }
+        public string? EmailCheckinNote { get; set; }
 
-        public List<CreateKioskDto> Kiosks { get; set; } = new List<CreateKioskDto>();
+        public List<CreateTicketDto> Tickets { get; set; } = new();
+        public List<CreateKioskDto> Kiosks { get; set; } = new();
     }
 
     public class CreateTicketDto
@@ -32,12 +38,14 @@ namespace EventPass.Application.DTOs.Events
         public string Name { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public int Quantity { get; set; }
+        public string? Description { get; set; }
     }
 
     public class CreateKioskDto
     {
         public string Name { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
+        public string? SecretToken { get; set; } 
     }
 
     public class EventSummaryDto

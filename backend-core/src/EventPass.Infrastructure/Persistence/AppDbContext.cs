@@ -28,6 +28,7 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
         LegacySchemaConfiguration.Configure(modelBuilder);
         modelBuilder.Entity<Ticket>().Property(t => t.IsActive).HasDefaultValue(true);
         modelBuilder.Entity<Order>(entity =>

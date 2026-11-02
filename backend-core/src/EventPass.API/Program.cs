@@ -9,8 +9,11 @@ using Microsoft.EntityFrameworkCore;
 using Pgvector.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 using EventPass.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using EventPass.Infrastructure.Storage;
+using Microsoft.OpenApi.Models;
 
 var seedOnly = args.Any(a => a.Equals("--seed", StringComparison.OrdinalIgnoreCase));
 var builder = WebApplication.CreateBuilder(args.Where(a => !a.Equals("--seed", StringComparison.OrdinalIgnoreCase)).ToArray());
@@ -91,14 +94,47 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAttendeeService, TicketDetailRepository>();
 builder.Services.AddScoped<ITransactionService, TransactionRepository>();
 
+builder.Services.AddScoped<IFileStorageService, DropboxStorageService>();
+builder.Services.AddScoped<IFileStorageServices, LocalFileStorageService>();
+
 // 6. Đăng ký SignalR (Realtime Notification)
 // 6. Ã„ÂÃ„Æ’ng kÃƒÂ½ SignalR (Realtime Notification)
 builder.Services.AddSignalR();
 
 // 7. Ã„ÂÃ„Æ’ng kÃƒÂ½ Web API Controllers & Swagger UI
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Nhập token JWT (không cần gõ tiền tố Bearer)",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 var app = builder.Build();
 
@@ -108,8 +144,14 @@ if (seedOnly && !app.Environment.IsDevelopment())
 if (app.Environment.IsDevelopment() && (seedOnly || app.Configuration.GetValue<bool>("DatabaseSeed:Enabled")))
 {
     await using var scope = app.Services.CreateAsyncScope();
+    
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+
     var hasher = new PasswordHasher<User>();
-    var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), hasher.HashPassword);
+    var bcryptHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+    // var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), hasher.HashPassword);
+    var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), (user, password) => bcryptHasher.HashPassword(password));
     app.Logger.LogInformation("Seed hoÃƒÂ n tÃ¡ÂºÂ¥t: thÃƒÂªm {UsersAdded} tÃƒÂ i khoÃ¡ÂºÂ£n, {EventsAdded} sÃ¡Â»Â± kiÃ¡Â»â€¡n.", result.UsersAdded, result.EventsAdded);
 }
 if (seedOnly) return;

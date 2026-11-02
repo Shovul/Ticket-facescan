@@ -8,7 +8,7 @@ namespace EventPass.API.Controllers
 {
     [ApiController]
     [Route("api/v1/events")]
-    // [Authorize(Roles = "Admin")] 
+    [Authorize(Roles = "Admin")] 
     public class EventsController : ControllerBase
     {
         private readonly IEventService _eventService;
@@ -21,16 +21,15 @@ namespace EventPass.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateEvent([FromBody] CreateEventDto dto)
+        public async Task<IActionResult> CreateEvent([FromForm] CreateEventDto dto)
         {
             try
             {
-                // var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-                // if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int adminId))
-                // {
-                //     dto.OrganizerId = adminId;
-                // }
-                dto.OrganizerId = 2;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int adminId))
+                {
+                    dto.OrganizerId = adminId;
+                }
 
                 var newEvent = await _eventService.CreateEventAsync(dto);
                 
