@@ -9,16 +9,19 @@ import '../../../styles/event.css';
 export default function EventsListPage() {
   const [events, setEvents] = useState<EventSummaryDto[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<'all' | 'open' | 'upcoming' | 'ended'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'Ongoing' | 'Upcoming' | 'Ended'>('all');
   
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [retry, setRetry] = useState(0);
   const observerTarget = useRef<HTMLDivElement>(null);
 
   const fetchEvents = useCallback(async (pageNum: number, search: string, status: string, isNewSearch = false) => {
     if (loading) return;
     setLoading(true);
+    setError(null);
     
     try {
       const data = await eventService.getEvents(pageNum, 10, search, status);
@@ -28,24 +31,25 @@ export default function EventsListPage() {
       setPage(pageNum);
     } catch (error) {
       console.error('Failed to fetch events:', error);
+      setError(error?.response?.data?.Error || 'Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loading]);
 
   // Handle Search and Filter changes (Reset to Page 1)
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       fetchEvents(1, searchQuery, activeFilter, true);
-    }, 400); // 400ms debounce for typing
+    }, 400); 
     return () => clearTimeout(delayDebounce);
-  }, [searchQuery, activeFilter, fetchEvents]);
+  }, [searchQuery, activeFilter, retry]);
 
   // Infinite Scroll Intersection Observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMore && !loading) {
+        if (entries[0].isIntersecting && hasMore && !loading && !error) {
           fetchEvents(page + 1, searchQuery, activeFilter, false);
         }
       },
@@ -57,7 +61,15 @@ export default function EventsListPage() {
     }
 
     return () => observer.disconnect();
-  }, [hasMore, loading, page, searchQuery, activeFilter, fetchEvents]);
+  }, [hasMore, loading, error, page, searchQuery, activeFilter, fetchEvents]);
+
+  const handleRetry = () => {
+    if (page === 1 || events.length === 0) {
+      setRetry(v => v + 1);
+    } else {
+      fetchEvents(page + 1, searchQuery, activeFilter, false);
+    }
+  };
 
   return (
     <div className="events-layout-wrapper">
@@ -88,9 +100,9 @@ export default function EventsListPage() {
 
           <div className="filter-tabs">
             <button className={`tab-btn ${activeFilter === 'all' ? 'active' : ''}`} onClick={() => setActiveFilter('all')}>Tất cả</button>
-            <button className={`tab-btn ${activeFilter === 'open' ? 'active' : ''}`} onClick={() => setActiveFilter('open')}>Đang mở</button>
-            <button className={`tab-btn ${activeFilter === 'upcoming' ? 'active' : ''}`} onClick={() => setActiveFilter('upcoming')}>Sắp tới</button>
-            <button className={`tab-btn ${activeFilter === 'ended' ? 'active' : ''}`} onClick={() => setActiveFilter('ended')}>Đã qua</button>
+            <button className={`tab-btn ${activeFilter === 'Ongoing' ? 'active' : ''}`} onClick={() => setActiveFilter('Ongoing')}>Đang mở</button>
+            <button className={`tab-btn ${activeFilter === 'Upcoming' ? 'active' : ''}`} onClick={() => setActiveFilter('Upcoming')}>Sắp tới</button>
+            <button className={`tab-btn ${activeFilter === 'Ended' ? 'active' : ''}`} onClick={() => setActiveFilter('Ended')}>Đã qua</button>
           </div>
         </div>
 
@@ -140,7 +152,15 @@ export default function EventsListPage() {
             })}
           </div>
         ) : !loading ? (
-          <div className="empty-events-state">Không tìm thấy sự kiện nào phù hợp.</div>
+          <div className="empty-events-state">
+            Không tìm thấy sự kiện nào phù hợp.
+            {!loading && error && (
+              <div className="customer-state" role="alert">
+                <p>{error}</p>
+                <button className="btn-modal-back" onClick={handleRetry}>Thử lại</button>
+              </div>
+            )}  
+          </div>
         ) : null}
 
         <div ref={observerTarget} className="flex justify-center py-6">

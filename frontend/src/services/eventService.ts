@@ -31,14 +31,14 @@ export const eventService = {
       }
     });
 
-    if (data.organizerLogoFile) {
-      formData.append('OrganizerLogoFile', data.organizerLogoFile);
-    }
-
     if (data.eventImageFiles && Array.isArray(data.eventImageFiles)) {
       data.eventImageFiles.forEach((file: File) => {
-        formData.append('EventImageFiles', file);
+        formData.append('EventImages', file);
       });
+    }
+
+    if (data.organizerLogoFile) {
+      formData.append('OrganizerLogo', data.organizerLogoFile);
     }
 
     if (data.tickets && Array.isArray(data.tickets)) {
@@ -63,6 +63,56 @@ export const eventService = {
     }
 
     const response = await apiClient.post('/events', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  updateEvent: async (id: number, data: any) => {
+    const formData = new FormData();
+
+    Object.keys(data).forEach((key) => {
+      if (!['tickets', 'kiosks', 'eventImages', 'organizerLogo', 'eventImages', 'organizerLogo'].includes(key)) {
+        if (data[key] !== undefined && data[key] !== null) {
+          formData.append(key, data[key]);
+        }
+      }
+    });
+
+    if (data.organizerLogoFile) {
+      formData.append('OrganizerLogo', data.organizerLogoFile);
+    }
+
+    if (data.eventImageFiles && Array.isArray(data.eventImageFiles)) {
+      data.eventImageFiles.forEach((file: File) => {
+        formData.append('EventImages', file);
+      });
+    }
+
+    if (data.tickets && Array.isArray(data.tickets)) {
+      data.tickets.forEach((ticket: any, index: number) => {
+        formData.append(`Tickets[${index}].Name`, ticket.name);
+        formData.append(`Tickets[${index}].Price`, ticket.price);
+        formData.append(`Tickets[${index}].Quantity`, ticket.quantity);
+        if (ticket.description) {
+          formData.append(`Tickets[${index}].Description`, ticket.description);
+        }
+      });
+    }
+
+    if (data.kiosks && Array.isArray(data.kiosks)) {
+      data.kiosks.forEach((kiosk: any, index: number) => {
+        formData.append(`Kiosks[${index}].Name`, kiosk.name);
+        formData.append(`Kiosks[${index}].Location`, kiosk.location || '');
+        if (kiosk.secretToken) {
+          formData.append(`Kiosks[${index}].SecretToken`, kiosk.secretToken);
+        }
+      });
+    }
+
+    const response = await apiClient.put(`/events/${id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

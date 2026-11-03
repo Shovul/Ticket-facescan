@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { eventService } from '../../../../services/eventService';
 import { EventDetailResponse } from '../../../../types/event';
 import { useNotification } from '../../../../components/shared/NotificationProvider';
-import '../../../../styles/admin-layout.css';
+import '../../../../styles/edit-event.css';
 
 export default function EventDetailPage() {
   const params = useParams();
@@ -18,7 +18,6 @@ export default function EventDetailPage() {
   const [activeTab, setActiveTab] = useState<number>(1);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Form states cho chỉnh sửa trực tiếp
   const [formData, setFormData] = useState({
     organizerName: '',
     organizerEmail: '',
@@ -29,9 +28,22 @@ export default function EventDetailPage() {
     description: '',
     location: '',
     eventSpeakers: '',
+    publicTime: '',
+    openTicketTime: '',
+    closeTicketTime: '',
+    openKioskTime: '',
     startTime: '',
     endTime: '',
+    emailSubject: '',
+    emailCheckinNote: '',
   });
+
+  const formatDateForInput = (dateString?: string) => {
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -48,8 +60,14 @@ export default function EventDetailPage() {
           description: data.description || '',
           location: data.location || '',
           eventSpeakers: data.eventSpeakers || '',
-          startTime: data.startTime ? data.startTime.slice(0, 16) : '',
-          endTime: data.endTime ? data.endTime.slice(0, 16) : '',
+          publicTime: formatDateForInput(data.publicTime),
+          openTicketTime: formatDateForInput(data.openTicketTime),
+          closeTicketTime: formatDateForInput(data.closeTicketTime),
+          openKioskTime: formatDateForInput(data.openKioskTime),
+          startTime: formatDateForInput(data.startTime),
+          endTime: formatDateForInput(data.endTime),
+          emailSubject: data.emailSubject || '',
+          emailCheckinNote: data.emailCheckinNote || ''
         });
       } catch (err: any) {
         notify(err.response?.data?.Error || 'Không thể tải chi tiết sự kiện.', 'error');
@@ -68,7 +86,11 @@ export default function EventDetailPage() {
   const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Gọi service cập nhật sự kiện
+      await eventService.updateEvent(eventId, {
+        ...formData,
+        tickets: event?.tickets || [],
+        kiosks: event?.kiosks || []
+      });
       notify('Đã cập nhật thông tin sự kiện thành công trực tiếp!', 'success');
       setIsEditing(false);
     } catch (err: any) {
@@ -76,198 +98,325 @@ export default function EventDetailPage() {
     }
   };
 
-  if (loading) return <div className="p-10 text-center text-[#079FA0] font-bold text-sm">Đang tải dữ liệu chi tiết...</div>;
-  if (!event) return <div className="p-10 text-center text-red-500 font-bold text-sm">Không tìm thấy thông tin sự kiện.</div>;
+  if (loading) return <div style={{ padding: 40, textAlign: 'center', color: '#079FA0', fontWeight: 'bold' }}>Đang tải dữ liệu chi tiết...</div>;
+  if (!event) return <div style={{ padding: 40, textAlign: 'center', color: '#dc2626', fontWeight: 'bold' }}>Không tìm thấy thông tin sự kiện.</div>;
 
   return (
-    <div className="events-layout-wrapper">
-      {/* Top Header */}
-      <header className="event-header">
-        <div className="header-left">
-          <Link href="/admin/events" className="btn-back">
-            <svg className="svg-icon sm" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-            <span>Quay lại danh sách</span>
-          </Link>
-          <h1 className="header-title">Quản Trị — {event.title}</h1>
-        </div>
-        <div className="header-status">
-          Trạng thái: <strong className="status-success">Đang hoạt động trực tiếp</strong>
-        </div>
-      </header>
+    <>
 
-      <div className="event-form-container">
-        
-        {/* Tiêu đề tổng quan sự kiện */}
-        <div className="form-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <span className="event-status-tag open" style={{ background: '#e6f7f3', color: '#0d7a60', border: '1px solid #bcf0e2', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 800 }}>
-                ID: EVT-{event.id}
-              </span>
-            </div>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#023852', marginBottom: '4px' }}>{event.title}</h2>
-            <div style={{ fontSize: '13px', color: '#537583', display: 'flex', gap: '12px' }}>
-              <span>{new Date(event.startTime).toLocaleString('vi-VN')}</span>
-              <span>•</span>
-              <span>{event.location}</span>
-            </div>
+      <main className="app-main-wrapper">
+        <header className="main-top-header">
+          <div className="header-left">
+            <Link href="/admin/events" className="btn-back-events">
+              <svg className="icon" viewBox="0 0 24 24" style={{ width: 14, height: 14 }}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+              <span>Quay lại danh sách</span>
+            </Link>
+            <h1 className="header-page-title">Quản Trị — {event.title}</h1>
           </div>
-        </div>
+        </header>
 
-        {/* 4 Tabs Điều Hướng Quản Trị */}
-        <div className="detail-sub-tabs" style={{ display: 'flex', borderBottom: '1.5px solid #cfe5dc', gap: '24px', background: '#fff', padding: '0 20px', borderRadius: '10px 10px 0 0' }}>
-          {[
-            { id: 1, label: '1. Thông tin chung & Hạng vé' },
-            { id: 2, label: '2. Cấu hình trạm soát vé' },
-            { id: 3, label: '3. Mẫu vé & Thiết kế email' },
-            { id: 4, label: '4. Cài đặt nâng cao / Đóng mở cổng' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: '14px 4px',
-                fontSize: '13.5px',
-                fontWeight: 700,
-                color: activeTab === tab.id ? '#023852' : '#537583',
-                borderBottom: activeTab === tab.id ? '3px solid #079FA0' : '3px solid transparent',
-                cursor: 'pointer',
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <div className="main-content-scroll">
+          <div className="view-container">
+            {/* Header Thẻ Sự kiện */}
+            <div className="event-detail-header-card">
+              <div className="detail-title-group">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <span className="event-status-tag open">Đang mở đăng ký</span>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 700 }}>ID: EVT-{event.id}</span>
+                </div>
+                <h2>{event.title}</h2>
+                <div className="detail-subline">
+                  <span>{new Date(event.startTime).toLocaleString('vi-VN')}</span>
+                  <span>•</span>
+                  <span>{event.location}</span>
+                </div>
+              </div>
+            </div>
 
-        {/* TAB 1: THÔNG TIN CHUNG & HẠNG VÉ */}
-        {activeTab === 1 && (
-          <div className="form-panel" style={{ borderRadius: '0 0 10px 10px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingBottom: '12px', borderBottom: '1.5px solid #e3efea' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#023852' }}>Chi tiết nội dung & Phân hạng vé</h3>
-              <button
-                type="button"
-                className="btn-action-secondary"
-                onClick={() => setIsEditing(!isEditing)}
-                style={{ padding: '6px 12px', background: '#f2f7f5', border: '1.5px solid #cfe5dc', borderRadius: '6px', fontWeight: 700, cursor: 'pointer' }}
-              >
-                {isEditing ? 'Hủy chỉnh sửa' : 'Chỉnh sửa thông tin'}
+            {/* Điều hướng 4 Tabs */}
+            <div className="detail-sub-tabs">
+              <button type="button" className={`sub-tab-item ${activeTab === 1 ? 'active' : ''}`} onClick={() => setActiveTab(1)}>
+                <svg className="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span>1. Thông tin chung & Hạng vé</span>
+              </button>
+              <button type="button" className={`sub-tab-item ${activeTab === 2 ? 'active' : ''}`} onClick={() => setActiveTab(2)}>
+                <svg className="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span>2. Cấu hình trạm soát vé</span>
+              </button>
+              <button type="button" className={`sub-tab-item ${activeTab === 3 ? 'active' : ''}`} onClick={() => setActiveTab(3)}>
+                <svg className="icon" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+                <span>3. Mẫu vé & Thiết kế email</span>
+              </button>
+              <button type="button" className={`sub-tab-item ${activeTab === 4 ? 'active' : ''}`} onClick={() => setActiveTab(4)}>
+                <svg className="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>4. Cài đặt nâng cao / Đóng mở cổng</span>
               </button>
             </div>
 
-            <form onSubmit={handleSaveEvent}>
-              <fieldset disabled={!isEditing} style={{ border: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div className="panel-grid">
-                  <div className="form-group">
-                    <label className="form-label">Tên đơn vị tổ chức <span className="required-mark">*</span></label>
-                    <input type="text" className="form-input" value={formData.organizerName} onChange={(e) => handleUpdateField('organizerName', e.target.value)} required />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Email ban tổ chức <span className="required-mark">*</span></label>
-                    <input type="email" className="form-input" value={formData.organizerEmail} onChange={(e) => handleUpdateField('organizerEmail', e.target.value)} required />
-                  </div>
-                  <div className="form-group full-width">
-                    <label className="form-label">Tên sự kiện <span className="required-mark">*</span></label>
-                    <input type="text" className="form-input" value={formData.title} onChange={(e) => handleUpdateField('title', e.target.value)} required />
-                  </div>
-                  <div className="form-group full-width">
-                    <label className="form-label">Mô tả chi tiết</label>
-                    <textarea className="form-textarea" rows={3} value={formData.description} onChange={(e) => handleUpdateField('description', e.target.value)}></textarea>
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Địa điểm tổ chức <span className="required-mark">*</span></label>
-                    <input type="text" className="form-input" value={formData.location} onChange={(e) => handleUpdateField('location', e.target.value)} required />
-                  </div>
+            {/* TAB 1: THÔNG TIN CHUNG & HẠNG VÉ */}
+            <div className={`detail-tab-content ${activeTab === 1 ? 'active' : ''}`}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', paddingBottom: '14px', borderBottom: '1px solid var(--hairline)' }}>
+                <div>
+                  <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-navy)' }}>Thông tin chi tiết sự kiện</h3>
+                  <p style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>
+                    Trạng thái: <strong style={{ color: 'var(--success)' }}>Dữ liệu hoạt động trực tiếp trên sàn</strong>
+                  </p>
                 </div>
+                <button type="button" className="btn-action-secondary" onClick={() => setIsEditing(!isEditing)}>
+                  <svg className="icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  <span>{isEditing ? 'Hủy chỉnh sửa' : 'Chỉnh sửa thông tin'}</span>
+                </button>
+              </div>
 
-                {/* Danh sách Hạng vé */}
-                <div style={{ marginTop: '20px' }}>
-                  <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#023852', marginBottom: '10px' }}>Danh sách Phân hạng vé phát hành</h4>
-                  <div className="tickets-list">
+              <form onSubmit={handleSaveEvent}>
+                <fieldset disabled={!isEditing} style={{ border: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  
+                  {/* 1. THÔNG TIN BỘ PHẬN TỔ CHỨC */}
+                  <div className="form-section-divider">
+                    <svg className="icon" viewBox="0 0 24 24" style={{ color: 'var(--color-teal)' }}><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                    <span>1. Thông Tin Ban Tổ Chức & Pháp Lý Đơn Vị</span>
+                  </div>
+
+                  <div className="form-grid-layout">
+                    <div className="form-field">
+                      <label className="field-label">Tên cơ quan / Đơn vị tổ chức <span className="req">*</span></label>
+                      <input type="text" className="form-control" value={formData.organizerName} onChange={e => handleUpdateField('organizerName', e.target.value)} required />
+                    </div>
+                    <div className="form-field">
+                      <label className="field-label">Hòm thư điện tử chính thức <span className="req">*</span></label>
+                      <input type="email" className="form-control" value={formData.organizerEmail} onChange={e => handleUpdateField('organizerEmail', e.target.value)} required />
+                    </div>
+                    <div className="form-field">
+                      <label className="field-label">Đường dây nóng hỗ trợ khách vé <span className="req">*</span></label>
+                      <input type="tel" className="form-control" value={formData.organizerHotline} onChange={e => handleUpdateField('organizerHotline', e.target.value)} required />
+                    </div>
+                    <div className="form-field">
+                      <label className="field-label">Website / Cổng thông tin sự kiện</label>
+                      <input type="url" className="form-control" value={formData.organizerWebsite} onChange={e => handleUpdateField('organizerWebsite', e.target.value)} />
+                    </div>
+                    <div className="form-field full">
+                      <label className="field-label">Mã định danh / Quyết định thành lập</label>
+                      <input type="text" className="form-control" value={formData.organizerLegalId} onChange={e => handleUpdateField('organizerLegalId', e.target.value)} />
+                    </div>
+                  </div>
+
+                  {/* 2. CHUNG & HÌNH ẢNH */}
+                  <div className="form-section-divider">
+                    <svg className="icon" viewBox="0 0 24 24" style={{ color: 'var(--color-teal)' }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <span>2. Thông Tin Chung Sự Kiện & Hình Ảnh</span>
+                  </div>
+
+                  <div className="form-grid-layout">
+                    <div className="form-field full">
+                      <label className="field-label">Tên sự kiện <span className="req">*</span></label>
+                      <input type="text" className="form-control" value={formData.title} onChange={e => handleUpdateField('title', e.target.value)} required />
+                    </div>
+                    <div className="form-field full">
+                      <label className="field-label">Mô tả sự kiện & Lịch trình</label>
+                      <textarea className="form-control" rows={3} value={formData.description} onChange={e => handleUpdateField('description', e.target.value)} />
+                    </div>
+                    <div className="form-field">
+                      <label className="field-label">Nhân vật nổi bật</label>
+                      <input type="text" className="form-control" value={formData.eventSpeakers} onChange={e => handleUpdateField('eventSpeakers', e.target.value)} />
+                    </div>
+                    <div className="form-field">
+                      <label className="field-label">Địa điểm tổ chức <span className="req">*</span></label>
+                      <input type="text" className="form-control" value={formData.location} onChange={e => handleUpdateField('location', e.target.value)} required />
+                    </div>
+                  </div>
+
+                  {/* 3. THỜI GIAN */}
+                  <div className="form-section-divider">
+                    <svg className="icon" viewBox="0 0 24 24" style={{ color: 'var(--color-teal)' }}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>3. Chu Trình Thời Gian Sự Kiện (5 Mốc Tuyến Tính)</span>
+                  </div>
+
+                  <div className="form-grid-layout">
+                    <div className="form-field">
+                      <label className="field-label">1. Ngày công khai xuất hiện trên Web <span className="req">*</span></label>
+                      <input type="datetime-local" className="form-control" value={formData.publicTime} onChange={e => handleUpdateField('publicTime', e.target.value)} required />
+                    </div>
+                    <div className="form-field">
+                      <label className="field-label">2. Ngày chính thức mở cổng bán vé <span className="req">*</span></label>
+                      <input type="datetime-local" className="form-control" value={formData.openTicketTime} onChange={e => handleUpdateField('openTicketTime', e.target.value)} required />
+                    </div>
+                    <div className="form-field">
+                      <label className="field-label">3. Ngày đóng cổng bán vé <span className="req">*</span></label>
+                      <input type="datetime-local" className="form-control" value={formData.closeTicketTime} onChange={e => handleUpdateField('closeTicketTime', e.target.value)} required />
+                    </div>
+                    <div className="form-field">
+                      <label className="field-label">4. Thời gian bắt đầu quét Kiosk Check-in <span className="req">*</span></label>
+                      <input type="datetime-local" className="form-control" value={formData.openKioskTime} onChange={e => handleUpdateField('openKioskTime', e.target.value)} required />
+                    </div>
+                    <div className="form-field">
+                      <label className="field-label">5A. Thời gian bắt đầu sự kiện chính thức <span className="req">*</span></label>
+                      <input type="datetime-local" className="form-control" value={formData.startTime} onChange={e => handleUpdateField('startTime', e.target.value)} required />
+                    </div>
+                    <div className="form-field">
+                      <label className="field-label">5B. Thời gian bế mạc sự kiện <span className="req">*</span></label>
+                      <input type="datetime-local" className="form-control" value={formData.endTime} onChange={e => handleUpdateField('endTime', e.target.value)} required />
+                    </div>
+                  </div>
+
+                  {/* 4. PHÂN HẠNG VÉ */}
+                  <div className="form-section-divider">
+                    <svg className="icon" viewBox="0 0 24 24" style={{ color: 'var(--color-teal)' }}><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+                    <span>4. Danh Sách Phân Hạng Vé & Slot Phát Hành</span>
+                  </div>
+
+                  <div className="form-field full">
                     {event.tickets?.map((ticket) => (
-                      <div key={ticket.id} className="ticket-row" style={{ gridTemplateColumns: '2fr 1fr 1fr auto' }}>
-                        <div><strong>{ticket.name}</strong></div>
-                        <div>Giá: {ticket.price.toLocaleString('vi-VN')}đ</div>
-                        <div>Đã bán: {ticket.quantitySold} / {ticket.quantity}</div>
-                        <div><span className="status-success">Đang mở bán</span></div>
+                      <div key={ticket.id} className="ticket-tier-row">
+                        <div className="ticket-tier-info">
+                          <h4>
+                            <span>{ticket.name}</span>
+                            <span className="tier-badge-status active">Đang mở bán</span>
+                          </h4>
+                          <p>Giá: <strong>{ticket.price === 0 ? 'Miễn phí' : `${ticket.price.toLocaleString('vi-VN')} đ`}</strong> • Đã đăng ký: <strong>{ticket.quantitySold}</strong> / Tổng slot: <strong>{ticket.quantity}</strong> • Còn {Math.max(0, ticket.quantity - ticket.quantitySold)} chỗ • {ticket.description}</p>
+                        </div>
+                        <div style={{ display: isEditing ? 'flex' : 'none', alignItems: 'center', gap: '8px' }}>
+                          <button type="button" className="btn-action-secondary" style={{ padding: '5px 12px', fontSize: '12px' }}>+ Thêm slot</button>
+                          <button type="button" className="btn-action-danger" style={{ padding: '5px 12px', fontSize: '12px', background: '#fff', color: '#dc2626' }}>Khóa / Ngừng bán</button>
+                        </div>
                       </div>
                     ))}
                   </div>
+
+                  {isEditing && (
+                    <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid var(--hairline)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <button type="submit" className="btn-action-primary">
+                          <svg className="icon" viewBox="0 0 24 24" style={{ width: 15, height: 15 }}><polyline points="20 6 9 17 4 12"/></svg>
+                          <span>Lưu Thay Đổi Trực Tiếp</span>
+                        </button>
+                        <span style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>Các thay đổi sẽ được công khai ngay trên nền tảng.</span>
+                      </div>
+                    </div>
+                  )}
+                </fieldset>
+              </form>
+            </div>
+
+            {/* TAB 2: TRẠM SOÁT VÉ */}
+            <div className={`detail-tab-content ${activeTab === 2 ? 'active' : ''}`}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <div>
+                  <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-navy)' }}>Trạm Soát Vé Tự Động (Làn Kiosk Điểm Danh)</h3>
+                  <p style={{ fontSize: '12.5px', color: 'var(--text-muted)', marginTop: '4px' }}>Quản lý định danh các thiết bị Kiosk camera tại cổng vào sự kiện</p>
+                </div>
+                <button type="button" className="btn-action-primary">
+                  <svg className="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  <span>Thêm trạm mới</span>
+                </button>
+              </div>
+
+              <table className="station-list-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '45%' }}>Tên trạm / Làn kiểm soát</th>
+                    <th style={{ width: '35%' }}>Secret Token (Định danh trạm)</th>
+                    <th style={{ textAlign: 'right', width: '20%' }}>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {event.kiosks?.map((kiosk) => (
+                    <tr key={kiosk.id}>
+                      <td><strong>{kiosk.name}</strong><br/><span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>{kiosk.location || 'Cổng chính'}</span></td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span className="token-masked">••••••••••••••••</span>
+                          <button type="button" onClick={() => notify(`Mã Secret Token: ${kiosk.secretToken}`, 'info')} style={{ background: 'none', border: 'none', color: 'var(--color-teal)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', padding: '2px 4px' }}>Hiển thị</button>
+                        </div>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <button type="button" className="btn-action-secondary" style={{ padding: '4px 10px', fontSize: '11.5px' }}>Cài đặt / Đổi tên</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* TAB 3: MẪU VÉ SỐ & THIẾT KẾ EMAIL */}
+            <div className={`detail-tab-content ${activeTab === 3 ? 'active' : ''}`}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', alignItems: 'start' }}>
+                <div>
+                  <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-navy)', marginBottom: '6px' }}>Xem trước Thẻ Vé Điện Tử (Digital Pass)</h3>
+                  <p style={{ fontSize: '12.5px', color: 'var(--text-muted)', lineHeight: 1.5, marginBottom: '18px' }}>
+                    Vé điện tử được tự động sinh sau khi khách đăng ký thành công, tích hợp mã QR động định danh và thông báo làn vào cửa.
+                  </p>
+
+                  <div className="form-field full" style={{ marginBottom: '14px' }}>
+                    <label className="field-label">Tiêu đề email xác nhận</label>
+                    <input type="text" className="form-control" value={formData.emailSubject} onChange={e => handleUpdateField('emailSubject', e.target.value)} />
+                  </div>
+                  <div className="form-field full" style={{ marginBottom: '14px' }}>
+                    <label className="field-label">Ghi chú hướng dẫn check-in trong email</label>
+                    <textarea className="form-control" rows={3} value={formData.emailCheckinNote} onChange={e => handleUpdateField('emailCheckinNote', e.target.value)} />
+                  </div>
+                  <button type="button" className="btn-action-primary" onClick={() => notify('Đã cập nhật mẫu vé và thiết kế email.', 'success')}>Cập nhật thiết kế vé</button>
                 </div>
 
-                {isEditing && (
-                  <div style={{ marginTop: '16px' }}>
-                    <button type="submit" className="btn-submit">Lưu Thay Đổi Trực Tiếp</button>
-                  </div>
-                )}
-              </fieldset>
-            </form>
-          </div>
-        )}
-
-        {/* TAB 2: CẤU HÌNH TRẠM SOÁT VÉ */}
-        {activeTab === 2 && (
-          <div className="form-panel" style={{ borderRadius: '0 0 10px 10px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#023852', marginBottom: '12px' }}>Trạm Soát Vé Tự Động (Kiosk Check-in)</h3>
-            <p style={{ fontSize: '13px', color: '#537583', marginBottom: '16px' }}>Quản lý các thiết bị camera tại cổng và mã Secret Token định danh[cite: 7].</p>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {event.kiosks && event.kiosks.length > 0 ? (
-                event.kiosks.map((kiosk) => (
-                  <div key={kiosk.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: '#f2f7f5', border: '1px solid #cfe5dc', borderRadius: '8px' }}>
-                    <div>
-                      <div style={{ fontWeight: 800, color: '#023852' }}>{kiosk.name}</div>
-                      <div style={{ fontSize: '12px', color: '#537583' }}>Địa điểm: {kiosk.location || 'Cổng chính'}</div>
+                <div style={{ background: 'linear-gradient(145deg, var(--color-navy) 0%, #034b6e 100%)', color: '#fff', borderRadius: '14px', padding: '24px', boxShadow: '0 12px 30px rgba(2, 56, 82, 0.2)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.15)', paddingBottom: '14px', marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div>
+                        <div style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--color-mint)', fontWeight: 800 }}>Đơn vị tổ chức</div>
+                        <div style={{ fontSize: '13px', fontWeight: 700 }}>{formData.organizerName || 'Đơn vị tổ chức'}</div>
+                      </div>
                     </div>
-                    <div style={{ fontFamily: 'monospace', fontSize: '12px', background: '#fff', padding: '4px 8px', borderRadius: '4px', border: '1px solid #cfe5dc', color: '#079FA0', fontWeight: 700 }}>
-                      {kiosk.secretToken}
-                    </div>
+                    <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.2)', padding: '3px 8px', borderRadius: '10px', fontWeight: 800 }}>VIP PASS</span>
                   </div>
-                ))
-              ) : (
-                <div style={{ fontSize: '13px', color: '#537583' }}>Chưa có trạm Kiosk nào được cấu hình cho sự kiện này.</div>
-              )}
-            </div>
-          </div>
-        )}
 
-        {/* TAB 3: MẪU VÉ & THIẾT KẾ EMAIL */}
-        {activeTab === 3 && (
-          <div className="form-panel" style={{ borderRadius: '0 0 10px 10px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#023852', marginBottom: '12px' }}>Mẫu Thẻ Vé Điện Tử & Email Xác Nhận</h3>
-            <p style={{ fontSize: '13px', color: '#537583', marginBottom: '16px' }}>Xem trước cấu trúc vé và nội dung thông báo gửi tự động cho khách đăng ký thành công.</p>
-            
-            <div style={{ background: 'linear-gradient(145deg, #023852 0%, #034b6e 100%)', color: '#fff', borderRadius: '14px', padding: '24px', maxWidth: '420px', boxShadow: '0 10px 25px rgba(2, 56, 82, 0.18)' }}>
-              <div style={{ fontSize: '16px', fontWeight: 800, marginBottom: '6px' }}>{event.title}</div>
-              <div style={{ fontSize: '12px', color: '#d2e9f3', marginBottom: '14px' }}>Thời gian: {new Date(event.startTime).toLocaleString('vi-VN')}</div>
-              <div style={{ background: '#fff', borderRadius: '8px', padding: '14px', color: '#023852', textAlign: 'center', fontWeight: 700, fontFamily: 'monospace' }}>
-                [QR CODE ĐỘNG & FACE ID]
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 800 }}>{formData.title || 'Tên sự kiện'}</div>
+                    <div style={{ fontSize: '12px', color: '#d2e9f3' }}>Người tham dự: <strong>Hà Thái Sơn</strong></div>
+                    <div style={{ fontSize: '12px', color: '#d2e9f3' }}>Thời gian: {formData.startTime.replace('T', ' • ')}</div>
+                    <div style={{ fontSize: '12px', color: '#d2e9f3' }}>Cổng vào: {formData.location} (Làn Face ID)</div>
+                  </div>
+
+                  <div style={{ background: '#fff', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '110px', height: '110px', border: '2px dashed #023852', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
+                      <svg className="icon" viewBox="0 0 24 24" style={{ width: 60, height: 60, color: '#023852' }}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    </div>
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#023852', fontFamily: 'monospace' }}>PASS-789-VIP-DEMO</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
 
-        {/* TAB 4: CÀI ĐẶT NÂNG CAO */}
-        {activeTab === 4 && (
-          <div className="form-panel" style={{ borderRadius: '0 0 10px 10px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#023852', marginBottom: '12px' }}>Cài Đặt Nâng Cao & Tác Vụ Khẩn Cấp</h3>
-            <p style={{ fontSize: '13px', color: '#537583', marginBottom: '16px' }}>Các thao tác can thiệp trực tiếp vào chu trình vận hành sự kiện.</p>
-            
-            <div style={{ border: '1.5px solid #fecaca', background: '#fff5f5', borderRadius: '10px', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#dc2626' }}>Hủy sự kiện khẩn cấp</h4>
-                <p style={{ fontSize: '12.5px', color: '#537583', marginTop: '2px' }}>Vô hiệu hóa toàn bộ mã vé và gửi email thông báo hủy đến khách tham dự.</p>
+            {/* TAB 4: CÀI ĐẶT NÂNG CAO */}
+            <div className={`detail-tab-content ${activeTab === 4 ? 'active' : ''}`}>
+              <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--color-navy)', marginBottom: '4px' }}>Điều Phối Cổng & Giới Hạn Sự Kiện</h3>
+              <p style={{ fontSize: '12.5px', color: 'var(--text-muted)', marginBottom: '16px' }}>Các thao tác can thiệp trực tiếp vào chu trình phát hành vé và mở cổng soát vé</p>
+
+              <div style={{ border: '1.5px solid var(--card-border)', background: '#fff', borderRadius: '10px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '16px', borderBottom: '1px solid var(--hairline)' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <h4 style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--color-navy)', margin: 0 }}>Đóng đăng ký vé sớm</h4>
+                      <span className="event-status-tag open" style={{ marginLeft: '8px' }}>Đang mở đăng ký</span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', margin: 0 }}>Khóa cổng đăng ký của người dùng dù vẫn còn số lượng vé trống.</p>
+                  </div>
+                  <button type="button" className="btn-action-danger" style={{ background: '#fff', color: 'var(--danger)' }}>Đóng đăng ký</button>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <h4 style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--danger)', margin: 0 }}>Hủy sự kiện khẩn cấp</h4>
+                    </div>
+                    <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', margin: 0 }}>Vô hiệu hóa toàn bộ mã vé và gửi email thông báo hủy ngay lập tức đến khách tham dự.</p>
+                  </div>
+                  <button type="button" className="btn-action-danger" onClick={() => notify('Hành động yêu cầu xác nhận.', 'info')}>Xác nhận hủy sự kiện này</button>
+                </div>
               </div>
-              <button type="button" className="btn-action-danger" onClick={() => notify('Chức năng hủy khẩn cấp yêu cầu xác nhận lý do.', 'info')} style={{ background: '#dc2626', color: '#fff', padding: '8px 16px', borderRadius: '6px', fontWeight: 700, border: 'none', cursor: 'pointer' }}>
-                Hủy sự kiện
-              </button>
             </div>
-          </div>
-        )}
 
-      </div>
-    </div>
+          </div>
+        </div>
+      </main>
+    </>
   );
 }

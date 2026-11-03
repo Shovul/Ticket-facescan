@@ -52,7 +52,7 @@ namespace EventPass.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateEvent(int id, [FromBody] CreateEventDto dto)
+        public async Task<IActionResult> UpdateEvent(int id, [FromForm] CreateEventDto dto)
         {
             try
             {

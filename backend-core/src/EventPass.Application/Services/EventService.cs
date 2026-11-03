@@ -3,6 +3,7 @@ using EventPass.Application.DTOs.Events;
 using EventPass.Application.Interfaces;
 using EventPass.Domain.Entities;
 using EventPass.Domain.Enums;
+using Microsoft.Extensions.Logging;
 
 namespace EventPass.Application.Services
 {
@@ -13,13 +14,15 @@ namespace EventPass.Application.Services
         private readonly IRepository<TicketDetail> _ticketDetailRepo;
         private readonly IUserRepository _userRepo;
         private readonly IFileStorageService _fileStorageService;
+        private readonly ILogger<EventService> _logger;
 
         public EventService(
             IEventRepository eventRepo,
             IRepository<Ticket> ticketRepo,
             IRepository<TicketDetail> ticketDetailRepo,
             IUserRepository userRepo,
-            IFileStorageService fileStorageService)
+            IFileStorageService fileStorageService,
+            ILogger<EventService> logger)
 
         {
             _eventRepo = eventRepo;
@@ -27,6 +30,7 @@ namespace EventPass.Application.Services
             _ticketDetailRepo = ticketDetailRepo;
             _userRepo = userRepo;
             _fileStorageService = fileStorageService;
+            _logger = logger;
         }
 
         public async Task<Event> CreateEventAsync(CreateEventDto dto)
@@ -256,10 +260,44 @@ namespace EventPass.Application.Services
 
         public async Task<PaginatedEventResponse> GetEventsAsync(int page, int pageSize, string search, string status)
         {
+            var now = DateTime.UtcNow;
+            var eventsToUpdate = await _eventRepo.GetPagedAsync(
+                pageNumber: 1,
+                pageSize: 1000,
+                filter: e => e.Status != EventStatus.Cancelled && (
+                    (e.Status == EventStatus.Upcoming && now >= e.StartTime) ||
+                    (e.Status != EventStatus.Ended && now > e.EndTime)
+                )
+            );
+
+            if (eventsToUpdate.Items.Any())
+            {
+                foreach (var ev in eventsToUpdate.Items)
+                {
+                    if (now >= ev.StartTime && now <= ev.EndTime)
+                    {
+                        ev.Status = EventStatus.Ongoing;
+                    }
+                    else if (now > ev.EndTime)
+                    {
+                        ev.Status = EventStatus.Ended;
+                    }
+                    await _eventRepo.UpdateAsync(ev);
+                }
+                await _eventRepo.SaveChangesAsync();
+            }
+
+            var statusLower = string.IsNullOrWhiteSpace(status) ? "all" : status.ToLower();
+
             Expression<Func<Event, bool>> filter = e => 
-                string.IsNullOrWhiteSpace(search) || 
-                e.Title.Contains(search) || 
-                e.Location.Contains(search);
+                (string.IsNullOrWhiteSpace(search) || e.Title.Contains(search) || e.Location.Contains(search)) &&
+                (
+                    statusLower == "all" ||
+                    (statusLower == "upcoming" && e.Status == EventStatus.Upcoming) ||
+                    (statusLower == "ongoing" && e.Status == EventStatus.Ongoing) ||
+                    (statusLower == "ended" && e.Status == EventStatus.Ended) ||
+                    (statusLower == "cancelled" && e.Status == EventStatus.Cancelled)
+                );
 
             var (events, totalCount) = await _eventRepo.GetPagedAsync(
                 pageNumber: page,
@@ -269,23 +307,22 @@ namespace EventPass.Application.Services
                 includeProperties: "Tickets"
             );
 
-            var items = events.Select(e => new EventSummaryDto
+            var mappedItems = events.Select(e => new EventSummaryDto
             {
                 Id = e.Id,
                 Title = e.Title,
-                Status = e.Status.ToString().ToLower(),
-                StatusText = e.Status.ToString(), 
+                Status = e.Status.ToString(),
+                StatusText = e.Status.ToString(),
                 StartTime = e.StartTime,
                 Location = e.Location,
                 CoverImage = e.EventImages?.FirstOrDefault() ?? "",
-                
                 Total = e.Tickets.Sum(t => t.Quantity),
                 Sold = e.Tickets.Sum(t => t.QuantitySold)
             }).ToList();
 
             return new PaginatedEventResponse
             {
-                Items = items,
+                Items = mappedItems,
                 TotalCount = totalCount,
                 Page = page,
                 PageSize = pageSize
