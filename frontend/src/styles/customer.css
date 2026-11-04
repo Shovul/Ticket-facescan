@@ -1,4 +1,4 @@
-﻿
+
   .customer-site {
     --color-navy: #023852;
     --color-navy-dark: #012233;
@@ -830,5 +830,350 @@
   }
   .customer-site .face-action-btns {
     justify-content: center;
+  }
+}
+
+
+/* ==========================================================================
+   BỘ LỌC NÂNG CAO TRANG CHỦ & DANH MỤC SỰ KIỆN (UC06 - MAI PHƯƠNG)
+   ========================================================================== */
+
+.customer-site .storefront-content-wrap {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.customer-site .filter-sidebar-card {
+  width: 280px;
+  min-width: 280px;
+  flex-shrink: 0;
+  background: var(--white);
+  border: 1.5px solid var(--card-border);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  box-shadow: 0 4px 14px rgba(2, 56, 82, 0.04);
+  box-sizing: border-box;
+}
+
+.customer-site .sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.customer-site .sidebar-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-navy);
+}
+
+.customer-site .btn-reset-filters {
+  background: none;
+  border: none;
+  color: var(--color-teal);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+.customer-site .btn-reset-filters:hover {
+  text-decoration: underline;
+}
+
+.customer-site .filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.customer-site .filter-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.customer-site .ticket-type-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.customer-site .btn-type-pill {
+  flex: 1;
+  padding: 7px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1.5px solid var(--card-border);
+  background: #fff;
+  color: var(--color-navy);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.customer-site .btn-type-pill.active {
+  background: #023852;
+  color: #fff;
+  border-color: #023852;
+}
+
+.customer-site .ticket-type-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.customer-site .price-display-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.customer-site .price-value-text {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-navy);
+}
+
+.customer-site .price-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.customer-site .price-range-slider {
+  width: 100%;
+  accent-color: #023852;
+  cursor: pointer;
+}
+
+.customer-site .category-checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.customer-site .category-checkbox-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--color-navy);
+  cursor: pointer;
+  user-select: none;
+}
+
+.customer-site .category-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.customer-site .category-checkbox-input {
+  width: 15px;
+  height: 15px;
+  accent-color: #023852;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.customer-site .category-count-badge {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.customer-site .btn-show-more-categories {
+  background: none;
+  border: none;
+  color: var(--color-teal);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  font-family: inherit;
+}
+.customer-site .btn-show-more-categories:hover {
+  text-decoration: underline;
+}
+
+.customer-site .date-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.customer-site .btn-clear-date {
+  background: none;
+  border: none;
+  color: var(--color-teal);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+.customer-site .btn-clear-date:hover {
+  text-decoration: underline;
+}
+
+.customer-site .date-inputs-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.customer-site .date-separator {
+  color: var(--text-muted);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.customer-site .date-input-field {
+  flex: 1 1 0;
+  min-width: 0;
+  width: 0;
+  padding: 6px 3px 6px 5px;
+  border-radius: 6px;
+  border: 1.5px solid var(--card-border);
+  font-size: 11px;
+  color: var(--color-navy);
+  outline: none;
+  font-family: inherit;
+  background: #fff;
+  box-sizing: border-box;
+}
+.customer-site .date-input-field::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+}
+.customer-site .date-input-field::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+.customer-site .date-input-field:focus {
+  border-color: var(--color-teal);
+}
+
+.customer-site .btn-apply-filters {
+  width: 100%;
+  padding: 10px;
+  background: #023852;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-family: inherit;
+}
+.customer-site .btn-apply-filters:hover {
+  background: #079FA0;
+}
+
+.customer-site .catalog-content-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.customer-site .active-chips-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-height: 28px;
+}
+
+.customer-site .active-chips-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.customer-site .active-count-label {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--color-navy);
+  margin-right: 4px;
+}
+
+.customer-site .filter-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #e0f2f1;
+  color: #00796b;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #b2dfdb;
+  transition: all 0.15s ease;
+}
+.customer-site .filter-badge-chip:hover {
+  background: #b2dfdb;
+}
+
+.customer-site .btn-clear-chips {
+  background: none;
+  border: none;
+  color: var(--color-teal);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+}
+.customer-site .btn-clear-chips:hover {
+  text-decoration: underline;
+}
+
+/* Các biến thể màu nền cover gradient khi chưa có ảnh bìa */
+.customer-site .cover-gradient-0 {
+  background: linear-gradient(135deg, #4a148c 0%, #7b1fa2 100%) !important;
+}
+.customer-site .cover-gradient-1 {
+  background: linear-gradient(135deg, #d35400 0%, #f39c12 100%) !important;
+}
+.customer-site .cover-gradient-2 {
+  background: linear-gradient(135deg, #004d40 0%, #00796b 100%) !important;
+}
+.customer-site .cover-gradient-3 {
+  background: linear-gradient(135deg, #023852 0%, #079fa0 100%) !important;
+}
+
+.customer-site .tier-pill.free {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+
+@media (max-width: 980px) {
+  .customer-site .storefront-content-wrap {
+    flex-direction: column;
+  }
+  .customer-site .filter-sidebar-card {
+    width: 100%;
+    min-width: 100%;
   }
 }

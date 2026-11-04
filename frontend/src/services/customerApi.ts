@@ -47,8 +47,41 @@ async function request<T>(path: string, options: RequestInit = {}, authenticated
 
 export const customerApi = {
   customer: (signal?: AbortSignal) => request<CustomerSummary>("/bookings/customer-summary", { signal }, true),
-  events: (search: string, sort: string, page: number, signal?: AbortSignal) => request<PublicEventPage>(
-    `/public/events?${new URLSearchParams({ search, sort, page: String(page) })}`, { signal }),
+  // "Tra cứu danh sách sự kiện công khai với bộ lọc nâng cao"
+  events: (
+    params: {
+      search?: string;
+      sort?: string;
+      page?: number;
+      ticketType?: string;
+      minPrice?: number;
+      maxPrice?: number;
+      categories?: string[];
+      startDate?: string;
+      endDate?: string;
+    } | string,
+    sort = "time",
+    page = 1,
+    signal?: AbortSignal
+  ) => {
+    const queryParams: Record<string, string> = {};
+    if (typeof params === "string") {
+      if (params) queryParams.search = params;
+      queryParams.sort = sort;
+      queryParams.page = String(page);
+    } else {
+      if (params.search) queryParams.search = params.search;
+      if (params.sort) queryParams.sort = params.sort;
+      if (params.page) queryParams.page = String(params.page);
+      if (params.ticketType && params.ticketType !== "all") queryParams.ticketType = params.ticketType;
+      if (params.minPrice !== undefined && params.minPrice > 0) queryParams.minPrice = String(params.minPrice);
+      if (params.maxPrice !== undefined) queryParams.maxPrice = String(params.maxPrice);
+      if (params.categories && params.categories.length > 0) queryParams.categories = params.categories.join(",");
+      if (params.startDate) queryParams.startDate = params.startDate;
+      if (params.endDate) queryParams.endDate = params.endDate;
+    }
+    return request<PublicEventPage>(`/public/events?${new URLSearchParams(queryParams)}`, { signal });
+  },
   event: (id: string, signal?: AbortSignal) => request<PublicEvent>(`/public/events/${encodeURIComponent(id)}`, { signal }),
   reserve: (eventId: number, items: { ticketTypeId: number; quantity: number }[], requestKey: string) =>
     request<Booking>("/bookings", { method: "POST", body: JSON.stringify({ eventId, items, requestKey }) }, true),

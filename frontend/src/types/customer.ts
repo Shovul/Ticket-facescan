@@ -4,8 +4,29 @@ export interface PublicEvent {
   id: number; title: string; description?: string; coverImage?: string; location: string;
   startTime: string; endTime: string; remainingQuantity: number; tickets: PublicTicket[];
   organizerName?: string; organizerAvatarUrl?: string;
+  categories?: string[];
 }
-export interface PublicEventPage { items: PublicEvent[]; page: number; pageSize: number; totalCount: number; totalPages: number; }
+export interface PublicEventPage {
+  items: PublicEvent[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  categoryCounts?: Record<string, number>;
+}
+
+export interface PublicEventFilterParams {
+  search?: string;
+  sort?: string;
+  page?: number;
+  ticketType?: "all" | "free" | "paid" | "both";
+  minPrice?: number;
+  maxPrice?: number;
+  categories?: string[];
+  startDate?: string;
+  endDate?: string;
+}
+
 export interface BookingItem {
   id: number; ticketTypeId: number; ticketTypeName: string; unitPrice: number; status: string;
   attendeeName?: string; attendeeEmail?: string; attendeePhone?: string; hasFaceId: boolean;
