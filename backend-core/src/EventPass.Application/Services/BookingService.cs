@@ -181,7 +181,7 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
             return Task.FromResult(true);
         }, ct);
         using var stream = new MemoryStream(image);
-        var result = await ai.ExtractFaceEmbeddingAsync(stream, "portrait", true, false, isEnrollment: true, cancellationToken: ct);
+        var result = await ai.ExtractFaceEmbeddingAsync(stream, "portrait", true, true, isEnrollment: true, cancellationToken: ct);
         if (!result.Success || result.Embedding is not { Count: 512 } || result.Embedding.Any(v => !float.IsFinite(v)) || result.Embedding.All(v => v == 0))
             throw new BookingException(result.ErrorCode == "AI_SERVICE_UNAVAILABLE" ? 503 : 422,
                 result.ErrorMessage ?? "Ảnh phải rõ mặt, chính diện và chỉ có một người.");
@@ -226,7 +226,7 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
                 item.TicketDetail.FaceVector = item.FaceVector;
                 item.TicketDetail.AttendeeFaceData = dropboxUrl ?? $"booking-item:{item.Id}";
             }
-            if (claimHash != null && item.UnitPrice == 0 && item.Status == "reserved")
+            if (claimHash != null && item.Status == "reserved" && (item.UnitPrice == 0 || o.PaidAt != null))
             {
                 Issue(o, item);
                 if (o.TotalAmount == 0) o.PaymentStatus = PaymentStatus.Success;
@@ -437,7 +437,32 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
         var item = order.Items.Single(i => i.ClaimTokenHash == hash);
         var result = await SaveFaceAsync(order.UserId, order.OrderCode, item.Id, image, contentType, ct, hash, attendee);
         await SendEmail(order.UserId, order.OrderCode, ct);
-        return new(result.EventTitle, item.Ticket.Name, ClaimDeadline(order, item), DateTime.UtcNow);
+
+        var ticket = item.TicketDetail;
+        var faceUrl = ticket?.AttendeeFaceData?.StartsWith("http") == true ? ticket.AttendeeFaceData
+            : item.FaceImageContentType?.Contains('|') == true ? item.FaceImageContentType.Split('|')[1]
+            : null;
+
+        if (ticket != null)
+        {
+            ticket.AttendeeName = attendee.Name.Trim();
+            ticket.AttendeeEmail = attendee.Email.Trim();
+            ticket.AttendeePhone = attendee.Phone.Trim();
+        }
+
+        return new(
+            order.Event.Title,
+            item.Ticket.Name,
+            ClaimDeadline(order, item),
+            DateTime.UtcNow,
+            ticket?.TicketCode,
+            ticket?.QrCodeUrl,
+            attendee.Name.Trim(),
+            order.Event.Location,
+            order.Event.StartTime,
+            order.Event.EndTime,
+            faceUrl
+        );
     }
 
     private static string HashToken(string token)
