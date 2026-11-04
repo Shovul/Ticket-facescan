@@ -372,6 +372,10 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
                 ?? throw new BookingException(404, "Không tìm thấy thẻ vé.");
             var image = item.ProtectedFaceImage == null ? null
                 : "data:" + item.FaceImageContentType + ";base64," + Convert.ToBase64String(imageProtector.Unprotect(item.ProtectedFaceImage));
+            if (string.IsNullOrEmpty(image) && !string.IsNullOrEmpty(item.TicketDetail?.AttendeeFaceData))
+            {
+                image = item.TicketDetail.AttendeeFaceData;
+            }
             return Task.FromResult(new DigitalPassDto(TicketDto(o, item), image));
         }, ct);
 
@@ -469,9 +473,12 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
             : ticket.Status == TicketDetailStatus.CheckedIn ? "checkedin"
             : ticket.Status == TicketDetailStatus.Cancelled ? "cancelled"
             : ticket.Status == TicketDetailStatus.Expired || order.Event.EndTime <= DateTime.UtcNow ? "expired" : "valid";
+        var hasFace = item.FaceVector != null || ticket.FaceVector != null;
+        var faceUrl = !string.IsNullOrEmpty(ticket.AttendeeFaceData) ? ticket.AttendeeFaceData : null;
         return new(order.OrderCode, item.Id, order.Event.Title, order.Event.Location, order.Event.StartTime, order.Event.EndTime,
             string.Join(" • ", order.Event.Kiosks.Where(k => k.IsActive).Select(k => k.Name)), item.Ticket.Name, item.UnitPrice,
-            ticket.TicketCode, ticket.QrCodeUrl, item.AttendeeName, item.FaceVector != null, status, ticket.CheckedInAt);
+            ticket.TicketCode, ticket.QrCodeUrl, item.AttendeeName, hasFace, status, ticket.CheckedInAt,
+            ticket.Id, faceUrl);
     }
 
     private async Task<T> WithOrder<T>(int userId, string code, Func<Order, Task<T>> action, CancellationToken ct)

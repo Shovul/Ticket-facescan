@@ -46,7 +46,7 @@ public record ClaimTicketDto(string EventTitle, string TicketTypeName, DateTime 
 public record CustomerTicketDto(string OrderCode, int ItemId, string EventTitle, string Location,
     DateTime StartTime, DateTime EndTime, string Gate, string TicketTypeName, decimal Price,
     string TicketCode, string QrCodeUrl, string? AttendeeName, bool HasFaceId, string Status,
-    DateTime? CheckedInAt);
+    DateTime? CheckedInAt, int? TicketId = null, string? AttendeeFaceUrl = null);
 public record CustomerTicketsDto(IReadOnlyList<BookingDto> PendingOrders, IReadOnlyList<CustomerTicketDto> Tickets,
     int Page, int TotalPages, int TotalCount, int AllCount, int FreeCount, int PaidCount, int MissingFaceCount, DateTime ServerTime);
 public record DigitalPassDto(CustomerTicketDto Ticket, string? FaceImage);
