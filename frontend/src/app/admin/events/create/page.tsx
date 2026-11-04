@@ -177,11 +177,25 @@ export default function CreateEventForm() {
             </div>
             <div className="tickets-list">
               {formData.kiosks.map((kiosk, index) => (
-                <div key={index} className="ticket-row" style={{ gridTemplateColumns: '2fr 1fr auto' }}>
-                  <div className="form-group"><label className="form-label">Tên trạm / Vị trí <span className="required-mark">*</span></label><input type="text" required value={kiosk.name} onChange={(e) => updateKiosk(index, 'name', e.target.value)} className="form-input" /></div>
-                  <div className="form-group"><label className="form-label">Secret Token (Tự sinh)</label><div style={{ padding: '8px', background: '#fff', border: '1.5px solid #cfe5dc', borderRadius: '6px', fontFamily: 'monospace', color: '#079FA0', fontWeight: 'bold' }}>{kiosk.secretToken}</div></div>
-                  <div className="ticket-actions"><button type="button" onClick={() => removeKiosk(index)} className="btn-remove-ticket" title="Xóa trạm"><svg className="svg-icon md block-md" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+                <div key={index} className="ticket-row" style={{ gridTemplateColumns: '2fr 2fr 1.5fr auto' }}>
+                <div className="form-group">
+                  <label className="form-label">Tên trạm <span className="required-mark">*</span></label>
+                  <input type="text" required value={kiosk.name} onChange={(e) => updateKiosk(index, 'name', e.target.value)} className="form-input" />
                 </div>
+                <div className="form-group">
+                  <label className="form-label">Vị trí <span className="required-mark">*</span></label>
+                  <input type="text" required value={kiosk.location} onChange={(e) => updateKiosk(index, 'location', e.target.value)} className="form-input" placeholder="Ví dụ: Cổng chính - Đường ABC" />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Secret Token (Tự sinh)</label>
+                  <div style={{ padding: '8px', background: '#fff', border: '1.5px solid #cfe5dc', borderRadius: '6px', fontFamily: 'monospace', color: '#079FA0', fontWeight: 'bold' }}>{kiosk.secretToken}</div>
+                </div>
+                <div className="ticket-actions">
+                  <button type="button" onClick={() => removeKiosk(index)} className="btn-remove-ticket" title="Xóa trạm">
+                    <svg className="svg-icon md block-md" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+              </div>
               ))}
             </div>
             <button type="button" onClick={addKiosk} className="btn-add-ticket">+ Thêm trạm kiểm soát</button>
