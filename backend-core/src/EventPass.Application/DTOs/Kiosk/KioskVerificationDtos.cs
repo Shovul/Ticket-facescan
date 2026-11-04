@@ -11,6 +11,7 @@ public class VerifyKioskTokenResponse
     public bool Success { get; set; }
     public int? KioskId { get; set; }
     public string? KioskName { get; set; }
+    public int? EventId { get; set; }
     public string? EventTitle { get; set; }
     public string Message { get; set; } = string.Empty;
 }

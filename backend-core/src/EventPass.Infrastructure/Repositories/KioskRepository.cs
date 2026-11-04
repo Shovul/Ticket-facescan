@@ -25,6 +25,18 @@ public class KioskRepository : Repository<Kiosk>, IKioskRepository
                 cancellationToken);
     }
 
+    public async Task<Kiosk?> GetBySecretTokenAsync(string secretToken, CancellationToken cancellationToken = default)
+    {
+        var token = secretToken.Trim();
+        return await _context.Kiosks
+            .Include(k => k.Event)
+            .FirstOrDefaultAsync(k => 
+                k.IsActive && 
+                !k.IsDeleted && 
+                (k.SecretToken == token || (token.StartsWith("stk_") && k.SecretToken == token.Substring(4)) || (!token.StartsWith("stk_") && k.SecretToken == "stk_" + token)), 
+                cancellationToken);
+    }
+
     public async Task<IEnumerable<Kiosk>> GetByEventIdAsync(int eventId, CancellationToken cancellationToken = default)
     {
         return await _context.Kiosks

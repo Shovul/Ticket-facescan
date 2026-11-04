@@ -585,19 +585,22 @@ public class KioskService : IKioskService
         string secretToken, 
         CancellationToken cancellationToken = default)
     {
-        if (eventId <= 0 || string.IsNullOrWhiteSpace(secretToken))
+        if (string.IsNullOrWhiteSpace(secretToken))
         {
             return new VerifyKioskTokenResponse
             {
                 Success = false,
-                Message = "Thông tin mã sự kiện hoặc mã khóa bí mật Kiosk không hợp lệ."
+                Message = "Thông tin mã khóa bí mật Kiosk không được để trống."
             };
         }
 
-        var kiosk = await _kioskRepo.GetBySecretTokenAsync(eventId, secretToken, cancellationToken: cancellationToken);
+        var kiosk = eventId > 0 
+            ? await _kioskRepo.GetBySecretTokenAsync(eventId, secretToken, cancellationToken: cancellationToken)
+            : await _kioskRepo.GetBySecretTokenAsync(secretToken, cancellationToken: cancellationToken);
+
         if (kiosk == null)
         {
-            _logger.LogWarning("⚠️ Xác thực thất bại cho Kiosk sự kiện {EventId} với token '{Token}'", eventId, secretToken);
+            _logger.LogWarning("⚠️ Xác thực thất bại cho Kiosk (EventId: {EventId}) với token '{Token}'", eventId, secretToken);
             return new VerifyKioskTokenResponse
             {
                 Success = false,
@@ -605,12 +608,13 @@ public class KioskService : IKioskService
             };
         }
 
-        _logger.LogInformation("✅ Kích hoạt thành công trạm Kiosk '{KioskName}' (ID: {KioskId}) cho sự kiện {EventId}", kiosk.Name, kiosk.Id, eventId);
+        _logger.LogInformation("✅ Kích hoạt thành công trạm Kiosk '{KioskName}' (ID: {KioskId}) cho sự kiện {EventId}", kiosk.Name, kiosk.Id, kiosk.EventId);
         return new VerifyKioskTokenResponse
         {
             Success = true,
             KioskId = kiosk.Id,
             KioskName = kiosk.Name,
+            EventId = kiosk.EventId,
             EventTitle = kiosk.Event?.Title,
             Message = $"Xác thực trạm '{kiosk.Name}' thành công."
         };

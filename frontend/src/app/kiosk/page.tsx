@@ -39,7 +39,17 @@ export default function KioskPage() {
   const [showExitModal, setShowExitModal] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
 
-  const [eventId] = useState(1);
+  const [eventId, setEventId] = useState<number>(1);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const qId = params.get("eventId");
+      if (qId && !isNaN(Number(qId))) {
+        setEventId(Number(qId));
+      }
+    }
+  }, []);
   const [kioskName, setKioskName] = useState("Kiosk Cổng 1 — Cổng Chính");
   const [eventInfo, setEventInfo] = useState<KioskEventInfo | null>(null);
   const [checkedInCount, setCheckedInCount] = useState(0);
@@ -47,6 +57,7 @@ export default function KioskPage() {
 
   const [isOnline, setIsOnline] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isContinuousScan, setIsContinuousScan] = useState(true);
   const [liveClock, setLiveClock] = useState("--:--:--");
   const [checkinResult, setCheckinResult] = useState<CheckinResult | null>(null);
 
@@ -69,10 +80,11 @@ export default function KioskPage() {
   }, []);
 
   // 2. Nạp dữ liệu sự kiện & Edge Cache
-  const loadEventDataAndCache = useCallback(async (customKey?: string) => {
+  const loadEventDataAndCache = useCallback(async (customKey?: string, customEventId?: number) => {
     const key = customKey || kioskSecretKey;
+    const targetEventId = customEventId || eventId;
     try {
-      const eventRes = await fetch(`${API_BASE_URL}/api/v1/kiosk/events/${eventId}`, {
+      const eventRes = await fetch(`${API_BASE_URL}/api/v1/kiosk/events/${targetEventId}`, {
         headers: { "X-Kiosk-Secret-Key": key },
       });
       if (eventRes.ok) {
@@ -82,13 +94,13 @@ export default function KioskPage() {
         setTotalTickets(data.totalTickets);
       }
 
-      const ticketsRes = await fetch(`${API_BASE_URL}/api/v1/kiosk/events/${eventId}/offline-tickets`, {
+      const ticketsRes = await fetch(`${API_BASE_URL}/api/v1/kiosk/events/${targetEventId}/offline-tickets`, {
         headers: { "X-Kiosk-Secret-Key": key },
       });
       if (ticketsRes.ok) {
         const tickets = await ticketsRes.json();
         await saveOfflineTickets(tickets);
-        console.log(`✅ [EDGE CACHE] Đã nạp thành công ${tickets.length} vé vào IndexedDB.`);
+        console.log(`✅ [EDGE CACHE] Đã nạp thành công ${tickets.length} vé thực tế vào IndexedDB.`);
       }
     } catch (err) {
       console.warn("Mạng gián đoạn khi nạp cache ban đầu:", err);
@@ -188,16 +200,16 @@ export default function KioskPage() {
     }, 3500);
   }, [playSound]);
 
-  // 6. Mở khóa kích hoạt Kiosk bằng X-Kiosk-Secret-Key thực tế từ DB
+  // 6. Mở khóa kích hoạt Kiosk bằng X-Kiosk-Secret-Key thực tế từ DB (BR03 / BR05)
   const handleUnlockKiosk = async (code: string): Promise<boolean> => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/kiosk/events/${eventId}/verify-token`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/kiosk/verify-token`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          eventId,
+          eventId: eventId > 0 ? eventId : 0,
           secretToken: code.trim(),
         }),
       });
@@ -209,9 +221,11 @@ export default function KioskPage() {
         if (data.kioskName) {
           setKioskName(data.kioskName);
         }
+        const activeEventId = data.eventId || eventId || 1;
+        setEventId(activeEventId);
         setIsLocked(false);
         playSound("success");
-        await loadEventDataAndCache(activeKey);
+        await loadEventDataAndCache(activeKey, activeEventId);
         await startCamera();
         connectSignalR();
         return true;
@@ -220,16 +234,7 @@ export default function KioskPage() {
         return false;
       }
     } catch (err) {
-      console.warn("Mạng gián đoạn khi xác thực token trạm Kiosk:", err);
-      // Fallback cho chế độ offline nếu mất mạng kết nối tới server lúc khởi động
-      if (code.length >= 4) {
-        const activeKey = code.startsWith("stk_") ? code : `stk_${code}`;
-        setKioskSecretKey(activeKey);
-        setIsLocked(false);
-        playSound("success");
-        await startCamera();
-        return true;
-      }
+      console.warn("Lỗi kết nối khi xác thực token trạm Kiosk:", err);
       playSound("error");
       return false;
     }
@@ -334,26 +339,35 @@ export default function KioskPage() {
     scanIntervalMs: 250,
   });
 
-  // 9. Check-in Face ID từ Webcam
-  const handleCaptureFace = async () => {
+  // 9. Check-in Face ID từ Webcam (Hỗ trợ Quét Liên tục & Thủ công)
+  const handleCaptureFace = useCallback(async (silentIfNoFace = false) => {
     if (isProcessing) return;
     setIsProcessing(true);
 
     try {
       if (!isOnline) {
-        triggerResultDisplay({
-          success: false,
-          statusCode: "OFFLINE_PROMPT",
-          message: "Mạng sự kiện đang gián đoạn — Vui lòng giơ mã QR trên vé để vào cổng!",
-          borderColor: "#FAC005",
-        });
+        if (!silentIfNoFace) {
+          triggerResultDisplay({
+            success: false,
+            statusCode: "OFFLINE_PROMPT",
+            message: "Mạng sự kiện đang gián đoạn — Vui lòng giơ mã QR trên vé để vào cổng!",
+            borderColor: "#FAC005",
+          });
+        }
         setIsProcessing(false);
         return;
       }
 
       const blob = await captureFrameBlob();
       if (!blob) {
-        await handleCheckinByCode("TK-SGU-VIP-8888");
+        if (!silentIfNoFace) {
+          triggerResultDisplay({
+            success: false,
+            statusCode: "CAMERA_NOT_READY",
+            message: "Camera chưa sẵn sàng hoặc không thể chụp khung hình từ webcam.",
+            borderColor: "#EF4444",
+          });
+        }
         setIsProcessing(false);
         return;
       }
@@ -372,18 +386,36 @@ export default function KioskPage() {
       });
 
       const result: CheckinResult = await res.json();
+      if (silentIfNoFace && (result.statusCode === "NO_FACE" || result.statusCode === "QUALITY_LOW")) {
+        return;
+      }
       triggerResultDisplay(result);
     } catch {
-      triggerResultDisplay({
-        success: false,
-        statusCode: "NETWORK_ERROR",
-        message: "Mạng chập chờn — Vui lòng bấm Quét mã QR cứu hộ!",
-        borderColor: "#EF4444",
-      });
+      if (!silentIfNoFace) {
+        triggerResultDisplay({
+          success: false,
+          statusCode: "NETWORK_ERROR",
+          message: "Mạng chập chờn — Vui lòng bấm Quét mã QR cứu hộ!",
+          borderColor: "#EF4444",
+        });
+      }
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [isProcessing, isOnline, captureFrameBlob, eventId, kioskName, kioskSecretKey, triggerResultDisplay, handleCheckinByCode]);
+
+  // 10. Vòng lặp quét mặt liên tục qua Camera Kiosk
+  useEffect(() => {
+    if (!isContinuousScan || isLocked || !isCameraReady || isProcessing || checkinResult || !isOnline) {
+      return;
+    }
+
+    const scanTimer = setTimeout(() => {
+      handleCaptureFace(true);
+    }, 1500);
+
+    return () => clearTimeout(scanTimer);
+  }, [isContinuousScan, isLocked, isCameraReady, isProcessing, checkinResult, isOnline, handleCaptureFace]);
 
   const handleToggleOnline = async () => {
     const nextState = !isOnline;
@@ -466,8 +498,9 @@ export default function KioskPage() {
       <KioskDemoBar
         isProcessing={isProcessing}
         isOnline={isOnline}
-        onCaptureFace={handleCaptureFace}
-        onTestVipCode={() => handleCheckinByCode("TK-SGU-VIP-8888")}
+        isContinuousScan={isContinuousScan}
+        onCaptureFace={() => handleCaptureFace(false)}
+        onToggleContinuousScan={() => setIsContinuousScan((prev) => !prev)}
         onToggleOnline={handleToggleOnline}
       />
 

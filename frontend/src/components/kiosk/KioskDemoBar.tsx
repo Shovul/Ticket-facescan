@@ -3,23 +3,40 @@ import React from "react";
 interface KioskDemoBarProps {
   isProcessing: boolean;
   isOnline: boolean;
+  isContinuousScan: boolean;
   onCaptureFace: () => void;
-  onTestVipCode: () => void;
+  onToggleContinuousScan: () => void;
   onToggleOnline: () => void;
 }
 
 export const KioskDemoBar: React.FC<KioskDemoBarProps> = ({
   isProcessing,
   isOnline,
+  isContinuousScan,
   onCaptureFace,
-  onTestVipCode,
+  onToggleContinuousScan,
   onToggleOnline,
 }) => {
   return (
     <div className="sim-demo-bar">
-      <span className="sim-demo-label">Demo Bar:</span>
+      <span className="sim-demo-label">Điều khiển Trạm Soát Vé:</span>
 
-      {/* Nút Test Quét Mặt Thực Tế */}
+      {/* Nút Bật/Tắt Quét Mặt Liên Tục */}
+      <button
+        type="button"
+        onClick={onToggleContinuousScan}
+        className="sim-btn-kiosk"
+        style={{
+          background: isContinuousScan ? "rgba(34, 197, 94, 0.25)" : "#043852",
+          color: isContinuousScan ? "#22C55E" : "var(--text-muted)",
+          borderColor: isContinuousScan ? "#22C55E" : "var(--border-color)",
+          fontWeight: 700,
+        }}
+      >
+        {isContinuousScan ? "● Quét Mặt Liên Tục: BẬT" : "○ Quét Mặt Liên Tục: TẮT"}
+      </button>
+
+      {/* Nút Chụp & Quét Mặt Ngay */}
       <button
         type="button"
         onClick={onCaptureFace}
@@ -31,19 +48,10 @@ export const KioskDemoBar: React.FC<KioskDemoBarProps> = ({
           opacity: isProcessing ? 0.6 : 1,
         }}
       >
-        {isProcessing ? "Đang quét..." : "Quét Mặt Ngay (Cam)"}
+        {isProcessing ? "Đang quét..." : "Chụp & Quét Mặt Ngay"}
       </button>
 
-      {/* Nút Test VIP 8888 */}
-      <button
-        type="button"
-        onClick={onTestVipCode}
-        className="sim-btn-kiosk"
-      >
-        Test Vé VIP 8888
-      </button>
-
-      {/* Nút Bật/Tắt Giả lập Offline */}
+      {/* Nút Bật/Tắt Giả lập Ngoại Tuyến */}
       <button
         type="button"
         onClick={onToggleOnline}
@@ -54,7 +62,7 @@ export const KioskDemoBar: React.FC<KioskDemoBarProps> = ({
           fontWeight: isOnline ? 600 : 800,
         }}
       >
-        {isOnline ? "Rút Dây Mạng (Giả Lập)" : "Cắm Mạng Lại (Sync)"}
+        {isOnline ? "Thử Nghiệm Mất Mạng (Offline Failover)" : "Kết Nối Lại Mạng (Sync Dữ Liệu)"}
       </button>
     </div>
   );
