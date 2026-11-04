@@ -1,4 +1,4 @@
-﻿namespace EventPass.Application.DTOs.User;
+namespace EventPass.Application.DTOs.User;
 
 public class UserProfileResponseDto
 {
@@ -9,5 +9,7 @@ public class UserProfileResponseDto
     public string PhoneNumber { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
     public bool HasPassword { get; set; } = true;
+    public string? AvatarUrl { get; set; }
+    public bool HasFaceScan { get; set; }
+    public bool HasFaceRegistered => HasFaceScan;
 }
-

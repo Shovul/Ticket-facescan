@@ -129,7 +129,7 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
             return Task.FromResult(true);
         }, ct);
         using var stream = new MemoryStream(image);
-        var result = await ai.ExtractFaceEmbeddingAsync(stream, "portrait", true, false, ct);
+        var result = await ai.ExtractFaceEmbeddingAsync(stream, "portrait", true, false, isEnrollment: true, cancellationToken: ct);
         if (!result.Success || result.Embedding is not { Count: 512 } || result.Embedding.Any(v => !float.IsFinite(v)) || result.Embedding.All(v => v == 0))
             throw new BookingException(result.ErrorCode == "AI_SERVICE_UNAVAILABLE" ? 503 : 422,
                 result.ErrorMessage ?? "Ảnh phải rõ mặt, chính diện và chỉ có một người.");

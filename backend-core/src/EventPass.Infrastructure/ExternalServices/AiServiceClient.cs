@@ -29,6 +29,7 @@ public class AiServiceClient : IAiServiceClient
         string fileName, 
         bool enforceDetection = true, 
         bool antiSpoofing = true, 
+        bool isEnrollment = false,
         CancellationToken cancellationToken = default)
     {
         try
@@ -46,6 +47,8 @@ public class AiServiceClient : IAiServiceClient
 
             formData.Add(new StringContent(enforceDetection ? "true" : "false"), "enforce_detection");
             formData.Add(new StringContent(antiSpoofing ? "true" : "false"), "anti_spoofing");
+            formData.Add(new StringContent(isEnrollment ? "true" : "false"), "is_enrollment");
+            formData.Add(new StringContent(isEnrollment ? "enrollment" : "kiosk"), "mode");
 
             using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/face/extract");
             request.Headers.Add("X-API-Key", _apiKey);

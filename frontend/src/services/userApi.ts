@@ -9,13 +9,15 @@ function getAuthHeader() {
 }
 
 export interface UserProfileData {
-  userId: number;
+  userId?: number;
+  id?: number;
   username: string;
   email: string;
   fullName: string;
   phoneNumber?: string;
   avatarUrl?: string;
-  hasFaceRegistered: boolean;
+  hasFaceRegistered?: boolean;
+  hasFaceScan?: boolean;
   role: string;
 }
 
@@ -73,12 +75,13 @@ export const userApi = {
     }
   },
 
-  async uploadFaceProfile(file: File): Promise<AuthApiResponse<any>> {
+  async uploadFaceProfile(file: File | Blob, fileName = 'face_portrait.jpg'): Promise<AuthApiResponse<any>> {
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', file, fileName);
 
-      const response = await axios.post<AuthApiResponse<any>>(`${BASE_URL}/user/face-profile`, formData, {
+      // Gọi endpoint UC05 POST /api/v1/users/face
+      const response = await axios.post<AuthApiResponse<any>>(`${BASE_URL}/users/face`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           ...getAuthHeader(),
@@ -90,4 +93,9 @@ export const userApi = {
       return { success: false, message: 'Không thể xử lý khuôn mặt. Vui lòng thử lại với ảnh rõ nét hơn.', data: null };
     }
   },
+
+  // Alias
+  uploadFace(file: File | Blob, fileName?: string) {
+    return this.uploadFaceProfile(file, fileName);
+  }
 };
