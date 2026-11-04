@@ -44,8 +44,9 @@ export default function Sidebar() {
     sessionStorage.removeItem("eventpass.activeBooking");
     sessionStorage.removeItem("eventpass.reservationRequest");
     window.dispatchEvent(new Event("auth-state-change"));
+    setShowLogoutModal(false);
     notify("Đã đăng xuất tài khoản.", "info");
-    router.push("/events");
+    window.location.href = "/events";
   }
 
   return (

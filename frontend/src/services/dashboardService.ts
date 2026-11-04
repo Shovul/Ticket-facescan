@@ -5,8 +5,16 @@ import {
   GetAttendeesResponse 
 } from '../types/dashboard';
 
+const getBaseUrl = (): string => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!envUrl) return 'http://localhost:5000/api';
+  
+  const cleaned = envUrl.replace(/\/$/, '').replace(/\/v1$/, '');
+  return cleaned.endsWith('/api') ? cleaned : `${cleaned}/api`;
+};
+
 const api = axios.create({
-  baseURL: (process.env.NEXT_PUBLIC_API_URL?.replace('/v1', '')) || 'http://localhost:5000/api',
+  baseURL: getBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
