@@ -155,6 +155,10 @@ using (var scope = app.Services.CreateScope())
         var dbContext = services.GetRequiredService<AppDbContext>();
         await dbContext.Database.MigrateAsync();
         app.Logger.LogInformation("Database migrations applied successfully.");
+
+        var bcryptHasher = services.GetRequiredService<IPasswordHasher>();
+        var result = await DatabaseSeeder.InitializeAsync(dbContext, (user, password) => bcryptHasher.HashPassword(password));
+        app.Logger.LogInformation("Seed hoàn tất: thêm {UsersAdded} tài khoản, {EventsAdded} sự kiện.", result.UsersAdded, result.EventsAdded);
     }
     catch (Exception ex)
     {
@@ -163,22 +167,22 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Seed dÃ¡Â»Â¯ liÃ¡Â»â€¡u local sau khi Ã„â€˜ÃƒÂ£ cÃ¡ÂºÂ­p nhÃ¡ÂºÂ­t migration, khÃƒÂ´ng tÃ¡Â»Â± thay Ã„â€˜Ã¡Â»â€¢i schema database.
-if (seedOnly && !app.Environment.IsDevelopment())
-    throw new InvalidOperationException("ChÃ¡Â»â€° chÃ¡ÂºÂ¡y seed dÃ¡Â»Â¯ liÃ¡Â»â€¡u mÃ¡ÂºÂ«u trong mÃƒÂ´i trÃ†Â°Ã¡Â»Âng Development.");
-if (app.Environment.IsDevelopment() && (seedOnly || app.Configuration.GetValue<bool>("DatabaseSeed:Enabled")))
-{
-    await using var scope = app.Services.CreateAsyncScope();
+// // Seed dÃ¡Â»Â¯ liÃ¡Â»â€¡u local sau khi Ã„â€˜ÃƒÂ£ cÃ¡ÂºÂ­p nhÃ¡ÂºÂ­t migration, khÃƒÂ´ng tÃ¡Â»Â± thay Ã„â€˜Ã¡Â»â€¢i schema database.
+// if (seedOnly && !app.Environment.IsDevelopment())
+//     throw new InvalidOperationException("ChÃ¡Â»â€° chÃ¡ÂºÂ¡y seed dÃ¡Â»Â¯ liÃ¡Â»â€¡u mÃ¡ÂºÂ«u trong mÃƒÂ´i trÃ†Â°Ã¡Â»Âng Development.");
+// if (app.Environment.IsDevelopment() && (seedOnly || app.Configuration.GetValue<bool>("DatabaseSeed:Enabled")))
+// {
+//     await using var scope = app.Services.CreateAsyncScope();
     
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await dbContext.Database.MigrateAsync();
+//     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//     await dbContext.Database.MigrateAsync();
 
-    var hasher = new PasswordHasher<User>();
-    var bcryptHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
-    // var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), hasher.HashPassword);
-    var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), (user, password) => bcryptHasher.HashPassword(password));
-    app.Logger.LogInformation("Seed hoÃƒÂ n tÃ¡ÂºÂ¥t: thÃƒÂªm {UsersAdded} tÃƒÂ i khoÃ¡ÂºÂ£n, {EventsAdded} sÃ¡Â»Â± kiÃ¡Â»â€¡n.", result.UsersAdded, result.EventsAdded);
-}
+//     var hasher = new PasswordHasher<User>();
+//     var bcryptHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+//     // var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), hasher.HashPassword);
+//     var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), (user, password) => bcryptHasher.HashPassword(password));
+//     app.Logger.LogInformation("Seed hoÃƒÂ n tÃ¡ÂºÂ¥t: thÃƒÂªm {UsersAdded} tÃƒÂ i khoÃ¡ÂºÂ£n, {EventsAdded} sÃ¡Â»Â± kiÃ¡Â»â€¡n.", result.UsersAdded, result.EventsAdded);
+// }
 if (seedOnly) return;
 
 // CÃ¡ÂºÂ¥u hÃƒÂ¬nh Swagger UI trÃ¡Â»Â±c quan
