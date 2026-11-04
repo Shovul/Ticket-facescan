@@ -22,6 +22,15 @@ var builder = WebApplication.CreateBuilder(args.Where(a => !a.Equals("--seed", S
 
 // 1. CÃ¡ÂºÂ¥u hÃƒÂ¬nh Database PostgreSQL 16 + pgvector HNSW
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgres"))
+{
+    var uri = new Uri(connectionString);
+    var userInfo = uri.UserInfo.Split(':');
+    
+    var port = uri.Port > 0 ? uri.Port : 5432;
+    
+    connectionString = $"Host={uri.Host};Port={port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true;";
+}
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(connectionString, npgsqlOptions =>
@@ -138,22 +147,42 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Seed dÃ¡Â»Â¯ liÃ¡Â»â€¡u local sau khi Ã„â€˜ÃƒÂ£ cÃ¡ÂºÂ­p nhÃ¡ÂºÂ­t migration, khÃƒÂ´ng tÃ¡Â»Â± thay Ã„â€˜Ã¡Â»â€¢i schema database.
-if (seedOnly && !app.Environment.IsDevelopment())
-    throw new InvalidOperationException("ChÃ¡Â»â€° chÃ¡ÂºÂ¡y seed dÃ¡Â»Â¯ liÃ¡Â»â€¡u mÃ¡ÂºÂ«u trong mÃƒÂ´i trÃ†Â°Ã¡Â»Âng Development.");
-if (app.Environment.IsDevelopment() && (seedOnly || app.Configuration.GetValue<bool>("DatabaseSeed:Enabled")))
+using (var scope = app.Services.CreateScope())
 {
-    await using var scope = app.Services.CreateAsyncScope();
-    
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await dbContext.Database.MigrateAsync();
+    var services = scope.ServiceProvider;
+    try
+    {
+        var dbContext = services.GetRequiredService<AppDbContext>();
+        await dbContext.Database.MigrateAsync();
+        app.Logger.LogInformation("Database migrations applied successfully.");
 
-    var hasher = new PasswordHasher<User>();
-    var bcryptHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
-    // var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), hasher.HashPassword);
-    var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), (user, password) => bcryptHasher.HashPassword(password));
-    app.Logger.LogInformation("Seed hoÃƒÂ n tÃ¡ÂºÂ¥t: thÃƒÂªm {UsersAdded} tÃƒÂ i khoÃ¡ÂºÂ£n, {EventsAdded} sÃ¡Â»Â± kiÃ¡Â»â€¡n.", result.UsersAdded, result.EventsAdded);
+        var bcryptHasher = services.GetRequiredService<IPasswordHasher>();
+        var result = await DatabaseSeeder.InitializeAsync(dbContext, (user, password) => bcryptHasher.HashPassword(password));
+        app.Logger.LogInformation("Seed hoàn tất: thêm {UsersAdded} tài khoản, {EventsAdded} sự kiện.", result.UsersAdded, result.EventsAdded);
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "An error occurred while migrating the database.");
+        throw;
+    }
 }
+
+// // Seed dÃ¡Â»Â¯ liÃ¡Â»â€¡u local sau khi Ã„â€˜ÃƒÂ£ cÃ¡ÂºÂ­p nhÃ¡ÂºÂ­t migration, khÃƒÂ´ng tÃ¡Â»Â± thay Ã„â€˜Ã¡Â»â€¢i schema database.
+// if (seedOnly && !app.Environment.IsDevelopment())
+//     throw new InvalidOperationException("ChÃ¡Â»â€° chÃ¡ÂºÂ¡y seed dÃ¡Â»Â¯ liÃ¡Â»â€¡u mÃ¡ÂºÂ«u trong mÃƒÂ´i trÃ†Â°Ã¡Â»Âng Development.");
+// if (app.Environment.IsDevelopment() && (seedOnly || app.Configuration.GetValue<bool>("DatabaseSeed:Enabled")))
+// {
+//     await using var scope = app.Services.CreateAsyncScope();
+    
+//     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//     await dbContext.Database.MigrateAsync();
+
+//     var hasher = new PasswordHasher<User>();
+//     var bcryptHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
+//     // var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), hasher.HashPassword);
+//     var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), (user, password) => bcryptHasher.HashPassword(password));
+//     app.Logger.LogInformation("Seed hoÃƒÂ n tÃ¡ÂºÂ¥t: thÃƒÂªm {UsersAdded} tÃƒÂ i khoÃ¡ÂºÂ£n, {EventsAdded} sÃ¡Â»Â± kiÃ¡Â»â€¡n.", result.UsersAdded, result.EventsAdded);
+// }
 if (seedOnly) return;
 
 // CÃ¡ÂºÂ¥u hÃƒÂ¬nh Swagger UI trÃ¡Â»Â±c quan
