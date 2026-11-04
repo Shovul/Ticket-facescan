@@ -66,7 +66,7 @@ export const useDashboard = () => {
     if (!activeEventId) return;
     fetchDashboardData();
 
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:5000';
 
     const kioskConn = new HubConnectionBuilder()
       .withUrl(`${baseUrl}/hubs/kiosk`)
