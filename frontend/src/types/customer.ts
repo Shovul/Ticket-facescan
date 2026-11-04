@@ -30,4 +30,16 @@ export interface CustomerTickets {
 }
 export interface DigitalPass { ticket: CustomerTicket; faceImage?: string; }
 export interface ClaimLink { token: string; expiresAt: string; }
-export interface ClaimTicket { eventTitle: string; ticketTypeName: string; expiresAt: string; serverTime: string; }
+export interface ClaimTicket {
+  eventTitle: string;
+  ticketTypeName: string;
+  expiresAt: string;
+  serverTime: string;
+  ticketCode?: string;
+  qrCodeUrl?: string;
+  attendeeName?: string;
+  location?: string;
+  startTime?: string;
+  endTime?: string;
+  faceImage?: string;
+}

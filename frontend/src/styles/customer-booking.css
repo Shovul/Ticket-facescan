@@ -1096,3 +1096,315 @@
 .customer-site .section-title { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: var(--color-navy); padding-bottom: 10px; border-bottom: 1.5px solid var(--hairline); margin-bottom: 14px; text-align: left; }
 .customer-site .vietqr-stage-box .section-title { margin-bottom: 0; }
 @keyframes ep-customer-fade-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+
+/* ========================================================
+   UC09: CAMERA KHUNG NGẮM TRÒN & DIGITAL PASS CHO CLAIM
+   ======================================================== */
+
+.customer-site .claim-face-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.customer-site .claim-tab-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.customer-site .claim-tab-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.customer-site .claim-tab-btn.active {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+}
+
+.customer-site .claim-camera-viewport {
+  width: 100%;
+  height: 320px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.customer-site .claim-camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.customer-site .claim-circle-guide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.customer-site .claim-circle-inner {
+  width: 210px;
+  height: 210px;
+  border: 2.5px dashed #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.customer-site .claim-crosshair {
+  width: 12px;
+  height: 12px;
+  border: 1px solid rgba(34, 197, 94, 0.5);
+  border-radius: 50%;
+}
+
+.customer-site .claim-angle-check-bar {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.customer-site .claim-check-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.customer-site .claim-check-item.ok {
+  color: #4ade80;
+}
+
+.customer-site .claim-camera-controls {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.customer-site .btn-claim-capture {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 24px;
+  background: #ea580c;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.4);
+  transition: all 0.15s ease;
+}
+
+.customer-site .btn-claim-capture:hover {
+  background: #c2410c;
+}
+
+.customer-site .claim-preview-container {
+  width: 100%;
+  min-height: 280px;
+  background: #0f172a;
+  border-radius: 12px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  gap: 12px;
+}
+
+.customer-site .claim-preview-circle {
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  border: 3px solid #22c55e;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.25);
+  background: #000;
+}
+
+.customer-site .claim-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.customer-site .claim-preview-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid #22c55e;
+  color: #4ade80;
+  padding: 5px 12px;
+  border-radius: 16px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.customer-site .btn-claim-retake {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.customer-site .btn-claim-retake:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Digital Pass sau khi nhận vé thành công */
+.customer-site .claim-digital-pass-card {
+  background: linear-gradient(155deg, #023852 0%, #011b27 100%);
+  color: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 15px 35px rgba(2, 56, 82, 0.3);
+  border: 1.5px solid rgba(159, 216, 197, 0.25);
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.customer-site .claim-pass-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.customer-site .claim-pass-top strong {
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: #9fd8c5;
+}
+
+.customer-site .claim-pass-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.customer-site .claim-pass-body h3 {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+  color: #fff;
+}
+
+.customer-site .claim-pass-meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #cde5f0;
+}
+
+.customer-site .claim-pass-attendee-strip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 12px 16px;
+}
+
+.customer-site .claim-pass-face-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2.5px solid #22c55e;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #000;
+}
+
+.customer-site .claim-pass-attendee-info strong {
+  font-size: 14px;
+  color: #fff;
+  display: block;
+}
+
+.customer-site .claim-pass-attendee-info span {
+  font-size: 11.5px;
+  color: #4ade80;
+  display: block;
+  margin-top: 2px;
+}
+
+.customer-site .claim-pass-qr-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 10px;
+  color: #023852;
+}
+
+.customer-site .claim-pass-qr-wrap code {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.customer-site .claim-pass-footer-tip {
+  font-size: 11.5px;
+  color: #cde5f0;
+  text-align: center;
+  line-height: 1.4;
+}

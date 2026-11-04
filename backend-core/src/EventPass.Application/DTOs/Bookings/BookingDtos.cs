@@ -42,7 +42,18 @@ public class BookingException(int statusCode, string message) : Exception(messag
 }
 
 public record ClaimLinkDto(string Token, DateTime ExpiresAt);
-public record ClaimTicketDto(string EventTitle, string TicketTypeName, DateTime ExpiresAt, DateTime ServerTime);
+public record ClaimTicketDto(
+    string EventTitle,
+    string TicketTypeName,
+    DateTime ExpiresAt,
+    DateTime ServerTime,
+    string? TicketCode = null,
+    string? QrCodeUrl = null,
+    string? AttendeeName = null,
+    string? Location = null,
+    DateTime? StartTime = null,
+    DateTime? EndTime = null,
+    string? FaceImage = null);
 public record CustomerTicketDto(string OrderCode, int ItemId, string EventTitle, string Location,
     DateTime StartTime, DateTime EndTime, string Gate, string TicketTypeName, decimal Price,
     string TicketCode, string QrCodeUrl, string? AttendeeName, bool HasFaceId, string Status,

@@ -86,9 +86,12 @@ export const customerApi = {
     }, true);
   },
   claim: (token: string, signal?: AbortSignal) => request<ClaimTicket>(`/bookings/claims/${encodeURIComponent(token)}`, { signal }),
-  completeClaim: (token: string, attendee: { name: string; email: string; phone: string }, image: File) => {
-    const body = new FormData(); Object.entries(attendee).forEach(([key, value]) => body.append(key, value));
-    body.append("Image", image); body.append("Consent", "true");
+  completeClaim: (token: string, attendee: { name: string; email: string; phone: string }, image: File | Blob) => {
+    const body = new FormData();
+    Object.entries(attendee).forEach(([key, value]) => body.append(key, value));
+    const fileName = image instanceof File ? image.name : "portrait.jpg";
+    body.append("Image", image, fileName);
+    body.append("Consent", "true");
     return request<ClaimTicket>(`/bookings/claims/${encodeURIComponent(token)}`, { method: "POST", body });
   },
   cancel: (code: string) => request<Booking>(`/bookings/${encodeURIComponent(code)}/cancel`, { method: "POST" }, true),
