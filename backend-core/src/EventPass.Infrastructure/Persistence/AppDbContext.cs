@@ -50,7 +50,7 @@ public class AppDbContext : DbContext
             entity.Property(i => i.AttendeeName).HasMaxLength(100);
             entity.Property(i => i.AttendeeEmail).HasMaxLength(255);
             entity.Property(i => i.AttendeePhone).HasMaxLength(15);
-            entity.Property(i => i.FaceVector).HasColumnType("vector(512)");
+            // entity.Property(i => i.FaceVector).HasColumnType("vector(512)");
             entity.HasOne(i => i.Order).WithMany(o => o.Items).HasForeignKey(i => i.OrderId);
             entity.HasOne(i => i.Ticket).WithMany().HasForeignKey(i => i.TicketId).OnDelete(DeleteBehavior.Restrict);
             entity.HasOne(i => i.TicketDetail).WithMany().HasForeignKey(i => i.TicketDetailId).OnDelete(DeleteBehavior.Restrict);
@@ -58,8 +58,48 @@ public class AppDbContext : DbContext
             entity.HasIndex(i => new { i.TicketId, i.Status });
         });
 
+        if (Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory")
+        {
+            modelBuilder.Entity<OrderItem>()
+                .Property(o => o.FaceVector)
+                .HasConversion(
+                    v => v != null ? v.ToString() : null,
+                    v => v != null ? new Pgvector.Vector(v) : null
+                );
+                
+            modelBuilder.Entity<TicketDetail>()
+                .Property(td => td.FaceVector)
+                .HasConversion(
+                    v => v != null ? v.ToString() : null,
+                    v => v != null ? new Pgvector.Vector(v) : null
+                );
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.FaceVector)
+                .HasConversion(
+                    v => v != null ? v.ToString() : null,
+                    v => v != null ? new Pgvector.Vector(v) : null
+                );
+        }
+        else
+        {
+            modelBuilder.HasPostgresExtension("vector");
+            
+            modelBuilder.Entity<OrderItem>()
+                .Property(i => i.FaceVector)
+                .HasColumnType("vector(512)");
+
+            modelBuilder.Entity<TicketDetail>()
+                .Property(td => td.FaceVector)
+                .HasColumnType("vector(512)");
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.FaceVector)
+                .HasColumnType("vector(512)");
+        }
+
         // Kích hoạt extension pgvector
-        modelBuilder.HasPostgresExtension("vector");
+        // modelBuilder.HasPostgresExtension("vector");
 
         // Global Query Filters to automatically ignore soft-deleted records
         modelBuilder.Entity<User>().HasQueryFilter(e => !e.IsDeleted);
@@ -70,13 +110,13 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Kiosk>().HasQueryFilter(e => !e.IsDeleted);
 
         // Cấu hình cột vector(512)
-        modelBuilder.Entity<TicketDetail>()
-            .Property(td => td.FaceVector)
-            .HasColumnType("vector(512)");
+        // modelBuilder.Entity<TicketDetail>()
+        //     .Property(td => td.FaceVector)
+        //     .HasColumnType("vector(512)");
 
-        modelBuilder.Entity<User>()
-            .Property(u => u.FaceVector)
-            .HasColumnType("vector(512)");
+        // modelBuilder.Entity<User>()
+        //     .Property(u => u.FaceVector)
+        //     .HasColumnType("vector(512)");
 
         // JSON Converter cho ICollection<string> (hỗ trợ null từ DB)
         var stringListConverter = new ValueConverter<ICollection<string>?, string?>(

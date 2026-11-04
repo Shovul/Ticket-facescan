@@ -5,4 +5,9 @@
     <Project Path="src/EventPass.Domain/EventPass.Domain.csproj" />
     <Project Path="src/EventPass.Infrastructure/EventPass.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EventPass.API.Tests/EventPass.API.Tests.csproj" />
+    <Project Path="tests/EventPass.Application.Tests/EventPass.Application.Tests.csproj" />
+    <Project Path="tests/EventPass.Infrastructure.Tests/EventPass.Infrastructure.Tests.csproj" />
+  </Folder>
 </Solution>

@@ -1,11 +1,12 @@
 using EventPass.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EventPass.API.Controllers;
 
 [ApiController]
 [Route("api/admin/attendees")]
-// [Authorize(Roles = "Admin")] // Mở comment khi hệ thống Auth JWT đã sẵn sàng
+[Authorize(Roles = "Admin")]
 public class AttendeesController : ControllerBase
 {
     private readonly IAttendeeService _attendeeService;
