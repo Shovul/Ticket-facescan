@@ -487,3 +487,435 @@
 
 .customer-site .my-tickets-page .res-left-info, .customer-site .my-tickets-page .res-text-block { min-width: 0; }
 .customer-site .my-tickets-page .res-text-block p { overflow-wrap: anywhere; }
+
+
+/* ========================================================
+   UC08: BỔ SUNG / CẬP NHẬT FACE ID (DIGITAL PASS & TICKET)
+   ======================================================== */
+
+.customer-site .my-tickets-page .btn-face-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.customer-site .my-tickets-page .btn-face-action.supplement {
+  background: #ea580c;
+  color: #ffffff;
+  padding: 6px 12px;
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.25);
+}
+
+.customer-site .my-tickets-page .btn-face-action.supplement:hover:not(:disabled) {
+  background: #c2410c;
+  box-shadow: 0 3px 10px rgba(234, 88, 12, 0.35);
+}
+
+.customer-site .my-tickets-page .btn-face-action.update {
+  background: #0284c7;
+  color: #ffffff;
+  padding: 6px 12px;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.2);
+}
+
+.customer-site .my-tickets-page .btn-face-action.update:hover:not(:disabled) {
+  background: #0369a1;
+  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.3);
+}
+
+.customer-site .my-tickets-page .btn-face-action.mini {
+  padding: 5px 10px;
+  font-size: 11px;
+}
+
+.customer-site .my-tickets-page .btn-face-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Avatar Preview Styling */
+.customer-site .my-tickets-page .attendee-face-preview.registered {
+  border-color: #16a34a;
+  background: #f0fdf4;
+  overflow: hidden;
+}
+
+.customer-site .my-tickets-page .attendee-face-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  display: block;
+}
+
+.customer-site .my-tickets-page .face-ready-label {
+  color: #15803d;
+  font-weight: 700;
+}
+
+.customer-site .my-tickets-page .face-missing-label {
+  color: #c2410c;
+  font-weight: 600;
+}
+
+.customer-site .my-tickets-page .pass-face-large.registered {
+  border: 2.5px solid #22c55e;
+}
+
+.customer-site .my-tickets-page .pass-face-large.missing {
+  width: 76px;
+  height: 76px;
+  border-radius: 10px;
+  border: 2px dashed #f97316;
+  background: rgba(249, 115, 22, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f97316;
+  flex-shrink: 0;
+}
+
+/* Modal Ticket Face Enrollment */
+.ticket-face-modal {
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ticket-modal-banner {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.ticket-modal-banner-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #475569;
+}
+
+.ticket-modal-banner-row strong {
+  color: #0f172a;
+}
+
+.face-modal-error-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.face-tab-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.face-tab-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  background: #f1f5f9;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.face-tab-btn.active {
+  background: #0284c7;
+  border-color: #0284c7;
+  color: #ffffff;
+}
+
+.face-media-view-box {
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f172a;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.camera-live-container, .camera-viewport {
+  width: 100%;
+  height: 260px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.camera-video-elem {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.face-oval-guide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.face-oval-inner {
+  width: 150px;
+  height: 190px;
+  border: 2px dashed #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+}
+
+.camera-capture-floating {
+  position: absolute;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-capture-shot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  background: #ea580c;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  transition: background 0.15s ease;
+}
+
+.btn-capture-shot:hover {
+  background: #c2410c;
+}
+
+.camera-error-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+  color: #e2e8f0;
+  font-size: 12.5px;
+}
+
+.captured-preview-box {
+  width: 100%;
+  height: 260px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.face-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.preview-overlay-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(22, 163, 74, 0.9);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-retake-shot {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(15, 23, 42, 0.85);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-retake-shot:hover {
+  background: #0f172a;
+}
+
+.upload-drop-container {
+  width: 100%;
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+}
+
+.upload-drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: calc(100% - 24px);
+  height: calc(100% - 24px);
+  border: 2px dashed #0284c7;
+  border-radius: 8px;
+  background: #f0f9ff;
+  cursor: pointer;
+  padding: 20px;
+  text-align: center;
+  color: #0369a1;
+  transition: all 0.15s ease;
+}
+
+.upload-drop-zone:hover {
+  background: #e0f2fe;
+  border-color: #0369a1;
+}
+
+.upload-drop-zone p {
+  font-size: 12.5px;
+  color: #1e293b;
+  margin: 0;
+}
+
+.upload-drop-zone span {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.face-standards-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 11.5px;
+  color: #1e40af;
+  line-height: 1.4;
+}
+
+.face-consent-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11.5px;
+  color: #475569;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.face-consent-checkbox-label input[type="checkbox"] {
+  margin-top: 2px;
+  accent-color: #0284c7;
+  width: 15px;
+  height: 15px;
+}
+
+.modal-actions-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.btn-face-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  color: #ffffff;
+}
+
+.btn-face-submit.btn-supplement {
+  background: #ea580c;
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25);
+}
+
+.btn-face-submit.btn-supplement:hover:not(:disabled) {
+  background: #c2410c;
+}
+
+.btn-face-submit.btn-update {
+  background: #0284c7;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+}
+
+.btn-face-submit.btn-update:hover:not(:disabled) {
+  background: #0369a1;
+}
+
+.btn-face-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spin-animate {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

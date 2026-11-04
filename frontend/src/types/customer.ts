@@ -22,6 +22,7 @@ export interface CustomerTicket {
   orderCode: string; itemId: number; eventTitle: string; location: string; startTime: string; endTime: string;
   gate: string; ticketTypeName: string; price: number; ticketCode: string; qrCodeUrl: string;
   attendeeName?: string; hasFaceId: boolean; status: string; checkedInAt?: string;
+  ticketId?: number; attendeeFaceUrl?: string;
 }
 export interface CustomerTickets {
   pendingOrders: Booking[]; tickets: CustomerTicket[]; page: number; totalPages: number; totalCount: number;

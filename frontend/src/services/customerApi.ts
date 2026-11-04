@@ -75,6 +75,16 @@ export const customerApi = {
   pass: (code: string, id: number) => request<DigitalPass>(`/bookings/${encodeURIComponent(code)}/items/${id}/pass`, {}, true),
   cancelPart: (code: string, part: "free" | "paid") => request<Booking>(`/bookings/${encodeURIComponent(code)}/cancel/${part}`, { method: "POST" }, true),
   claimLink: (code: string, id: number) => request<ClaimLink>(`/bookings/${encodeURIComponent(code)}/items/${id}/claim-link`, { method: "POST" }, true),
+  updateTicketFace: (ticketIdOrItemId: number, image: File | Blob, consent: boolean = true) => {
+    const body = new FormData();
+    const fileName = image instanceof File ? image.name : "portrait.jpg";
+    body.append("Image", image, fileName);
+    body.append("Consent", String(consent));
+    return request<{ success: boolean; data?: any; message?: string }>(`/tickets/${ticketIdOrItemId}/face`, {
+      method: "PUT",
+      body
+    }, true);
+  },
   claim: (token: string, signal?: AbortSignal) => request<ClaimTicket>(`/bookings/claims/${encodeURIComponent(token)}`, { signal }),
   completeClaim: (token: string, attendee: { name: string; email: string; phone: string }, image: File) => {
     const body = new FormData(); Object.entries(attendee).forEach(([key, value]) => body.append(key, value));
