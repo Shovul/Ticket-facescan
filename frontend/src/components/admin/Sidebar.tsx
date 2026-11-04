@@ -3,10 +3,14 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import '../../styles/admin-sidebar.css';
+import { useNotification } from '../shared/NotificationProvider';
+import { useRouter } from 'next/navigation';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const notify = useNotification();
+  const router = useRouter();
 
   const navItems = [
     { 
@@ -30,6 +34,19 @@ export default function Sidebar() {
       icon: <svg className="w-[18px] h-[18px] shrink-0 stroke-current fill-none stroke-[1.8]" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> 
     },
   ];
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("access_token");
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+    sessionStorage.removeItem("eventpass.activeBooking");
+    sessionStorage.removeItem("eventpass.reservationRequest");
+    window.dispatchEvent(new Event("auth-state-change"));
+    notify("Đã đăng xuất tài khoản.", "info");
+    router.push("/events");
+  }
 
   return (
     <>
@@ -93,7 +110,7 @@ export default function Sidebar() {
             <p className="modal-desc">Bạn có chắc chắn muốn kết thúc phiên làm việc của Quản trị viên?</p>
             <div className="modal-actions">
               <button onClick={() => setShowLogoutModal(false)} className="btn-cancel">Hủy</button>
-              <button className="btn-confirm">Đăng Xuất Ngay</button>
+              <button className="btn-confirm" onClick={handleLogout()}>Đăng Xuất Ngay</button>
             </div>
           </div>
         </div>
