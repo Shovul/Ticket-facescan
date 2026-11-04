@@ -5,6 +5,7 @@ import { KioskEventInfo, CheckinResult } from "../../types/kiosk";
 import { useWebcam } from "../../hooks/useWebcam";
 import { useKioskAudio } from "../../hooks/useKioskAudio";
 import { useKioskSignalR } from "../../hooks/useKioskSignalR";
+import { useQrScanner } from "../../hooks/useQrScanner";
 import {
   saveOfflineTickets,
   getOfflineTicket,
@@ -26,7 +27,9 @@ import {
   KioskDemoBar,
 } from "../../components/kiosk";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5162";
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000")
+  .replace(/\/$/, "")
+  .replace(/\/api\/v1$/, "");
 import "../../styles/kiosk.css";
 
 export default function KioskPage() {
@@ -93,10 +96,17 @@ export default function KioskPage() {
     }
   }, [eventId, kioskSecretKey]);
 
-  // 3. Xử lý SignalR Realtime
-  const handleCheckinUpdate = useCallback((data: CheckinResult) => {
+  // 3. Xử lý SignalR Realtime (Đồng bộ chéo IndexedDB giữa các trạm Kiosk)
+  const handleCheckinUpdate = useCallback(async (data: CheckinResult) => {
     if (data.success) {
       setCheckedInCount((prev) => prev + 1);
+      if (data.ticketCode) {
+        try {
+          await markTicketCheckedInLocally(data.ticketCode, data.checkedInAt || new Date().toISOString());
+        } catch (e) {
+          console.warn("Lỗi đồng bộ IndexedDB từ SignalR:", e);
+        }
+      }
     }
   }, []);
 
@@ -159,11 +169,15 @@ export default function KioskPage() {
     };
   }, [syncPendingLogs]);
 
-  // 5. Hiển thị kết quả điểm danh
+  // 5. Hiển thị kết quả điểm danh & Đồng bộ IndexedDB tại chỗ
   const triggerResultDisplay = useCallback((result: CheckinResult) => {
     setCheckinResult(result);
     if (result.success) {
       playSound("success");
+      if (result.ticketCode) {
+        markTicketCheckedInLocally(result.ticketCode, result.checkedInAt || new Date().toISOString())
+          .catch((err) => console.warn("Lỗi cập nhật vé vào IndexedDB:", err));
+      }
     } else {
       playSound("error");
     }
@@ -221,7 +235,106 @@ export default function KioskPage() {
     }
   };
 
-  // 7. Check-in Face ID từ Webcam
+  // 7. Check-in Cứu hộ bằng Mã vé / QR (Hỗ trợ Online & Offline)
+  const handleCheckinByCode = useCallback(async (code: string) => {
+    if (!code || isProcessing) return;
+    setShowQrModal(false);
+
+    if (isOnline) {
+      setIsProcessing(true);
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/v1/kiosk/checkin-code`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Kiosk-Secret-Key": kioskSecretKey,
+          },
+          body: JSON.stringify({
+            eventId,
+            ticketCode: code,
+            kioskName,
+          }),
+        });
+
+        const result: CheckinResult = await res.json();
+        triggerResultDisplay(result);
+        return;
+      } catch (err) {
+        console.warn("Mạng gặp sự cố khi gọi checkin-code, chuyển sang offline cache...", err);
+      } finally {
+        setIsProcessing(false);
+      }
+    }
+
+    // Trường hợp Offline (Đối soát tức thì qua IndexedDB < 10ms)
+    try {
+      const localTicket = await getOfflineTicket(code);
+      const nowIso = new Date().toISOString();
+
+      if (!localTicket) {
+        triggerResultDisplay({
+          success: false,
+          statusCode: "NOT_FOUND",
+          message: `Mã vé '${code}' không tồn tại trong danh sách sự kiện (Đối soát ngoại tuyến).`,
+          borderColor: "#EF4444",
+          ticketCode: code,
+        });
+        return;
+      }
+
+      if (localTicket.status === 1) {
+        triggerResultDisplay({
+          success: false,
+          statusCode: "DUPLICATE",
+          message: `Cảnh báo vé trùng lặp: Vé '${localTicket.ticketCode}' đã check-in vào lúc ${localTicket.checkedInAt || "trước đó"}!`,
+          borderColor: "#EF4444",
+          ticketCode: localTicket.ticketCode,
+          attendeeName: localTicket.attendeeName,
+          ticketTypeName: localTicket.ticketTypeName,
+        });
+        return;
+      }
+
+      await markTicketCheckedInLocally(code, nowIso);
+      await addOfflineLog({
+        ticketCode: code,
+        capturedAt: nowIso,
+        checkinMethod: "QR_CODE_OFFLINE",
+        notes: "Điểm danh ngoại tuyến tại trạm Kiosk qua Camera QR",
+      });
+
+      setCheckedInCount((prev) => prev + 1);
+      triggerResultDisplay({
+        success: true,
+        statusCode: "SUCCESS",
+        message: `[OFFLINE] Điểm danh thành công! Chào mừng ${localTicket.attendeeName}.`,
+        borderColor: "#22C55E",
+        ticketCode: localTicket.ticketCode,
+        attendeeName: localTicket.attendeeName,
+        ticketTypeName: localTicket.ticketTypeName,
+        checkedInAt: nowIso,
+        totalLatencyMs: 6.8,
+      });
+    } catch (offlineErr) {
+      console.error("Lỗi khi đối soát ngoại tuyến IndexedDB:", offlineErr);
+    }
+  }, [isProcessing, isOnline, kioskSecretKey, eventId, kioskName, triggerResultDisplay]);
+
+  // 8. Tự động nhận diện & Quét mã QR trực tiếp qua Camera Kiosk
+  // Luôn hoạt động khi trạm đã mở khóa và camera sẵn sàng (chạy nền siêu nhẹ < 10ms CPU)
+  const isQrScannerActive = !isLocked && isCameraReady && !isProcessing && !checkinResult;
+
+  useQrScanner({
+    videoRef,
+    enabled: isQrScannerActive,
+    onCodeScanned: (scannedCode) => {
+      console.log("📷 [AUTO QR SCANNER] Nhận diện mã vé từ Camera:", scannedCode);
+      handleCheckinByCode(scannedCode);
+    },
+    scanIntervalMs: 250,
+  });
+
+  // 9. Check-in Face ID từ Webcam
   const handleCaptureFace = async () => {
     if (isProcessing) return;
     setIsProcessing(true);
@@ -272,81 +385,13 @@ export default function KioskPage() {
     }
   };
 
-  // 8. Check-in Cứu hộ bằng Mã vé / QR
-  const handleCheckinByCode = async (code: string) => {
-    setShowQrModal(false);
-
-    if (isOnline) {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/v1/kiosk/checkin-code`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Kiosk-Secret-Key": kioskSecretKey,
-          },
-          body: JSON.stringify({
-            eventId,
-            ticketCode: code,
-            kioskName,
-          }),
-        });
-
-        const result: CheckinResult = await res.json();
-        triggerResultDisplay(result);
-        return;
-      } catch (err) {
-        console.warn("Mạng gặp sự cố khi gọi checkin-code, chuyển sang offline cache...", err);
-      }
+  const handleToggleOnline = async () => {
+    const nextState = !isOnline;
+    setIsOnline(nextState);
+    if (nextState) {
+      console.log("🌐 Đã kết nối lại mạng — Bắt đầu đồng bộ danh sách log ngoại tuyến...");
+      await syncPendingLogs();
     }
-
-    // Trường hợp Offline
-    const localTicket = await getOfflineTicket(code);
-    const nowIso = new Date().toISOString();
-
-    if (!localTicket) {
-      triggerResultDisplay({
-        success: false,
-        statusCode: "NOT_FOUND",
-        message: "Mã vé không tồn tại trong danh sách sự kiện (Đối soát ngoại tuyến).",
-        borderColor: "#EF4444",
-        ticketCode: code,
-      });
-      return;
-    }
-
-    if (localTicket.status === 1) {
-      triggerResultDisplay({
-        success: false,
-        statusCode: "DUPLICATE",
-        message: `Cảnh báo vé trùng lặp: Vé đã check-in vào lúc ${localTicket.checkedInAt || "trước đó"}!`,
-        borderColor: "#EF4444",
-        ticketCode: localTicket.ticketCode,
-        attendeeName: localTicket.attendeeName,
-        ticketTypeName: localTicket.ticketTypeName,
-      });
-      return;
-    }
-
-    await markTicketCheckedInLocally(code, nowIso);
-    await addOfflineLog({
-      ticketCode: code,
-      capturedAt: nowIso,
-      checkinMethod: "QR_CODE_OFFLINE",
-      notes: "Điểm danh ngoại tuyến tại trạm Kiosk mất mạng",
-    });
-
-    setCheckedInCount((prev) => prev + 1);
-    triggerResultDisplay({
-      success: true,
-      statusCode: "SUCCESS",
-      message: `[OFFLINE] Điểm danh thành công! Chào mừng ${localTicket.attendeeName}.`,
-      borderColor: "#22C55E",
-      ticketCode: localTicket.ticketCode,
-      attendeeName: localTicket.attendeeName,
-      ticketTypeName: localTicket.ticketTypeName,
-      checkedInAt: nowIso,
-      totalLatencyMs: 8.5,
-    });
   };
 
   const handleToggleFullScreen = () => {
@@ -396,6 +441,8 @@ export default function KioskPage() {
           isCameraReady={isCameraReady}
           checkinResult={checkinResult}
           onOpenQrModal={() => setShowQrModal(true)}
+          isOnline={isOnline}
+          isQrScanningActive={!isOnline}
         />
 
         {/* CỘT PHẢI: HIỂN THỊ KẾT QUẢ CHÀO MỪNG HOẶC CHỜ */}
@@ -421,7 +468,7 @@ export default function KioskPage() {
         isOnline={isOnline}
         onCaptureFace={handleCaptureFace}
         onTestVipCode={() => handleCheckinByCode("TK-SGU-VIP-8888")}
-        onToggleOnline={() => setIsOnline(!isOnline)}
+        onToggleOnline={handleToggleOnline}
       />
 
       {/* 6. MODAL CỨU HỘ QUÉT MÃ QR */}

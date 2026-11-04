@@ -21,5 +21,6 @@ public interface IBookingRepository
     void AddOrder(Order order);
     void AddTicket(TicketDetail ticket);
     Task SaveAsync(CancellationToken ct);
+    Task<List<string>> GetExpiredFacePhotoUrlsAsync(DateTime cutoff, CancellationToken ct);
     Task DeleteExpiredPhotosAsync(DateTime now, CancellationToken ct);
 }

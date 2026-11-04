@@ -1,21 +1,6 @@
-# FROM node:20-alpine
-# WORKDIR /app
-
-# # Copy file quản lý thư viện và cài đặt
-# COPY package*.json ./
-# RUN npm install
-
-# # Copy toàn bộ mã nguồn
-# COPY . .
-
-# EXPOSE 3000
-# # Chạy Next.js ở chế độ development
-# CMD ["npm", "run", "dev"]
-
 # --- STAGE 1: Base image for installation and caching ---
 FROM node:20-alpine AS base
 WORKDIR /app
-# Check https://github.com to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 
 # --- STAGE 2: Dependencies installer ---
@@ -33,9 +18,14 @@ RUN \
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
 # Environment variables must be present during build time for Next.js to embed them
-# ARG NEXT_PUBLIC_API_URL
-# ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_SIGNALR_URL
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_SIGNALR_URL=$NEXT_PUBLIC_SIGNALR_URL
+ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
 
 RUN \
   if [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
@@ -58,7 +48,6 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 
 # Automatically leverage output traces to reduce image size
-# https://nextjs.org
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 

@@ -60,10 +60,23 @@ public class BookingRepository(AppDbContext db) : IBookingRepository
     public void AddOrder(Order order) => db.Orders.Add(order);
     public void AddTicket(TicketDetail ticket) => db.TicketDetails.Add(ticket);
     public Task SaveAsync(CancellationToken ct) => db.SaveChangesAsync(ct);
+
+    public async Task<List<string>> GetExpiredFacePhotoUrlsAsync(DateTime cutoff, CancellationToken ct)
+    {
+        return await db.TicketDetails.IgnoreQueryFilters()
+            .Where(t => t.AttendeeFaceData != null && t.AttendeeFaceData.StartsWith("http") && t.Event.EndTime < cutoff)
+            .Select(t => t.AttendeeFaceData!)
+            .ToListAsync(ct);
+    }
+
     public async Task DeleteExpiredPhotosAsync(DateTime now, CancellationToken ct)
     {
-        await db.OrderItems.IgnoreQueryFilters().Where(i => i.ProtectedFaceImage != null && i.Order.Event.EndTime < now.AddDays(-30))
+        var cutoff = now.AddDays(-30);
+        await db.OrderItems.IgnoreQueryFilters().Where(i => i.ProtectedFaceImage != null && i.Order.Event.EndTime < cutoff)
             .ExecuteUpdateAsync(setters => setters.SetProperty(i => i.ProtectedFaceImage, (byte[]?)null)
                 .SetProperty(i => i.FaceImageContentType, (string?)null), ct);
+
+        await db.TicketDetails.IgnoreQueryFilters().Where(t => t.AttendeeFaceData != null && t.Event.EndTime < cutoff)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.AttendeeFaceData, (string?)null), ct);
     }
 }

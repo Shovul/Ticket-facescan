@@ -1,7 +1,7 @@
 import base64
 import io
 import re
-from typing import Tuple
+from typing import Tuple, Optional
 import numpy as np
 from PIL import Image
 from app.core.config import settings
@@ -73,25 +73,30 @@ def base64_to_cv2(base64_string: str, max_dim: int = 800) -> np.ndarray:
         raise ValueError(f"Invalid Base64 image payload: {str(e)}")
 
 
-def check_image_blur(cv2_image: np.ndarray) -> Tuple[bool, float]:
+def check_image_blur(cv2_image: np.ndarray, threshold: Optional[float] = None) -> Tuple[bool, float]:
     """
-    Estimate image blurriness using the Variance of the Laplacian method.
+    Estimate image blurriness using the Variance of the Laplacian method (ISO/IEC 29794-5 FIQA).
     Returns (is_blurry: bool, score: float).
-    Lower scores mean more blurry. Scores > 45 are typically acceptable for Face ID.
+    Lower scores mean more blurry.
     """
     if cv2_image is None or cv2_image.size == 0:
         return True, 0.0
 
+    limit = threshold if threshold is not None else settings.BLUR_LAPLACIAN_THRESHOLD
     if cv2 is not None:
         gray = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2GRAY)
         laplacian_var = float(cv2.Laplacian(gray, cv2.CV_64F).var())
-        is_blurry = laplacian_var < settings.BLUR_LAPLACIAN_THRESHOLD
+        is_blurry = laplacian_var < limit
         return is_blurry, round(laplacian_var, 2)
 
     return False, 100.0
 
 
-def check_image_brightness(cv2_image: np.ndarray) -> Tuple[bool, bool, float]:
+def check_image_brightness(
+    cv2_image: np.ndarray,
+    min_b: Optional[float] = None,
+    max_b: Optional[float] = None
+) -> Tuple[bool, bool, float]:
     """
     Estimate image illumination / lighting condition.
     Returns (is_too_dark: bool, is_too_bright: bool, brightness_score: float).
@@ -100,11 +105,14 @@ def check_image_brightness(cv2_image: np.ndarray) -> Tuple[bool, bool, float]:
     if cv2_image is None or cv2_image.size == 0:
         return True, False, 0.0
 
+    min_limit = min_b if min_b is not None else settings.MIN_BRIGHTNESS
+    max_limit = max_b if max_b is not None else settings.MAX_BRIGHTNESS
+
     if cv2 is not None:
         gray = cv2.cvtColor(cv2_image, cv2.COLOR_BGR2GRAY)
         mean_val = float(np.mean(gray))
-        is_too_dark = mean_val < settings.MIN_BRIGHTNESS
-        is_too_bright = mean_val > settings.MAX_BRIGHTNESS
+        is_too_dark = mean_val < min_limit
+        is_too_bright = mean_val > max_limit
         return is_too_dark, is_too_bright, round(mean_val, 2)
 
     return False, False, 128.0

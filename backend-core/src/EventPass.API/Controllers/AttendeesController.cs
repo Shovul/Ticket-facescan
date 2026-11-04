@@ -1,11 +1,14 @@
 using EventPass.Application.Interfaces;
+using EventPass.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EventPass.API.Controllers;
 
 [ApiController]
 [Route("api/admin/attendees")]
-// [Authorize(Roles = "Admin")] // Mở comment khi hệ thống Auth JWT đã sẵn sàng
+[Authorize(Roles = "Admin")]
 public class AttendeesController : ControllerBase
 {
     private readonly IAttendeeService _attendeeService;
@@ -61,7 +64,7 @@ public class AttendeesController : ControllerBase
         return Ok(new { Message = "Điểm danh thủ công thành công." });
     }
 
-    // 3. Khóa / Mở khóa vé khẩn cấp (Toggle між Valid và Cancelled)
+    // 3. Khóa / Mở khóa vé khẩn cấp (Toggle giữa Valid và Cancelled)
     [HttpPost("{id}/toggle-lock")]
     public async Task<IActionResult> ToggleLock(int id)
     {
@@ -88,5 +91,32 @@ public class AttendeesController : ControllerBase
         var fileName = $"Danh_sach_tham_du_Event_{eventId}_{DateTime.Now:yyyy-MM-dd}.csv";
 
         return File(fileBytes, "text/csv; charset=utf-8", fileName);
+    }
+
+    // 5. Xem ảnh chân dung đối soát trực quan (từ Dropbox hoặc giải mã bảo vệ) - Phục vụ UC12
+    [HttpGet("{id}/face-image")]
+    public async Task<IActionResult> GetFaceImage(
+        int id,
+        [FromServices] AppDbContext db,
+        [FromServices] IBookingFaceImageProtector protector)
+    {
+        var ticket = await db.TicketDetails.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
+        if (ticket == null)
+            return NotFound(new { Message = "Không tìm thấy thông tin vé." });
+
+        if (!string.IsNullOrEmpty(ticket.AttendeeFaceData) && ticket.AttendeeFaceData.StartsWith("http"))
+        {
+            return Redirect(ticket.AttendeeFaceData);
+        }
+
+        var item = await db.OrderItems.AsNoTracking().FirstOrDefaultAsync(i => i.TicketDetailId == id && i.ProtectedFaceImage != null);
+        if (item?.ProtectedFaceImage != null)
+        {
+            var raw = protector.Unprotect(item.ProtectedFaceImage);
+            var ct = item.FaceImageContentType?.Split('|')[0] ?? "image/jpeg";
+            return File(raw, ct);
+        }
+
+        return NotFound(new { Message = "Ảnh chân dung đã bị xóa vĩnh viễn theo chính sách 30 ngày (NFR12) hoặc chưa nạp ảnh." });
     }
 }

@@ -29,6 +29,7 @@ public class AiServiceClient : IAiServiceClient
         string fileName, 
         bool enforceDetection = true, 
         bool antiSpoofing = true, 
+        bool isEnrollment = false,
         CancellationToken cancellationToken = default)
     {
         try
@@ -46,6 +47,8 @@ public class AiServiceClient : IAiServiceClient
 
             formData.Add(new StringContent(enforceDetection ? "true" : "false"), "enforce_detection");
             formData.Add(new StringContent(antiSpoofing ? "true" : "false"), "anti_spoofing");
+            formData.Add(new StringContent(isEnrollment ? "true" : "false"), "is_enrollment");
+            formData.Add(new StringContent(isEnrollment ? "enrollment" : "kiosk"), "mode");
 
             using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/face/extract");
             request.Headers.Add("X-API-Key", _apiKey);
@@ -59,7 +62,22 @@ public class AiServiceClient : IAiServiceClient
                 PropertyNameCaseInsensitive = true
             };
 
-            var result = JsonSerializer.Deserialize<AiFaceExtractionResult>(json, options);
+            AiFaceExtractionResult? result = null;
+            try
+            {
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+                if (root.TryGetProperty("detail", out var detailElem) && detailElem.ValueKind == JsonValueKind.Object)
+                {
+                    root = detailElem;
+                }
+                result = JsonSerializer.Deserialize<AiFaceExtractionResult>(root.GetRawText(), options);
+            }
+            catch
+            {
+                result = JsonSerializer.Deserialize<AiFaceExtractionResult>(json, options);
+            }
+
             if (result == null)
             {
                 return new AiFaceExtractionResult
@@ -67,6 +85,35 @@ public class AiServiceClient : IAiServiceClient
                     Success = false,
                     ErrorCode = "AI_DESERIALIZATION_FAILED",
                     ErrorMessage = "Không thể đọc dữ liệu phản hồi từ AI Service."
+                };
+            }
+
+            // Đồng bộ fallback cho các thuộc tính
+            if (string.IsNullOrEmpty(result.ErrorMessage) && !string.IsNullOrEmpty(result.Message))
+            {
+                result.ErrorMessage = result.Message;
+            }
+
+            if (result.Liveness == null && result.IsReal.HasValue)
+            {
+                result.Liveness = new LivenessInfo
+                {
+                    IsReal = result.IsReal.Value,
+                    Score = result.FaceConfidence,
+                    Status = result.IsReal.Value ? "REAL" : "SPOOF"
+                };
+            }
+
+            if (result.Fiqa == null)
+            {
+                result.Fiqa = new FiqaInfo
+                {
+                    IsBlurry = result.IsBlurry,
+                    BlurScore = result.BlurScore,
+                    IsTooDark = result.IsTooDark,
+                    IsTooBright = result.IsTooBright,
+                    BrightnessScore = result.BrightnessScore,
+                    IsTooSmall = result.IsTooSmall
                 };
             }
 

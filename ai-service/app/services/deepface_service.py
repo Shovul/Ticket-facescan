@@ -12,13 +12,17 @@ except ImportError:
 try:
     from deepface import DeepFace
     try:
-        from deepface.modules.exceptions import SpoofDetected
+        from deepface.modules.exceptions import SpoofDetected, FaceNotDetected
     except ImportError:
         class SpoofDetected(Exception):
+            pass
+        class FaceNotDetected(Exception):
             pass
 except ImportError:
     DeepFace = None
     class SpoofDetected(Exception):
+        pass
+    class FaceNotDetected(Exception):
         pass
 
 from app.core.config import settings
@@ -75,24 +79,56 @@ class DeepFaceService:
         self,
         cv2_image: np.ndarray,
         enforce_detection: bool = True,
-        anti_spoofing: bool = False
+        anti_spoofing: bool = False,
+        is_enrollment: bool = False,
+        mode: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Trích xuất vector 512 chiều từ khung hình khuôn mặt.
-        Tối ưu đa luồng (Multi-threading): Chạy song song Facenet512 và MiniFASNet Anti-spoofing
-        giúp giảm thời gian xử lý từ 2.5s xuống chỉ còn ~350-400ms trên CPU.
+        Trích xuất vector 512 chiều từ khung hình khuôn mặt theo chuẩn khoa học:
+        - Enrollment Mode (is_enrollment=True hoặc mode='enrollment'):
+          + Kiểm tra ánh sáng khắt khe (40.0 <= brightness <= 220.0) -> Nếu vi phạm chặn ngay với POOR_LIGHTING.
+          + Kiểm tra độ nét khắt khe (Laplacian variance >= 60.0 theo chuẩn ICAO Doc 9303 & ISO/IEC 29794-5) -> Nếu < 60.0 chặn ngay với POOR_QUALITY.
+          + Chặn tuyệt đối nếu khung hình có >= 2 khuôn mặt (MULTIPLE_FACES_DETECTED), không tự ý chọn mặt đại diện để tránh nạp sai người chính chủ.
+          + Yêu cầu kích thước khuôn mặt >= 100x100px (FACE_TOO_SMALL).
+        - Kiosk Mode (is_enrollment=False hoặc mode='kiosk'):
+          + Độ nét linh hoạt (Laplacian variance >= 35.0) để bù trừ rung lắc khi người đi bộ tới gần quầy.
+          + Cơ chế Primary Face Selection: Khi phát hiện >= 2 khuôn mặt, tự động chọn khuôn mặt có bounding box lớn nhất (người đứng sát kiosk),
+            bỏ qua đám đông qua lại ở hậu cảnh, đảm bảo luồng check-in không bị tắc nghẽn.
+          + Tối ưu đa luồng chạy song song Facenet512 và Anti-spoofing < 300ms.
         """
         start_time = time.time()
         
-        # 1. Kiểm tra chất lượng ảnh FIQA (Độ nét & Ánh sáng)
-        is_blurry, blur_score = check_image_blur(cv2_image)
-        is_too_dark, is_too_bright, brightness_score = check_image_brightness(cv2_image)
+        # 0. Xác định chế độ hoạt động
+        enrollment_mode = bool(is_enrollment or (mode and mode.lower() == "enrollment"))
+        active_mode = "enrollment" if enrollment_mode else "kiosk"
+
+        # Thiết lập ngưỡng phân định
+        if enrollment_mode:
+            blur_threshold = settings.ENROLL_BLUR_THRESHOLD
+            min_face_w = settings.ENROLL_MIN_FACE_WIDTH
+            min_face_h = settings.ENROLL_MIN_FACE_HEIGHT
+            min_brightness = settings.ENROLL_MIN_BRIGHTNESS
+            max_brightness = settings.ENROLL_MAX_BRIGHTNESS
+        else:
+            blur_threshold = settings.KIOSK_BLUR_THRESHOLD
+            min_face_w = settings.KIOSK_MIN_FACE_WIDTH
+            min_face_h = settings.KIOSK_MIN_FACE_HEIGHT
+            min_brightness = settings.KIOSK_MIN_BRIGHTNESS
+            max_brightness = settings.KIOSK_MAX_BRIGHTNESS
+
+        # 1. BƯỚC 1: KIỂM TRA ĐỘ SÁNG (FIQA Illumination Check)
+        is_too_dark, is_too_bright, brightness_score = check_image_brightness(
+            cv2_image, min_b=min_brightness, max_b=max_brightness
+        )
+
+        # 2. BƯỚC 2: KIỂM TRA ĐỘ NÉT (FIQA Blur Check - Variance of Laplacian)
+        is_blurry, blur_score = check_image_blur(cv2_image, threshold=blur_threshold)
 
         if DeepFace is None:
             return {
                 "success": False,
                 "error_code": "DEPENDENCY_MISSING",
-                "message": "Thư viện 'deepface' chưa được cài đặt. Vui lòng chạy lệnh: pip install -r requirements.txt",
+                "message": "Thư viện 'deepface' chưa được cài đặt. Vui lòng cài đặt requirements.txt",
                 "embedding": None,
                 "dimension": 0,
                 "is_blurry": is_blurry,
@@ -100,13 +136,86 @@ class DeepFaceService:
                 "is_too_dark": is_too_dark,
                 "is_too_bright": is_too_bright,
                 "brightness_score": brightness_score,
-                "execution_time_ms": 0.0
+                "execution_time_ms": round((time.time() - start_time) * 1000, 2),
+                "mode": active_mode
             }
 
-        # 2. Xử lý đa luồng nếu bật Anti-Spoofing
+        # NẾU Ở CHẾ ĐỘ ENROLLMENT: Thẩm định chất lượng quang học (Ánh sáng -> Độ nét) trước khi chạy AI nặng
+        if enrollment_mode:
+            if is_too_dark:
+                duration_ms = round((time.time() - start_time) * 1000, 2)
+                return {
+                    "success": False,
+                    "error_code": "POOR_LIGHTING",
+                    "message": f"Ảnh quá tối (độ sáng: {brightness_score:.1f} < {min_brightness:.1f}). Vui lòng chụp ở khu vực có đủ ánh sáng.",
+                    "embedding": None,
+                    "dimension": 0,
+                    "face_detected": False,
+                    "is_blurry": is_blurry,
+                    "blur_score": blur_score,
+                    "is_too_dark": True,
+                    "is_too_bright": False,
+                    "brightness_score": brightness_score,
+                    "execution_time_ms": duration_ms,
+                    "mode": active_mode
+                }
+            if is_too_bright:
+                duration_ms = round((time.time() - start_time) * 1000, 2)
+                return {
+                    "success": False,
+                    "error_code": "POOR_LIGHTING",
+                    "message": f"Ảnh bị chói lóa hoặc lóa đèn (độ sáng: {brightness_score:.1f} > {max_brightness:.1f}). Vui lòng chụp lại không bị chói.",
+                    "embedding": None,
+                    "dimension": 0,
+                    "face_detected": False,
+                    "is_blurry": is_blurry,
+                    "blur_score": blur_score,
+                    "is_too_dark": False,
+                    "is_too_bright": True,
+                    "brightness_score": brightness_score,
+                    "execution_time_ms": duration_ms,
+                    "mode": active_mode
+                }
+            if is_blurry:
+                duration_ms = round((time.time() - start_time) * 1000, 2)
+                return {
+                    "success": False,
+                    "error_code": "POOR_QUALITY",
+                    "message": f"Ảnh bị mờ hoặc rung lắc (độ nét: {blur_score:.1f}/{blur_threshold:.1f}). Vui lòng chụp lại ảnh rõ nét hơn.",
+                    "embedding": None,
+                    "dimension": 0,
+                    "face_detected": False,
+                    "is_blurry": True,
+                    "blur_score": blur_score,
+                    "is_too_dark": is_too_dark,
+                    "is_too_bright": is_too_bright,
+                    "brightness_score": brightness_score,
+                    "execution_time_ms": duration_ms,
+                    "mode": active_mode
+                }
+        else:
+            # Ở chế độ Kiosk: nếu khung hình bị mờ nghiêm trọng (< 35.0), chặn ngay
+            if is_blurry:
+                duration_ms = round((time.time() - start_time) * 1000, 2)
+                return {
+                    "success": False,
+                    "error_code": "POOR_QUALITY",
+                    "message": f"Khung hình bị mờ hoặc chuyển động quá nhanh (độ nét: {blur_score:.1f}/{blur_threshold:.1f}). Vui lòng đứng yên trước camera.",
+                    "embedding": None,
+                    "dimension": 0,
+                    "face_detected": False,
+                    "is_blurry": True,
+                    "blur_score": blur_score,
+                    "is_too_dark": is_too_dark,
+                    "is_too_bright": is_too_bright,
+                    "brightness_score": brightness_score,
+                    "execution_time_ms": duration_ms,
+                    "mode": active_mode
+                }
+
+        # 3. BƯỚC 3 & 4: PHÁT HIỆN KHUÔN MẶT, CHỐNG GIẢ MẠO & TRÍCH XUẤT ĐẶC TRƯNG
         try:
             if anti_spoofing:
-                # Chạy song song 2 luồng: Luồng 1 trích xuất Facenet512, Luồng 2 kiểm tra MiniFASNet
                 def _task_represent():
                     return DeepFace.represent(
                         img_path=cv2_image,
@@ -130,12 +239,10 @@ class DeepFaceService:
                     fut_rep = executor.submit(_task_represent)
                     fut_spf = executor.submit(_task_spoof)
 
-                    # Đợi kết quả kiểm tra liveness trước
                     spoof_faces = fut_spf.result()
                     results = fut_rep.result()
 
             else:
-                # Không kiểm tra liveness: Chạy trực tiếp Facenet512
                 results = DeepFace.represent(
                     img_path=cv2_image,
                     model_name=self.model_name,
@@ -157,24 +264,16 @@ class DeepFaceService:
                 "is_real": False,
                 "is_blurry": is_blurry,
                 "blur_score": blur_score,
-                "execution_time_ms": duration_ms
+                "is_too_dark": is_too_dark,
+                "is_too_bright": is_too_bright,
+                "brightness_score": brightness_score,
+                "execution_time_ms": duration_ms,
+                "mode": active_mode
             }
-        except ValueError:
+        except (ValueError, Exception) as e:
             duration_ms = round((time.time() - start_time) * 1000, 2)
-            return {
-                "success": False,
-                "error_code": "NO_FACE_DETECTED",
-                "message": "Không tìm thấy khuôn mặt hợp lệ trong khung hình. Vui lòng hướng thẳng mặt vào camera.",
-                "embedding": None,
-                "dimension": 0,
-                "is_blurry": is_blurry,
-                "blur_score": blur_score,
-                "execution_time_ms": duration_ms
-            }
-        except Exception as e:
-            # Kiểm tra nếu exception chứa SpoofDetected bên trong future
-            if "SpoofDetected" in str(type(e)) or "SpoofDetected" in str(e):
-                duration_ms = round((time.time() - start_time) * 1000, 2)
+            err_str = str(e)
+            if "SpoofDetected" in str(type(e)) or "SpoofDetected" in err_str:
                 return {
                     "success": False,
                     "error_code": "SPOOF_DETECTED",
@@ -185,21 +284,40 @@ class DeepFaceService:
                     "is_real": False,
                     "is_blurry": is_blurry,
                     "blur_score": blur_score,
-                    "execution_time_ms": duration_ms
+                    "is_too_dark": is_too_dark,
+                    "is_too_bright": is_too_bright,
+                    "brightness_score": brightness_score,
+                    "execution_time_ms": duration_ms,
+                    "mode": active_mode
                 }
-            duration_ms = round((time.time() - start_time) * 1000, 2)
+            if "Face could not be detected" in err_str or "FaceNotDetected" in str(type(e)) or isinstance(e, ValueError):
+                return {
+                    "success": False,
+                    "error_code": "NO_FACE_DETECTED",
+                    "message": "Không tìm thấy khuôn mặt hợp lệ trong khung hình. Vui lòng hướng thẳng mặt vào camera.",
+                    "embedding": None,
+                    "dimension": 0,
+                    "face_detected": False,
+                    "is_blurry": is_blurry,
+                    "blur_score": blur_score,
+                    "is_too_dark": is_too_dark,
+                    "is_too_bright": is_too_bright,
+                    "brightness_score": brightness_score,
+                    "execution_time_ms": duration_ms,
+                    "mode": active_mode
+                }
             return {
                 "success": False,
                 "error_code": "EXTRACTION_FAILED",
-                "message": f"Lỗi xử lý trích xuất khuôn mặt: {str(e)}",
+                "message": f"Lỗi xử lý trích xuất khuôn mặt: {err_str}",
                 "embedding": None,
                 "dimension": 0,
                 "is_blurry": is_blurry,
                 "blur_score": blur_score,
-                "execution_time_ms": duration_ms
+                "execution_time_ms": duration_ms,
+                "mode": active_mode
             }
 
-        # 3. Kiểm tra danh sách kết quả
         if not results:
             duration_ms = round((time.time() - start_time) * 1000, 2)
             return {
@@ -208,23 +326,71 @@ class DeepFaceService:
                 "message": "Không phát hiện được khuôn mặt trong khung hình.",
                 "embedding": None,
                 "dimension": 0,
+                "face_detected": False,
                 "is_blurry": is_blurry,
                 "blur_score": blur_score,
-                "execution_time_ms": duration_ms
+                "execution_time_ms": duration_ms,
+                "mode": active_mode
             }
 
-        multiple_faces = len(results) > 1
-        primary_face = max(results, key=lambda x: x.get("facial_area", {}).get("w", 0) * x.get("facial_area", {}).get("h", 0))
-        embedding = primary_face.get("embedding", [])
+        faces_count = len(results)
+
+        # 4. BƯỚC 5: KIỂM SOÁT SỐ LƯỢNG MẶT THEO CHẾ ĐỘ
+        if enrollment_mode and faces_count > 1:
+            duration_ms = round((time.time() - start_time) * 1000, 2)
+            return {
+                "success": False,
+                "error_code": "MULTIPLE_FACES_DETECTED",
+                "message": f"Phát hiện {faces_count} người trong khung hình. Vui lòng chỉ chụp duy nhất 1 người chính chủ.",
+                "embedding": None,
+                "dimension": 0,
+                "face_detected": True,
+                "multiple_faces_detected": True,
+                "total_faces_count": faces_count,
+                "is_blurry": is_blurry,
+                "blur_score": blur_score,
+                "is_too_dark": is_too_dark,
+                "is_too_bright": is_too_bright,
+                "brightness_score": brightness_score,
+                "execution_time_ms": duration_ms,
+                "mode": active_mode
+            }
+
+        # Nếu ở Kiosk mode hoặc chỉ có 1 mặt:
+        # Áp dụng cơ chế Primary Face Selection: chọn khuôn mặt có bounding box lớn nhất (người đứng sát camera quầy)
+        primary_face = max(
+            results,
+            key=lambda x: x.get("facial_area", {}).get("w", 0) * x.get("facial_area", {}).get("h", 0)
+        )
         facial_area = primary_face.get("facial_area", {})
+        embedding = primary_face.get("embedding", [])
         face_confidence = primary_face.get("face_confidence", 1.0)
 
         face_w = facial_area.get("w", 0)
         face_h = facial_area.get("h", 0)
-        is_too_small = face_w < settings.MIN_FACE_WIDTH or face_h < settings.MIN_FACE_HEIGHT
+        is_too_small = face_w < min_face_w or face_h < min_face_h
+
+        # 5. BƯỚC 6: KIỂM TRA KÍCH THƯỚC KHUÔN MẶT
+        if is_too_small:
+            duration_ms = round((time.time() - start_time) * 1000, 2)
+            return {
+                "success": False,
+                "error_code": "FACE_TOO_SMALL",
+                "message": f"Khuôn mặt quá nhỏ ({face_w}x{face_h}px < {min_face_w}x{min_face_h}px) hoặc đứng quá xa camera. Vui lòng lại gần hơn.",
+                "embedding": None,
+                "dimension": 0,
+                "face_detected": True,
+                "facial_area": facial_area,
+                "is_too_small": True,
+                "multiple_faces_detected": (faces_count > 1),
+                "total_faces_count": faces_count,
+                "is_blurry": is_blurry,
+                "blur_score": blur_score,
+                "execution_time_ms": duration_ms,
+                "mode": active_mode
+            }
 
         duration_ms = round((time.time() - start_time) * 1000, 2)
-
         return {
             "success": True,
             "error_code": None,
@@ -235,15 +401,16 @@ class DeepFaceService:
             "is_real": True if anti_spoofing else None,
             "face_confidence": round(float(face_confidence), 4),
             "facial_area": facial_area,
-            "multiple_faces_detected": multiple_faces,
-            "total_faces_count": len(results),
+            "multiple_faces_detected": (faces_count > 1),
+            "total_faces_count": faces_count,
             "is_blurry": is_blurry,
             "blur_score": blur_score,
             "is_too_dark": is_too_dark,
             "is_too_bright": is_too_bright,
             "brightness_score": brightness_score,
-            "is_too_small": is_too_small,
-            "execution_time_ms": duration_ms
+            "is_too_small": False,
+            "execution_time_ms": duration_ms,
+            "mode": active_mode
         }
 
     def verify_two_faces(

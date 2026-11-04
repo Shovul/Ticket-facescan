@@ -51,10 +51,10 @@ public class KioskService : IKioskService
             imageStream, 
             fileName, 
             enforceDetection: true, 
-            antiSpoofing: true, 
-            cancellationToken);
+            antiSpoofing: true,
+            cancellationToken: cancellationToken);
         swAi.Stop();
-        _logger.LogInformation("⏱️ [PROFILER] 1. AI Service (Facenet512 + AntiSpoof) tốn: {Ms} ms", swAi.ElapsedMilliseconds);
+        _logger.LogInformation("⏱️ [PROFILER] 1. AI Service (Facenet512) tốn: {Ms} ms", swAi.ElapsedMilliseconds);
 
         // 2. Xử lý trường hợp AI phát hiện giả mạo hoặc lỗi chất lượng
         if (!aiResult.Success || aiResult.Embedding == null || aiResult.Embedding.Count != 512)
@@ -70,7 +70,7 @@ public class KioskService : IKioskService
                     Status = "SPOOF_DETECTED",
                     FaceConfidence = aiResult.Liveness?.Score,
                     Notes = "Phát hiện giả mạo khuôn mặt (màn hình/ảnh in)."
-                }, cancellationToken);
+                }, cancellationToken: cancellationToken);
 
                 var spoofResponse = new KioskCheckinResponse
                 {
@@ -124,7 +124,7 @@ public class KioskService : IKioskService
 
         // 4. Đo thời gian truy vấn 1:N PostgreSQL pgvector HNSW Index
         var swDb = Stopwatch.StartNew();
-        var nearestMatch = await _ticketDetailRepo.FindNearestMatchAsync(eventId, queryVector, cancellationToken);
+        var nearestMatch = await _ticketDetailRepo.FindNearestMatchAsync(eventId, queryVector, cancellationToken: cancellationToken);
         swDb.Stop();
         _logger.LogInformation("⏱️ [PROFILER] 2. PostgreSQL pgvector HNSW Query tốn: {Ms} ms", swDb.ElapsedMilliseconds);
 
@@ -141,7 +141,7 @@ public class KioskService : IKioskService
                 MatchDistance = nearestMatch?.Distance,
                 FaceConfidence = aiResult.Liveness?.Score,
                 Notes = "Không tìm thấy vé hợp lệ tương ứng trong sự kiện."
-            }, cancellationToken);
+            }, cancellationToken: cancellationToken);
 
             var notFoundResponse = new KioskCheckinResponse
             {
@@ -175,7 +175,7 @@ public class KioskService : IKioskService
                 MatchDistance = distance,
                 FaceConfidence = aiResult.Liveness?.Score,
                 Notes = $"Cảnh báo: Vé đã vào cổng trước đó vào lúc {ticket.CheckedInAt:HH:mm:ss dd/MM/yyyy}."
-            }, cancellationToken);
+            }, cancellationToken: cancellationToken);
             swLog.Stop();
             _logger.LogInformation("⏱️ [PROFILER] 3. Ghi log DUPLICATE vào CSDL tốn: {Ms} ms", swLog.ElapsedMilliseconds);
 
@@ -215,7 +215,7 @@ public class KioskService : IKioskService
                 Status = "CANCELLED",
                 MatchDistance = distance,
                 Notes = "Vé đã bị hủy bỏ bởi Ban Tổ Chức."
-            }, cancellationToken);
+            }, cancellationToken: cancellationToken);
 
             return new KioskCheckinResponse
             {
@@ -246,7 +246,7 @@ public class KioskService : IKioskService
             MatchDistance = distance,
             FaceConfidence = aiResult.Liveness?.Score,
             Notes = $"Điểm danh thành công lúc {ticket.CheckedInAt:HH:mm:ss dd/MM/yyyy} tại {kioskName}."
-        }, cancellationToken);
+        }, cancellationToken: cancellationToken);
         swUpdate.Stop();
         _logger.LogInformation("⏱️ [PROFILER] 3. Cập nhật vé & Ghi log VALID vào CSDL tốn: {Ms} ms", swUpdate.ElapsedMilliseconds);
 
@@ -287,7 +287,7 @@ public class KioskService : IKioskService
         var sw = Stopwatch.StartNew();
         var code = (ticketCode ?? string.Empty).Trim();
 
-        var ticket = await _ticketDetailRepo.GetByTicketCodeAsync(eventId, code, cancellationToken);
+        var ticket = await _ticketDetailRepo.GetByTicketCodeAsync(eventId, code, cancellationToken: cancellationToken);
         if (ticket == null)
         {
             sw.Stop();
@@ -297,7 +297,7 @@ public class KioskService : IKioskService
                 KioskName = kioskName,
                 Status = "NOT_FOUND",
                 Notes = $"Quét mã QR/TicketCode không tồn tại hoặc sai sự kiện: {code}"
-            }, cancellationToken);
+            }, cancellationToken: cancellationToken);
 
             var notFoundResponse = new KioskCheckinResponse
             {
@@ -323,7 +323,7 @@ public class KioskService : IKioskService
                 KioskName = kioskName,
                 Status = "DUPLICATE",
                 Notes = $"[QR/Code] Cảnh báo: Vé đã vào cổng trước đó vào lúc {ticket.CheckedInAt:HH:mm:ss dd/MM/yyyy}."
-            }, cancellationToken);
+            }, cancellationToken: cancellationToken);
 
             var duplicateResponse = new KioskCheckinResponse
             {
@@ -354,7 +354,7 @@ public class KioskService : IKioskService
                 KioskName = kioskName,
                 Status = "CANCELLED",
                 Notes = "[QR/Code] Vé đã bị hủy bỏ bởi Ban Tổ Chức."
-            }, cancellationToken);
+            }, cancellationToken: cancellationToken);
 
             return new KioskCheckinResponse
             {
@@ -381,7 +381,7 @@ public class KioskService : IKioskService
             KioskName = kioskName,
             Status = "VALID_CODE",
             Notes = $"Điểm danh thành công qua mã QR/Mã vé lúc {ticket.CheckedInAt:HH:mm:ss dd/MM/yyyy} tại {kioskName}."
-        }, cancellationToken);
+        }, cancellationToken: cancellationToken);
 
         sw.Stop();
         _logger.LogInformation("⏱️ [PROFILER] CheckinByCode toàn trình: {Ms} ms", sw.ElapsedMilliseconds);
@@ -411,7 +411,7 @@ public class KioskService : IKioskService
         int eventId, 
         CancellationToken cancellationToken = default)
     {
-        var tickets = await _ticketDetailRepo.GetTicketsForOfflineSyncAsync(eventId, cancellationToken);
+        var tickets = await _ticketDetailRepo.GetTicketsForOfflineSyncAsync(eventId, cancellationToken: cancellationToken);
         return tickets.Select(t => new OfflineTicketDto
         {
             Id = t.Id,
@@ -445,7 +445,7 @@ public class KioskService : IKioskService
             if (string.IsNullOrWhiteSpace(item.TicketCode))
                 continue;
 
-            var ticket = await _ticketDetailRepo.GetByTicketCodeAsync(eventId, item.TicketCode.Trim(), cancellationToken);
+            var ticket = await _ticketDetailRepo.GetByTicketCodeAsync(eventId, item.TicketCode.Trim(), cancellationToken: cancellationToken);
             if (ticket != null)
             {
                 var incomingTime = item.CapturedAt.ToUniversalTime();
@@ -521,7 +521,7 @@ public class KioskService : IKioskService
 
         if (logsToInsert.Count > 0)
         {
-            await _checkinLogRepo.AddRangeLogsAsync(logsToInsert, cancellationToken);
+            await _checkinLogRepo.AddRangeLogsAsync(logsToInsert, cancellationToken: cancellationToken);
         }
 
         // Bắn SignalR thông báo đồng bộ xong để Dashboard cập nhật số lượng
@@ -556,7 +556,7 @@ public class KioskService : IKioskService
     /// </summary>
     public async Task<KioskEventInfoDto?> GetEventInfoAsync(int eventId, CancellationToken cancellationToken = default)
     {
-        var summary = await _ticketDetailRepo.GetEventKioskSummaryAsync(eventId, cancellationToken);
+        var summary = await _ticketDetailRepo.GetEventKioskSummaryAsync(eventId, cancellationToken: cancellationToken);
         if (summary.Event == null)
             return null;
 
@@ -594,7 +594,7 @@ public class KioskService : IKioskService
             };
         }
 
-        var kiosk = await _kioskRepo.GetBySecretTokenAsync(eventId, secretToken, cancellationToken);
+        var kiosk = await _kioskRepo.GetBySecretTokenAsync(eventId, secretToken, cancellationToken: cancellationToken);
         if (kiosk == null)
         {
             _logger.LogWarning("⚠️ Xác thực thất bại cho Kiosk sự kiện {EventId} với token '{Token}'", eventId, secretToken);

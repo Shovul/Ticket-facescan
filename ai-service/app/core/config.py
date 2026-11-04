@@ -44,7 +44,21 @@ class Settings(BaseSettings):
     # For Facenet512, distance <= 0.30 (similarity >= 0.70) is considered a confident match
     DEFAULT_COSINE_THRESHOLD: float = 0.32
 
-    # Image Quality Thresholds (FIQA: Blur, Resolution, Illumination)
+    # Enrollment Mode Quality Thresholds (ICAO Doc 9303 & ISO/IEC 29794-5 FIQA)
+    ENROLL_BLUR_THRESHOLD: float = 60.0        # Điểm phương sai Laplacian < 60.0 coi là mờ (chặn ngay)
+    ENROLL_MIN_FACE_WIDTH: int = 100           # Kích thước mặt tối thiểu khi nạp hồ sơ (pixel)
+    ENROLL_MIN_FACE_HEIGHT: int = 100
+    ENROLL_MIN_BRIGHTNESS: float = 40.0        # Độ sáng trung bình tối thiểu (tránh thiếu sáng)
+    ENROLL_MAX_BRIGHTNESS: float = 220.0       # Độ sáng trung bình tối đa (tránh chói sáng / lóa đèn)
+
+    # Kiosk Check-in Quality Thresholds (Tolerant for real-time motion & crowd)
+    KIOSK_BLUR_THRESHOLD: float = 35.0         # Chấp nhận rung nhẹ do người đi bộ tới quầy
+    KIOSK_MIN_FACE_WIDTH: int = 80             # Kích thước mặt tối thiểu tại quầy Kiosk
+    KIOSK_MIN_FACE_HEIGHT: int = 80
+    KIOSK_MIN_BRIGHTNESS: float = 30.0
+    KIOSK_MAX_BRIGHTNESS: float = 230.0
+
+    # Image Quality Thresholds (Legacy fallback)
     MIN_FACE_WIDTH: int = 80
     MIN_FACE_HEIGHT: int = 80
     BLUR_LAPLACIAN_THRESHOLD: float = 45.0  # Under 45 is considered blurry
