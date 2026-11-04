@@ -6,7 +6,7 @@ import {
 } from '../types/dashboard';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL.replace('/v1', '') || 'http://localhost:5000/api',
+  baseURL: (process.env.NEXT_PUBLIC_API_URL?.replace('/v1', '')) || 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json',
   },
