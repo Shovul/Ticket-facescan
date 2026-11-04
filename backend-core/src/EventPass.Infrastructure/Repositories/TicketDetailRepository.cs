@@ -179,9 +179,11 @@ public class TicketDetailRepository : Repository<TicketDetail>, ITicketDetailRep
                 t.TicketCode.ToLower().Contains(kw));
         }
 
-        if (!string.IsNullOrWhiteSpace(ticketClass))
+        if (!string.IsNullOrWhiteSpace(ticketClass) && ticketClass != "all")
         {
-            query = query.Where(t => t.Ticket.Name.ToLower() == ticketClass.Trim().ToLower());
+            var classKw = ticketClass.Trim().ToLower();
+            // Dùng Contains thay vì == để tìm kiếm mệt dẻo hơn
+            query = query.Where(t => t.Ticket != null && t.Ticket.Name.ToLower().Contains(classKw));
         }
 
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<TicketDetailStatus>(status, true, out var parsedStatus))
