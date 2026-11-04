@@ -1,7 +1,8 @@
-﻿using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using EventPass.Application.DTOs.Common;
 using EventPass.Application.DTOs.User;
 using EventPass.Application.Interfaces;
+using Microsoft.Extensions.Logging;
 using Pgvector;
 
 namespace EventPass.Application.Services;
@@ -11,15 +12,21 @@ public class UserService : IUserService
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IAiServiceClient _aiServiceClient;
+    private readonly IFileStorageService _fileStorageService;
+    private readonly ILogger<UserService> _logger;
 
     public UserService(
         IUserRepository userRepository, 
         IPasswordHasher passwordHasher,
-        IAiServiceClient aiServiceClient)
+        IAiServiceClient aiServiceClient,
+        IFileStorageService fileStorageService,
+        ILogger<UserService> logger)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _aiServiceClient = aiServiceClient;
+        _fileStorageService = fileStorageService;
+        _logger = logger;
     }
 
     public async Task<ApiResponse<UserProfileResponseDto>> GetProfileAsync(int userId)
@@ -36,7 +43,9 @@ public class UserService : IUserService
             FullName = user.FullName,
             PhoneNumber = user.Phone ?? string.Empty,
             Role = user.Role.ToString(),
-            HasPassword = user.HasPassword
+            HasPassword = user.HasPassword,
+            AvatarUrl = user.AvatarUrl,
+            HasFaceScan = user.FaceVector != null
         };
 
         return ApiResponse<UserProfileResponseDto>.Ok(response);
@@ -78,7 +87,9 @@ public class UserService : IUserService
             FullName = user.FullName,
             PhoneNumber = user.Phone ?? string.Empty,
             Role = user.Role.ToString(),
-            HasPassword = user.HasPassword
+            HasPassword = user.HasPassword,
+            AvatarUrl = user.AvatarUrl,
+            HasFaceScan = user.FaceVector != null
         };
 
         return ApiResponse<UserProfileResponseDto>.Ok(response, "Cập nhật hồ sơ thành công!");
@@ -124,15 +135,53 @@ public class UserService : IUserService
         if (user == null)
             return ApiResponse<FaceProfileResponseDto>.Fail("Không tìm thấy tài khoản người dùng.");
 
-        // Goi AI Service trich xuat vector 512-d
-        var aiResult = await _aiServiceClient.ExtractFaceEmbeddingAsync(imageStream, fileName, enforceDetection: true, antiSpoofing: true);
+        using var ms = new MemoryStream();
+        await imageStream.CopyToAsync(ms);
+        var imageBytes = ms.ToArray();
 
-        if (!aiResult.Success || aiResult.Embedding == null || aiResult.Embedding.Count != 512)
+        // 1. Kiểm tra Magic Bytes nhị phân (chống giả mạo phần mở rộng file extension)
+        if (!IsValidImageHeader(imageBytes))
         {
-            return ApiResponse<FaceProfileResponseDto>.Fail(aiResult.ErrorMessage ?? "Không phát hiện khuôn mặt hợp lệ hoặc ảnh không đạt chuẩn.");
+            return ApiResponse<FaceProfileResponseDto>.Fail("Tệp tải lên không phải là định dạng hình ảnh hợp lệ (chỉ hỗ trợ JPG, PNG, WEBP).");
         }
 
+        // 2. Gửi sang AI Microservice (chế độ Enrollment với ISO/ICAO quality, FIQA & MiniFASNet Liveness)
+        using var aiStream = new MemoryStream(imageBytes);
+        var aiResult = await _aiServiceClient.ExtractFaceEmbeddingAsync(
+            aiStream, 
+            fileName, 
+            enforceDetection: true, 
+            antiSpoofing: true, 
+            isEnrollment: true);
+
+        if (!aiResult.Success || aiResult.Embedding == null || aiResult.Embedding.Count != 512 ||
+            aiResult.Embedding.Any(v => !float.IsFinite(v)) || aiResult.Embedding.All(v => v == 0))
+        {
+            return ApiResponse<FaceProfileResponseDto>.Fail(
+                aiResult.ErrorMessage ?? "Không phát hiện khuôn mặt hợp lệ hoặc ảnh không đạt chuẩn ISO/ICAO.");
+        }
+
+        // 3. Tải ảnh chân dung định danh lên Dropbox Cloud
+        string? avatarUrl = user.AvatarUrl;
+        try
+        {
+            var ext = Path.GetExtension(fileName);
+            if (string.IsNullOrEmpty(ext)) ext = ".jpg";
+            var avatarFileName = $"user_{userId}_{DateTime.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid():N}{ext}";
+            avatarUrl = await _fileStorageService.SaveBytesFileAsync(imageBytes, avatarFileName, "avatars");
+            _logger.LogInformation("📸 [DROPBOX] Đã lưu avatar định danh cho user {UserId}: {Url}", userId, avatarUrl);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Không thể tải ảnh avatar lên Dropbox cho user {UserId}: {Message}", userId, ex.Message);
+        }
+
+        // 4. Cập nhật vector 512-d và avatar_url vào cơ sở dữ liệu
         user.FaceVector = new Vector(aiResult.Embedding.ToArray());
+        if (!string.IsNullOrEmpty(avatarUrl))
+        {
+            user.AvatarUrl = avatarUrl;
+        }
         await _userRepository.UpdateAsync(user);
 
         return ApiResponse<FaceProfileResponseDto>.Ok(new FaceProfileResponseDto
@@ -143,5 +192,26 @@ public class UserService : IUserService
             FaceIdReady = true
         }, "Cập nhật Face ID thành công!");
     }
-}
 
+    /// <summary>
+    /// Kiểm tra Magic Bytes nhị phân ở đầu tệp để bảo đảm là định dạng ảnh thực sự
+    /// </summary>
+    private static bool IsValidImageHeader(byte[] bytes)
+    {
+        if (bytes == null || bytes.Length < 4) return false;
+
+        // JPEG: FF D8 FF
+        if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) return true;
+
+        // PNG: 89 50 4E 47 (0x89 'P' 'N' 'G')
+        if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) return true;
+
+        // WEBP: RIFF .... WEBP
+        if (bytes.Length >= 12 &&
+            bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46 && // RIFF
+            bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50) // WEBP
+            return true;
+
+        return false;
+    }
+}

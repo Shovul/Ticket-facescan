@@ -111,6 +111,58 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
 
     public async Task<BookingDto> UploadFaceAsync(int userId, string code, int itemId, AttendeeRequest attendee, byte[] image, string contentType, CancellationToken ct)
         => await SaveFaceAsync(userId, code, itemId, image, contentType, ct, attendee: attendee);
+    public async Task<BookingDto> UseProfileFaceAsync(int userId, string code, int itemId, AttendeeRequest? attendee, CancellationToken ct)
+    {
+        var user = await repository.GetUserAsync(userId, ct);
+        if (user == null)
+            throw new BookingException(401, "Phiên đăng nhập không hợp lệ.");
+
+        if (user.FaceVector == null)
+            throw new BookingException(400, "Tài khoản của bạn chưa có dữ liệu Face ID trong Hồ sơ cá nhân (UC05). Vui lòng nạp Face ID ở trang Profile hoặc chụp ảnh trực tiếp.");
+
+        var attendeeName = !string.IsNullOrWhiteSpace(attendee?.Name) ? attendee.Name.Trim() : user.FullName;
+        var attendeeEmail = !string.IsNullOrWhiteSpace(attendee?.Email) ? attendee.Email.Trim() : user.Email;
+        var attendeePhone = !string.IsNullOrWhiteSpace(attendee?.Phone) ? attendee.Phone.Trim() : (user.Phone ?? "");
+
+        if (string.IsNullOrWhiteSpace(attendeeName) || attendeeName.Length < 2)
+            throw new BookingException(422, "Họ và tên người tham dự không hợp lệ.");
+        if (string.IsNullOrWhiteSpace(attendeeEmail) || !attendeeEmail.Contains('@'))
+            throw new BookingException(422, "Email người tham dự không hợp lệ.");
+        if (string.IsNullOrWhiteSpace(attendeePhone) || attendeePhone.Length < 10)
+            throw new BookingException(422, "Số điện thoại người tham dự không hợp lệ.");
+
+        return await WithOrder(userId, code, async o =>
+        {
+            var item = EditableItem(o, itemId);
+
+            var faces = await repository.OtherFacesAsync(o.EventId, itemId, DateTime.UtcNow, ct);
+            if (faces.Any(v => CosineDistance(v, user.FaceVector.ToArray()) <= 0.35))
+                throw new BookingException(409, "Khuôn mặt trong hồ sơ cá nhân của bạn đã được đăng ký cho một vé khác trong cùng sự kiện.");
+
+            item.AttendeeName = attendeeName;
+            item.AttendeeEmail = attendeeEmail;
+            item.AttendeePhone = attendeePhone;
+            item.FaceVector = user.FaceVector;
+            item.FaceConsentAt = DateTime.UtcNow;
+            item.ClaimTokenHash = null;
+
+            if (!string.IsNullOrEmpty(user.AvatarUrl))
+            {
+                item.FaceImageContentType = $"image/jpeg|{user.AvatarUrl}";
+            }
+
+            if (item.TicketDetail != null)
+            {
+                item.TicketDetail.AttendeeName = item.AttendeeName;
+                item.TicketDetail.AttendeeEmail = item.AttendeeEmail;
+                item.TicketDetail.AttendeePhone = item.AttendeePhone;
+                item.TicketDetail.FaceVector = item.FaceVector;
+                item.TicketDetail.AttendeeFaceData = user.AvatarUrl ?? $"user-profile:{user.Id}";
+            }
+
+            return ToDto(o);
+        }, ct);
+    }
 
     private async Task<BookingDto> SaveFaceAsync(int userId, string code, int itemId, byte[] image, string contentType,
         CancellationToken ct, string? claimHash = null, AttendeeRequest? attendee = null)
@@ -129,7 +181,7 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
             return Task.FromResult(true);
         }, ct);
         using var stream = new MemoryStream(image);
-        var result = await ai.ExtractFaceEmbeddingAsync(stream, "portrait", true, false, ct);
+        var result = await ai.ExtractFaceEmbeddingAsync(stream, "portrait", true, false, isEnrollment: true, cancellationToken: ct);
         if (!result.Success || result.Embedding is not { Count: 512 } || result.Embedding.Any(v => !float.IsFinite(v)) || result.Embedding.All(v => v == 0))
             throw new BookingException(result.ErrorCode == "AI_SERVICE_UNAVAILABLE" ? 503 : 422,
                 result.ErrorMessage ?? "Ảnh phải rõ mặt, chính diện và chỉ có một người.");

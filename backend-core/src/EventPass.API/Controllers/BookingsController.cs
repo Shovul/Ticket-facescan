@@ -51,6 +51,13 @@ public class BookingsController(IBookingService service, ILogger<BookingsControl
         return await service.UploadFaceAsync(UserId, code, itemId, form, bytes, contentType, ct);
     });
 
+    /// <summary>
+    /// UC07: Dùng sẵn Face ID từ Profile (UC05) cho vé người mua
+    /// </summary>
+    [HttpPost("{code}/items/{itemId:int}/use-profile-face")]
+    public Task<IActionResult> UseProfileFace(string code, int itemId, [FromBody] AttendeeRequest? attendee, CancellationToken ct) =>
+        Handle(() => service.UseProfileFaceAsync(UserId, code, itemId, attendee, ct));
+
     [HttpPost("{code}/confirm-free")]
     public Task<IActionResult> Confirm(string code, CancellationToken ct) => Handle(() => service.ConfirmFreeAsync(UserId, code, ct));
 
@@ -108,8 +115,9 @@ public class BookingsController(IBookingService service, ILogger<BookingsControl
         await form.Image.CopyToAsync(stream, ct);
         var bytes = stream.ToArray();
         var contentType = bytes.Length >= 8 && bytes[0] == 137 && bytes[1] == 80 && bytes[2] == 78 && bytes[3] == 71 ? "image/png"
-            : bytes.Length >= 3 && bytes[0] == 255 && bytes[1] == 216 && bytes[2] == 255 ? "image/jpeg" : null;
-        if (contentType == null) throw new BookingException(400, "Chỉ chấp nhận ảnh JPG hoặc PNG.");
+            : bytes.Length >= 3 && bytes[0] == 255 && bytes[1] == 216 && bytes[2] == 255 ? "image/jpeg"
+            : bytes.Length >= 12 && bytes[0] == 'R' && bytes[1] == 'I' && bytes[2] == 'F' && bytes[3] == 'F' && bytes[8] == 'W' && bytes[9] == 'E' && bytes[10] == 'B' && bytes[11] == 'P' ? "image/webp" : null;
+        if (contentType == null) throw new BookingException(400, "Chỉ chấp nhận ảnh JPG, PNG hoặc WEBP.");
         return (bytes, contentType);
     }
 

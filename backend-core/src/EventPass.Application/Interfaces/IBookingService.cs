@@ -9,6 +9,7 @@ public interface IBookingService
     Task<BookingDto> GetAsync(int userId, string code, CancellationToken ct);
     Task<BookingDto> UpdateAttendeeAsync(int userId, string code, int itemId, AttendeeRequest request, CancellationToken ct);
     Task<BookingDto> UploadFaceAsync(int userId, string code, int itemId, AttendeeRequest attendee, byte[] image, string contentType, CancellationToken ct);
+    Task<BookingDto> UseProfileFaceAsync(int userId, string code, int itemId, AttendeeRequest? attendee, CancellationToken ct);
     Task<BookingDto> ConfirmFreeAsync(int userId, string code, CancellationToken ct);
     Task<BookingDto> CancelAsync(int userId, string code, CancellationToken ct);
     Task<CustomerTicketsDto> GetTicketsAsync(int userId, int page, string filter, CancellationToken ct);

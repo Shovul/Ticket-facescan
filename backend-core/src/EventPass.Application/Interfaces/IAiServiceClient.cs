@@ -9,5 +9,6 @@ public interface IAiServiceClient
         string fileName, 
         bool enforceDetection = true, 
         bool antiSpoofing = true, 
+        bool isEnrollment = false,
         CancellationToken cancellationToken = default);
 }

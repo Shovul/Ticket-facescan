@@ -55,10 +55,20 @@ export const customerApi = {
   booking: (code: string, signal?: AbortSignal) => request<Booking>(`/bookings/${encodeURIComponent(code)}`, { signal }, true),
   attendee: (code: string, id: number, data: { name: string; email: string; phone: string }) =>
     request<Booking>(`/bookings/${encodeURIComponent(code)}/items/${id}/attendee`, { method: "PUT", body: JSON.stringify(data) }, true),
-  face: (code: string, id: number, attendee: { name: string; email: string; phone: string }, image: File, consent: boolean) => {
-    const body = new FormData(); Object.entries(attendee).forEach(([key, value]) => body.append(key, value)); body.append("Image", image); body.append("Consent", String(consent));
+  face: (code: string, id: number, attendee: { name: string; email: string; phone: string }, image: File | Blob, consent: boolean) => {
+    const body = new FormData();
+    Object.entries(attendee).forEach(([key, value]) => body.append(key, value));
+    const fileName = image instanceof File ? image.name : "portrait.jpg";
+    body.append("Image", image, fileName);
+    body.append("Consent", String(consent));
     return request<Booking>(`/bookings/${encodeURIComponent(code)}/items/${id}/face`, { method: "POST", body }, true);
   },
+  useProfileFace: (code: string, id: number, attendee?: { name: string; email: string; phone: string }) =>
+    request<Booking>(`/bookings/${encodeURIComponent(code)}/items/${id}/use-profile-face`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(attendee || {})
+    }, true),
   confirmFree: (code: string) => request<Booking>(`/bookings/${encodeURIComponent(code)}/confirm-free`, { method: "POST" }, true),
   tickets: (page: number, filter: string, signal?: AbortSignal) => request<CustomerTickets>(
     `/bookings/my-tickets?${new URLSearchParams({ page: String(page), filter })}`, { signal }, true),
