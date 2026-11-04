@@ -62,15 +62,6 @@ public class KioskController : ControllerBase
     public async Task<ActionResult<VerifyKioskTokenResponse>> VerifyTokenFlat(
         [FromBody] VerifyKioskTokenRequest request)
     {
-        if (request.EventId <= 0)
-        {
-            return BadRequest(new VerifyKioskTokenResponse
-            {
-                Success = false,
-                Message = "Mã sự kiện không hợp lệ."
-            });
-        }
-
         var response = await _kioskService.VerifySecretTokenAsync(request.EventId, request.SecretToken, HttpContext.RequestAborted);
         if (!response.Success)
         {

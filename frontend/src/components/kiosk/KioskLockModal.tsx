@@ -17,7 +17,7 @@ export const KioskLockModal: React.FC<KioskLockModalProps> = ({ onUnlock }) => {
     setIsLoading(false);
     if (!success) {
       setHasError(true);
-      setTimeout(() => setHasError(false), 2000);
+      setTimeout(() => setHasError(false), 2500);
     }
   };
 
@@ -46,7 +46,7 @@ export const KioskLockModal: React.FC<KioskLockModalProps> = ({ onUnlock }) => {
           />
           {hasError && (
             <p style={{ color: "#EF4444", fontSize: "12px", marginTop: "4px", marginBottom: "4px" }}>
-              Mã bảo mật không đúng hoặc trạm chưa được cấp phép trong hệ thống!
+              Mã bảo mật không chính xác hoặc trạm chưa được cấp phép trong cơ sở dữ liệu!
             </p>
           )}
           <button type="submit" disabled={isLoading} className="btn-auth-action">
@@ -56,8 +56,25 @@ export const KioskLockModal: React.FC<KioskLockModalProps> = ({ onUnlock }) => {
             </svg>
           </button>
         </form>
-        <div style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: "12px" }}>
-          Mã mẫu trong DB: <code style={{ background: "#011522", padding: "2px 6px", borderRadius: "4px", color: "var(--color-mint)" }}>stk_sgu_2026</code> hoặc <code style={{ background: "#011522", padding: "2px 6px", borderRadius: "4px", color: "var(--color-mint)" }}>2026</code>
+
+        <div style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: "14px", lineHeight: "1.6" }}>
+          <div>Khóa bảo mật Kiosk thực tế trong CSDL:</div>
+          <div style={{ marginTop: "6px", display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "center" }}>
+            <span
+              style={{ cursor: "pointer", background: "#011522", padding: "3px 8px", borderRadius: "4px", color: "var(--color-mint)", border: "1px solid var(--border-color)" }}
+              onClick={() => setLockCode("SGU-KIOSK-LOCAL-2026")}
+              title="Bấm để điền mã Kiosk sự kiện 1"
+            >
+              SGU-KIOSK-LOCAL-2026 (Sự kiện 1)
+            </span>
+            <span
+              style={{ cursor: "pointer", background: "#011522", padding: "3px 8px", borderRadius: "4px", color: "var(--color-mint)", border: "1px solid var(--border-color)" }}
+              onClick={() => setLockCode("stk_live_716")}
+              title="Bấm để điền mã Kiosk sự kiện 2"
+            >
+              stk_live_716 (Sự kiện 2 - TechDay)
+            </span>
+          </div>
         </div>
       </div>
     </div>
