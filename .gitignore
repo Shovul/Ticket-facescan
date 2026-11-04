@@ -133,3 +133,4 @@ $RECYCLE.BIN/
 *.log
 logs/
 **/logs/
+backend-core/src/EventPass.API/appsettings.Development.json
