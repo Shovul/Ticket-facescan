@@ -18,7 +18,7 @@ export default function AttendeePagination({
   return (
     <div className="flex items-center justify-between p-3.5 px-5 bg-white border-t-2 border-[#e3efea] text-xs text-[#537583]">
       <div>
-        Hiển thị 6 bản ghi/trang (Tổng số người tham dự:{" "}
+        Hiển thị 6 bản ghi/trang (Tổng số:{" "}
         <span className="font-bold text-[#023852]">{totalCount}</span>)
       </div>
 
@@ -43,7 +43,7 @@ export default function AttendeePagination({
               if (!isNaN(val) && val >= 1 && val <= totalPages)
                 onPageChange(val);
             }}
-            className="w-12 h-7.5 text-center text-xs font-bold text-[#023852] border-2 border-[#cfe5dc] rounded outline-none focus:border-[#079fa0]"
+            className="w-12 h-7.5 text-center text-xs font-bold text-[#023852] border-2 border-[#cfe5dc] rounded outline-none"
           />
           <span>/</span>
           <span>{totalPages}</span>
