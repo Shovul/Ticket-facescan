@@ -110,7 +110,7 @@ export default function Sidebar() {
             <p className="modal-desc">Bạn có chắc chắn muốn kết thúc phiên làm việc của Quản trị viên?</p>
             <div className="modal-actions">
               <button onClick={() => setShowLogoutModal(false)} className="btn-cancel">Hủy</button>
-              <button className="btn-confirm" onClick={handleLogout()}>Đăng Xuất Ngay</button>
+              <button className="btn-confirm" onClick={handleLogout}>Đăng Xuất Ngay</button>
             </div>
           </div>
         </div>
