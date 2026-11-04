@@ -51,10 +51,10 @@ public class KioskService : IKioskService
             imageStream, 
             fileName, 
             enforceDetection: true, 
-            antiSpoofing: true, 
+            antiSpoofing: true,
             cancellationToken);
         swAi.Stop();
-        _logger.LogInformation("⏱️ [PROFILER] 1. AI Service (Facenet512 + AntiSpoof) tốn: {Ms} ms", swAi.ElapsedMilliseconds);
+        _logger.LogInformation("⏱️ [PROFILER] 1. AI Service (Facenet512) tốn: {Ms} ms", swAi.ElapsedMilliseconds);
 
         // 2. Xử lý trường hợp AI phát hiện giả mạo hoặc lỗi chất lượng
         if (!aiResult.Success || aiResult.Embedding == null || aiResult.Embedding.Count != 512)

@@ -1,0 +1,31 @@
+# Git
+.git
+.gitignore
+.github
+
+# IDE
+.vscode
+.idea
+
+# Node / Frontend
+**/node_modules
+**/.next
+**/.turbo
+
+# .NET / Backend
+**/bin
+**/obj
+
+# Python
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.pytest_cache
+**/.venv
+**/venv
+**/env
+
+# Temporary / OS
+.DS_Store
+Thumbs.db

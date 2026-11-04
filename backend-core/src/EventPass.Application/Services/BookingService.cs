@@ -4,13 +4,15 @@ using EventPass.Application.DTOs.Bookings;
 using EventPass.Application.Interfaces;
 using EventPass.Domain.Entities;
 using EventPass.Domain.Enums;
+using Microsoft.Extensions.Logging;
 using Pgvector;
 
 namespace EventPass.Application.Services;
 
 public class BookingService(IBookingRepository repository, IAiServiceClient ai,
     IBookingPaymentDetails paymentDetails, IBookingFaceImageProtector imageProtector,
-    IBookingEmailSender emailSender) : IBookingService, IBookingPaymentReceiver
+    IBookingEmailSender emailSender, IFileStorageService fileStorageService,
+    ILogger<BookingService> logger) : IBookingService, IBookingPaymentReceiver
 {
     // Lấy tên, ảnh đại diện và số vé còn hiệu lực cho thanh điều hướng khách hàng.
     public async Task<CustomerSummaryDto> GetCustomerAsync(int userId, CancellationToken ct)
@@ -132,6 +134,20 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
             throw new BookingException(result.ErrorCode == "AI_SERVICE_UNAVAILABLE" ? 503 : 422,
                 result.ErrorMessage ?? "Ảnh phải rõ mặt, chính diện và chỉ có một người.");
 
+        // Tải ảnh chân dung lên Dropbox Cloud để lưu trữ 30 ngày (NFR12 & Bảng 5.5)
+        string? dropboxUrl = null;
+        try
+        {
+            var ext = contentType.Contains("png") ? ".png" : ".jpg";
+            var fileName = $"face_item_{itemId}_{Guid.NewGuid():N}{ext}";
+            dropboxUrl = await fileStorageService.SaveBytesFileAsync(image, fileName, "faces");
+            logger.LogInformation("📸 [DROPBOX] Đã tải ảnh khuôn mặt lên Dropbox: {Url}", dropboxUrl);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "⚠️ [DROPBOX] Không thể tải ảnh lên Dropbox, tiếp tục lưu mã hóa dự phòng trong CSDL.");
+        }
+
         return await WithOrder(userId, code, async o =>
         {
             var item = EditableItem(o, itemId);
@@ -147,7 +163,7 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
                 throw new BookingException(409, "Khuôn mặt này đã được đăng ký cho vé khác trong cùng sự kiện.");
             item.FaceVector = new Vector(result.Embedding.ToArray());
             item.ProtectedFaceImage = imageProtector.Protect(image);
-            item.FaceImageContentType = contentType;
+            item.FaceImageContentType = dropboxUrl != null ? $"{contentType}|{dropboxUrl}" : contentType;
             item.FaceConsentAt = DateTime.UtcNow;
             item.ClaimTokenHash = null;
             if (item.TicketDetail != null)
@@ -156,7 +172,7 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
                 item.TicketDetail.AttendeeEmail = item.AttendeeEmail!;
                 item.TicketDetail.AttendeePhone = item.AttendeePhone;
                 item.TicketDetail.FaceVector = item.FaceVector;
-                item.TicketDetail.AttendeeFaceData = $"booking-item:{item.Id}";
+                item.TicketDetail.AttendeeFaceData = dropboxUrl ?? $"booking-item:{item.Id}";
             }
             if (claimHash != null && item.UnitPrice == 0 && item.Status == "reserved")
             {
@@ -237,7 +253,33 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
 
     public async Task ExpireAsync(CancellationToken ct)
     {
+        // 1. Quét và xóa các ảnh trên Dropbox của các sự kiện đã kết thúc quá 30 ngày (NFR12 / NĐ 13)
+        try
+        {
+            var cutoff = DateTime.UtcNow.AddDays(-30);
+            var expiredUrls = await repository.GetExpiredFacePhotoUrlsAsync(cutoff, ct);
+            foreach (var url in expiredUrls)
+            {
+                try
+                {
+                    await fileStorageService.DeleteFileAsync(url);
+                    logger.LogInformation("🧹 [NFR12-DROPBOX] Đã xóa vĩnh viễn ảnh trên Dropbox quá hạn 30 ngày: {Url}", url);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Lỗi khi xóa tệp Dropbox: {Url}", url);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Lỗi khi truy vấn danh sách ảnh Dropbox hết hạn.");
+        }
+
+        // 2. Xóa dữ liệu ảnh trong CSDL
         await repository.DeleteExpiredPhotosAsync(DateTime.UtcNow, ct);
+
+        // 3. Xử lý các đơn giữ chỗ hết hạn
         foreach (var eventId in await repository.ExpiringEventsAsync(ct))
             await repository.InEventTransactionAsync(eventId, async () =>
             {
@@ -245,7 +287,6 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
                 return true;
             }, ct);
     }
-
 
     // Trả hai khu vực đơn giữ chỗ và vé chính thức, phân trang bốn vé theo bộ lọc.
     public async Task<CustomerTicketsDto> GetTicketsAsync(int userId, int page, string filter, CancellationToken ct)
@@ -422,13 +463,27 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
 
     private void Issue(Order o, OrderItem item)
     {
+        string? faceData = null;
+        if (!string.IsNullOrEmpty(item.TicketDetail?.AttendeeFaceData) && item.TicketDetail.AttendeeFaceData.StartsWith("http"))
+        {
+            faceData = item.TicketDetail.AttendeeFaceData;
+        }
+        else if (item.FaceImageContentType?.Contains('|') == true)
+        {
+            faceData = item.FaceImageContentType.Split('|')[1];
+        }
+        else if (item.FaceVector != null)
+        {
+            faceData = $"booking-item:{item.Id}";
+        }
+
         var ticket = new TicketDetail
         {
             Order = o, Event = o.Event, EventId = o.EventId, Ticket = item.Ticket, TicketId = item.TicketId,
             TicketCode = "PASS" + Guid.NewGuid().ToString("N").ToUpperInvariant(),
             AttendeeName = item.AttendeeName ?? o.User.FullName, AttendeeEmail = item.AttendeeEmail ?? o.User.Email,
             AttendeePhone = item.AttendeePhone, FaceVector = item.FaceVector, Status = TicketDetailStatus.Valid,
-            AttendeeFaceData = item.FaceVector != null ? $"booking-item:{item.Id}" : null
+            AttendeeFaceData = faceData
         };
         ticket.QrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + Uri.EscapeDataString(ticket.TicketCode);
         repository.AddTicket(ticket);

@@ -6,6 +6,7 @@ import { useNotification } from '../components/shared/NotificationProvider';
 export const useCreateEvent = () => {
   const notify = useNotification();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     organizerName: '',
@@ -147,6 +148,7 @@ export const useCreateEvent = () => {
 
     const validationError = validateTimeline();
     if (validationError) {
+      setError(validationError);
       notify(validationError, "error");
       setLoading(false);
       return;
@@ -164,7 +166,7 @@ export const useCreateEvent = () => {
   };
 
   return {
-    formData, loading, updateField, handleLogoUpload, handleImagesUpload,
+    formData, loading, error, updateField, handleLogoUpload, handleImagesUpload,
     addTicket, updateTicket, removeTicket,
     addKiosk, updateKiosk, removeKiosk, submitForm,
   };

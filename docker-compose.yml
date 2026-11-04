@@ -42,11 +42,9 @@ services:
     networks:
       - eventpass-network
 
-  # 3. Backend Core (.NET 8 Clean Architecture)
+  # 3. Backend Core (.NET 9 Clean Architecture)
   backend-core:
     build:
-      # context: ./backend-core
-      # dockerfile: Dockerfile
       context: .
       dockerfile: ./backend-core/Dockerfile
     container_name: eventpass-backend
@@ -58,9 +56,12 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${DB_NAME:-eventpass_db};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-rootpassword@123};
+      - AiService__BaseUrl=http://ai-service:8000
+      - AiService__ApiKey=${AI_INTERNAL_API_KEY:-eventpass_internal_ai_token_2026}
       - AI_SERVICE_URL=http://ai-service:8000
       - AI_INTERNAL_API_KEY=${AI_INTERNAL_API_KEY:-eventpass_internal_ai_token_2026}
-      - JWT_SECRET=${JWT_SECRET:-}
+      - JWT_SECRET=${JWT_SECRET:-super_secret_key_eventpass_auth_2026_very_long_string_min_32_chars}
+      - DatabaseSeed__Enabled=true
     depends_on:
       postgres:
         condition: service_healthy
@@ -69,18 +70,23 @@ services:
     networks:
       - eventpass-network
 
-  # 4. Frontend (Next.js 14 Client & Kiosk)
+  # 4. Frontend (Next.js Client & Kiosk)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000/api/v1}
+        NEXT_PUBLIC_SIGNALR_URL: ${NEXT_PUBLIC_SIGNALR_URL:-http://localhost:5000/hubs}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-148794334414-pmi36s4ivlfob5em23b4kshstpckmnem.apps.googleusercontent.com}
     container_name: eventpass-frontend
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
-      - NEXT_PUBLIC_SIGNALR_URL=http://localhost:5000/hubs
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000/api/v1}
+      - NEXT_PUBLIC_SIGNALR_URL=${NEXT_PUBLIC_SIGNALR_URL:-http://localhost:5000/hubs}
+      - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-148794334414-pmi36s4ivlfob5em23b4kshstpckmnem.apps.googleusercontent.com}
     depends_on:
       - backend-core
     networks:
