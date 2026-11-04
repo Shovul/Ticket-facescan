@@ -22,6 +22,12 @@ var builder = WebApplication.CreateBuilder(args.Where(a => !a.Equals("--seed", S
 
 // 1. CÃ¡ÂºÂ¥u hÃƒÂ¬nh Database PostgreSQL 16 + pgvector HNSW
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgres"))
+{
+    var uri = new Uri(connectionString);
+    var userInfo = uri.UserInfo.Split(':');
+    connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true;";
+}
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(connectionString, npgsqlOptions =>
