@@ -78,8 +78,9 @@ public class BookingsController(
     [AllowAnonymous]
     public async Task<IActionResult> ReceivePayOsWebhook([FromBody] PayOSWebhookPayload payload, CancellationToken ct)
     {
+        // Phản hồi 200 OK ngay khi PayOS gửi request kiểm tra webhook hoạt động
         if (payload?.Data == null)
-            return BadRequest(new { code = "01", desc = "Payload không hợp lệ." });
+            return Ok(new { code = "00", desc = "success" });
 
         // Kiểm tra chữ ký bảo mật nếu đã cấu hình ChecksumKey
         var checksumKey = configuration["PayOS:ChecksumKey"];
@@ -88,7 +89,7 @@ public class BookingsController(
             if (!VerifyPayOsSignature(payload.Data, checksumKey, payload.Signature))
             {
                 logger.LogWarning("Webhook PayOS bị sai chữ ký bảo mật checksum.");
-                return BadRequest(new { code = "02", desc = "Chữ ký không hợp lệ." });
+                return Ok(new { code = "00", desc = "Chữ ký không khớp, bỏ qua xử lý." });
             }
         }
 
@@ -230,6 +231,7 @@ public class BookingsController(
             if (!string.IsNullOrEmpty(data.CancelUrl)) pairs["cancelUrl"] = data.CancelUrl;
             if (!string.IsNullOrEmpty(data.Description)) pairs["description"] = data.Description;
             if (data.OrderCode > 0) pairs["orderCode"] = data.OrderCode.ToString();
+            if (!string.IsNullOrEmpty(data.PaymentLinkId)) pairs["paymentLinkId"] = data.PaymentLinkId;
             if (!string.IsNullOrEmpty(data.Reference)) pairs["reference"] = data.Reference;
             if (!string.IsNullOrEmpty(data.ReturnUrl)) pairs["returnUrl"] = data.ReturnUrl;
 
