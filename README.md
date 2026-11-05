@@ -82,6 +82,8 @@ eventpass/
 * Khám phá sự kiện, chọn phân hạng vé và thanh toán qua mã VietQR động.
 * Cập nhật hồ sơ cá nhân và tải ảnh khuôn mặt (Face ID) để trích xuất vector nhúng.
 
+Email: customer@eventpass.local | Password: Customer@123
+
 ### 🛡️ Quản trị viên (Admin)
 
 * **Live Dashboard (UC10):** Theo dõi số lượng check-in, tỷ lệ lấp đầy, lưu lượng theo khung giờ và Live Feed qua SignalR.
@@ -89,6 +91,8 @@ eventpass/
 * **Quản trị sự kiện (UC12):** Quản lý chi tiết sự kiện, trạm soát vé, mẫu vé điện tử và điều phối đóng/mở/hủy sự kiện.
 * **Danh sách tham dự & Đối soát (UC13):** Tra cứu khách vé, xem ảnh đối chiếu Face ID, điểm danh thủ công, khóa/mở khóa vé linh hoạt và xuất file báo cáo.
 * **Theo dõi dòng tiền VietQR (UC14):** Giám sát giao dịch ngân hàng theo thời gian thực qua Webhook SePay/PayOS, phân trang đối soát cố định 06 giao dịch/trang.
+
+Email: admin@eventpass.local | Password: Admin@123
 
 ### 📷 Trạm kiểm soát (Kiosk)
 

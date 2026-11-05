@@ -6,12 +6,12 @@ const nextConfig = {
     return [
       {
         source: "/",
-        destination: "/admin/attendees",
+        destination: "/events",
         permanent: false,
       },
       {
         source: "/admin",
-        destination: "/admin/attendees",
+        destination: "/admin/dashboard",
         permanent: false,
       },
     ];
