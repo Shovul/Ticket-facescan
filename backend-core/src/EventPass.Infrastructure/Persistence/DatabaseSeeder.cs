@@ -41,6 +41,9 @@ public static class DatabaseSeeder
         var kioskSeed = await EnsureKioskDataAsync(db, admin, hashPassword, now, ct);
         usersAdded += kioskSeed.UsersAdded;
         var eventsAdded = kioskSeed.EventsAdded;
+
+        var sampleSeed = await EnsureComprehensiveSampleDataAsync(db, admin, hashPassword, now, ct);
+        usersAdded += sampleSeed.UsersAdded;
         foreach (var definition in Definitions())
         {
             if (await db.Events.IgnoreQueryFilters().AnyAsync(e => e.OrganizerId == admin.Id && e.Title == definition.Title, ct))
@@ -175,6 +178,193 @@ public static class DatabaseSeeder
         ticket.QuantitySold++;
         await db.SaveChangesAsync(ct);
         return new(usersAdded, eventsAdded);
+    }
+
+    // Tự động nạp dữ liệu mẫu toàn diện cho tất cả các bảng (users, orders, order_items, ticket_details, checkin_logs)
+    private static async Task<SeedDatabaseResult> EnsureComprehensiveSampleDataAsync(
+        AppDbContext db, User admin, Func<User, string, string> hashPassword, DateTime now, CancellationToken ct)
+    {
+        var usersAdded = 0;
+
+        // 1. Nạp danh sách 15 người dùng thực tế đại diện cho các vai trò
+        var sampleUsers = new (string Email, string Name, string Phone, UserRole Role)[]
+        {
+            ("lethihong@gmail.com", "Lê Thị Hồng", "0912345601", UserRole.User),
+            ("tranquocbao@gmail.com", "Trần Quốc Bảo", "0912345602", UserRole.User),
+            ("nguyenthanhnam@gmail.com", "Nguyễn Thành Nam", "0912345603", UserRole.User),
+            ("phamthithuy@gmail.com", "Phạm Thị Thúy", "0912345604", UserRole.User),
+            ("hoangminhtuan@gmail.com", "Hoàng Minh Tuấn", "0912345605", UserRole.User),
+            ("dangngoclan@gmail.com", "Đặng Ngọc Lan", "0912345606", UserRole.User),
+            ("vuhoanglong@gmail.com", "Vũ Hoàng Long", "0912345607", UserRole.User),
+            ("buiducthang@gmail.com", "Bùi Đức Thắng", "0912345608", UserRole.User),
+            ("ngophuonganh@gmail.com", "Ngô Phương Anh", "0912345609", UserRole.User),
+            ("dothikieu@gmail.com", "Đỗ Thị Kiều", "0912345610", UserRole.User),
+            ("tochucsukien@sgu.edu.vn", "Ban Tổ Chức Hội Thảo SGU", "0908889901", UserRole.Admin),
+            ("it.admin@eventpass.vn", "Quản Trị Viên Kỹ Thuật", "0908889902", UserRole.Admin)
+        };
+
+        var userEntities = new List<User>();
+        foreach (var u in sampleUsers)
+        {
+            var existing = await db.Users.IgnoreQueryFilters().SingleOrDefaultAsync(x => x.Email == u.Email, ct);
+            if (existing == null)
+            {
+                existing = new User
+                {
+                    Email = u.Email,
+                    Username = u.Email.Split('@')[0] + "_" + Guid.NewGuid().ToString("N")[..6],
+                    FullName = u.Name,
+                    Phone = u.Phone,
+                    Role = u.Role,
+                    AvatarUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400"
+                };
+                existing.PasswordHash = hashPassword(existing, "EventPass@2026");
+                db.Users.Add(existing);
+                usersAdded++;
+            }
+            userEntities.Add(existing);
+        }
+        await db.SaveChangesAsync(ct);
+
+        // 2. Lấy sự kiện và vé mẫu đang có để nạp đơn hàng, vé và checkin log
+        var ev = await db.Events.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == 1, ct)
+                 ?? await db.Events.IgnoreQueryFilters().FirstOrDefaultAsync(ct);
+        if (ev == null) return new(usersAdded, 0);
+
+        var tickets = await db.Tickets.IgnoreQueryFilters().Where(t => t.EventId == ev.Id).ToListAsync(ct);
+        if (!tickets.Any()) return new(usersAdded, 0);
+
+        // Lấy vector mẫu 512 chiều từ Resource
+        using var stream = typeof(DatabaseSeeder).Assembly.GetManifestResourceStream("EventPass.KioskSeedVector.json");
+        float[] baseVector = stream != null
+            ? (await JsonSerializer.DeserializeAsync<float[]>(stream, cancellationToken: ct)) ?? new float[512]
+            : new float[512];
+        if (baseVector.Length != 512) baseVector = new float[512];
+
+        // 3. Nạp 15 đơn hàng (orders), 15 mục chi tiết đơn (order_items) và 15 vé chi tiết (ticket_details)
+        var sampleAttendees = new (string Name, string Email, string Phone)[]
+        {
+            ("Lê Thị Hồng", "lethihong@gmail.com", "0912345601"),
+            ("Trần Quốc Bảo", "tranquocbao@gmail.com", "0912345602"),
+            ("Nguyễn Thành Nam", "nguyenthanhnam@gmail.com", "0912345603"),
+            ("Phạm Thị Thúy", "phamthithuy@gmail.com", "0912345604"),
+            ("Hoàng Minh Tuấn", "hoangminhtuan@gmail.com", "0912345605"),
+            ("Đặng Ngọc Lan", "dangngoclan@gmail.com", "0912345606"),
+            ("Vũ Hoàng Long", "vuhoanglong@gmail.com", "0912345607"),
+            ("Bùi Đức Thắng", "buiducthang@gmail.com", "0912345608"),
+            ("Ngô Phương Anh", "ngophuonganh@gmail.com", "0912345609"),
+            ("Đỗ Thị Kiều", "dothikieu@gmail.com", "0912345610"),
+            ("Nguyễn Văn An", "nguyenvanan@sgu.edu.vn", "0912345611"),
+            ("Trần Mai Linh", "tranmailinh@sgu.edu.vn", "0912345612"),
+            ("Lê Tuấn Kiệt", "letuankiet@sgu.edu.vn", "0912345613"),
+            ("Phan Thị Hạnh", "phanthihanh@sgu.edu.vn", "0912345614"),
+            ("Võ Minh Triết", "vominhtriet@sgu.edu.vn", "0912345615")
+        };
+
+        var ticketDetailEntities = new List<TicketDetail>();
+
+        for (int i = 0; i < sampleAttendees.Length; i++)
+        {
+            var att = sampleAttendees[i];
+            var code = $"TK-SGU-2026-{(i + 1):D4}";
+            var orderCode = $"ORD-2026-SGU-{(i + 2):D3}";
+
+            var ticket = tickets[i % tickets.Count];
+            var buyer = userEntities[i % userEntities.Count];
+
+            var order = await db.Orders.IgnoreQueryFilters().SingleOrDefaultAsync(o => o.OrderCode == orderCode, ct);
+            if (order == null)
+            {
+                order = new Order
+                {
+                    UserId = buyer.Id,
+                    EventId = ev.Id,
+                    OrderCode = orderCode,
+                    TotalAmount = ticket.Price > 0 ? ticket.Price : 0,
+                    PaymentMethod = ticket.Price > 0 ? "VietQR" : "FreePass",
+                    PaymentStatus = PaymentStatus.Success,
+                    TransactionCode = $"TRANS-SGU-{(100000 + i)}",
+                    PaidAt = now.AddHours(-2 - i)
+                };
+                db.Orders.Add(order);
+                await db.SaveChangesAsync(ct);
+
+                // Nạp order_items
+                var orderItem = new OrderItem
+                {
+                    OrderId = order.Id,
+                    TicketId = ticket.Id,
+                    UnitPrice = ticket.Price,
+                    Status = "confirmed",
+                    AttendeeName = att.Name,
+                    AttendeeEmail = att.Email,
+                    AttendeePhone = att.Phone,
+                    FaceConsentAt = now.AddHours(-2 - i)
+                };
+                db.OrderItems.Add(orderItem);
+            }
+
+            var ticketDetail = await db.TicketDetails.IgnoreQueryFilters().SingleOrDefaultAsync(t => t.TicketCode == code, ct);
+            if (ticketDetail == null)
+            {
+                // Biến thiên nhẹ vector mẫu cho từng người tham dự để mô phỏng nhận diện sinh trắc học
+                var personVector = (float[])baseVector.Clone();
+                if (personVector.Length == 512)
+                {
+                    personVector[i % 512] += (float)(0.01 * (i + 1));
+                }
+
+                ticketDetail = new TicketDetail
+                {
+                    OrderId = order.Id,
+                    EventId = ev.Id,
+                    TicketId = ticket.Id,
+                    TicketCode = code,
+                    QrCodeUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={code}",
+                    AttendeeName = att.Name,
+                    AttendeeEmail = att.Email,
+                    AttendeePhone = att.Phone,
+                    FaceVector = new Vector(personVector),
+                    Status = (i < 8) ? TicketDetailStatus.CheckedIn : TicketDetailStatus.Valid,
+                    CheckedInAt = (i < 8) ? now.AddMinutes(-10 * (i + 1)) : null
+                };
+                db.TicketDetails.Add(ticketDetail);
+                ticket.QuantitySold++;
+            }
+            ticketDetailEntities.Add(ticketDetail);
+        }
+        await db.SaveChangesAsync(ct);
+
+        // 4. Nạp 20 bản ghi checkin_logs (Nhật ký điểm danh Kiosk thời gian thực)
+        if (!await db.CheckinLogs.IgnoreQueryFilters().AnyAsync(ct))
+        {
+            var logs = new List<CheckinLog>();
+            var kiosksList = new[] { "Kiosk Cổng 1 (Chính)", "Kiosk Cổng 2 (VIP)", "Kiosk Cổng 3 (Hội trường)" };
+
+            for (int i = 0; i < 20; i++)
+            {
+                var td = ticketDetailEntities[i % ticketDetailEntities.Count];
+                var isSuccess = (i % 6 != 0); // Đa phần hợp lệ, thi thoảng có cảnh báo
+
+                logs.Add(new CheckinLog
+                {
+                    TicketDetailId = td.Id > 0 ? td.Id : null,
+                    EventId = ev.Id,
+                    KioskName = kiosksList[i % kiosksList.Length],
+                    CapturedAt = now.AddMinutes(-5 * (20 - i)),
+                    MatchDistance = isSuccess ? 0.18 + (i * 0.005) : 0.42,
+                    FaceConfidence = isSuccess ? 0.94 - (i * 0.008) : 0.58,
+                    Status = isSuccess ? "VALID" : "DUPLICATE",
+                    Notes = isSuccess
+                        ? $"Xác thực khuôn mặt thành công (< 0.45s) - Đối soát vé {td.TicketCode}"
+                        : $"Cảnh báo: Phát hiện khuôn mặt đã từng check-in lúc {now.AddMinutes(-30):HH:mm}"
+                });
+            }
+            db.CheckinLogs.AddRange(logs);
+            await db.SaveChangesAsync(ct);
+        }
+
+        return new SeedDatabaseResult(usersAdded, 0);
     }
 
     // Lịch tương đối được tính lúc tạo lần đầu; khởi động lại không gia hạn hoặc đặt lại tồn kho.
