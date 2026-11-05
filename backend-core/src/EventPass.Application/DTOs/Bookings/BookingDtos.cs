@@ -27,7 +27,7 @@ public record BookingItemDto(int Id, int TicketTypeId, string TicketTypeName, de
     bool HasFaceId, string? TicketCode, string? QrCodeUrl, bool HasActiveClaimLink);
 public record CustomerSummaryDto(int Id, string FullName, string? AvatarUrl, int TicketCount);
 public record BookingPaymentDto(string BankCode, string AccountNumber, string AccountName,
-    string Memo, decimal Amount, string QrUrl);
+    string Memo, decimal Amount, string QrUrl, string? CheckoutUrl = null);
 public record BookingDto(int Id, string OrderCode, int EventId, string EventTitle, string Location,
     DateTime StartTime, string Status, decimal TotalAmount, DateTime ServerTime,
     DateTime? ExpiresAt, DateTime? PaymentExpiresAt, DateTime? PaidAt,
@@ -61,3 +61,28 @@ public record CustomerTicketDto(string OrderCode, int ItemId, string EventTitle,
 public record CustomerTicketsDto(IReadOnlyList<BookingDto> PendingOrders, IReadOnlyList<CustomerTicketDto> Tickets,
     int Page, int TotalPages, int TotalCount, int AllCount, int FreeCount, int PaidCount, int MissingFaceCount, DateTime ServerTime);
 public record DigitalPassDto(CustomerTicketDto Ticket, string? FaceImage);
+
+// DTO tiếp nhận dữ liệu Webhook từ cổng thanh toán trực tuyến PayOS
+public class PayOSWebhookData
+{
+    public long OrderCode { get; set; }
+    public decimal Amount { get; set; }
+    public string? Description { get; set; }
+    public string? AccountNumber { get; set; }
+    public string? Reference { get; set; }
+    public string? TransactionDateTime { get; set; }
+    public string? Currency { get; set; }
+    public string? PaymentLinkId { get; set; }
+    public string? Code { get; set; }
+    public string? Desc { get; set; }
+    public string? CancelUrl { get; set; }
+    public string? ReturnUrl { get; set; }
+}
+
+public class PayOSWebhookPayload
+{
+    public string? Code { get; set; }
+    public string? Desc { get; set; }
+    public PayOSWebhookData? Data { get; set; }
+    public string? Signature { get; set; }
+}

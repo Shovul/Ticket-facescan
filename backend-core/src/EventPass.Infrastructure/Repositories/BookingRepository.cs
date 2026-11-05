@@ -34,9 +34,17 @@ public class BookingRepository(AppDbContext db) : IBookingRepository
     private IQueryable<Order> Orders => db.Orders.Include(o => o.Event).Include(o => o.User)
         .Include(o => o.Items).ThenInclude(i => i.Ticket).Include(o => o.Items).ThenInclude(i => i.TicketDetail)
         .Include(o => o.Event).ThenInclude(e => e.Kiosks);
-    public Task<Order?> GetOrderAsync(string code, CancellationToken ct) => Orders.SingleOrDefaultAsync(o => o.OrderCode == code, ct);
+    public Task<Order?> GetOrderAsync(string code, CancellationToken ct)
+    {
+        int? id = int.TryParse(code, out var v) ? v : null;
+        return Orders.SingleOrDefaultAsync(o => o.OrderCode == code || (id.HasValue && o.Id == id.Value), ct);
+    }
     public Task<Order?> GetRequestAsync(int userId, string key, CancellationToken ct) => Orders.SingleOrDefaultAsync(o => o.UserId == userId && o.RequestKey == key, ct);
-    public Task<int> GetOrderEventIdAsync(string code, CancellationToken ct) => db.Orders.Where(o => o.OrderCode == code).Select(o => o.EventId).SingleOrDefaultAsync(ct);
+    public Task<int> GetOrderEventIdAsync(string code, CancellationToken ct)
+    {
+        int? id = int.TryParse(code, out var v) ? v : null;
+        return db.Orders.Where(o => o.OrderCode == code || (id.HasValue && o.Id == id.Value)).Select(o => o.EventId).SingleOrDefaultAsync(ct);
+    }
 
     public Task<int> HeldQuantityAsync(int id, DateTime now, CancellationToken ct) => db.Set<OrderItem>()
         .CountAsync(i => i.TicketId == id && !i.IsDeleted && !i.Order.IsDeleted && i.Status == "reserved"

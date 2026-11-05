@@ -47,7 +47,7 @@ async function request<T>(path: string, options: RequestInit = {}, authenticated
 
 export const customerApi = {
   customer: (signal?: AbortSignal) => request<CustomerSummary>("/bookings/customer-summary", { signal }, true),
-  // "Tra cứu danh sách sự kiện công khai với bộ lọc nâng cao"
+  // Tra cứu danh sách sự kiện công khai với bộ lọc nâng cao
   events: (
     params: {
       search?: string;
@@ -103,6 +103,8 @@ export const customerApi = {
       body: JSON.stringify(attendee || {})
     }, true),
   confirmFree: (code: string) => request<Booking>(`/bookings/${encodeURIComponent(code)}/confirm-free`, { method: "POST" }, true),
+  // Xác nhận thanh toán đơn hàng (hỗ trợ kiểm thử trực tiếp)
+  confirmPayment: (code: string) => request<Booking>(`/bookings/${encodeURIComponent(code)}/confirm-payment`, { method: "POST" }, true),
   tickets: (page: number, filter: string, signal?: AbortSignal) => request<CustomerTickets>(
     `/bookings/my-tickets?${new URLSearchParams({ page: String(page), filter })}`, { signal }, true),
   pass: (code: string, id: number) => request<DigitalPass>(`/bookings/${encodeURIComponent(code)}/items/${id}/pass`, {}, true),

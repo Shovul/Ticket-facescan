@@ -32,7 +32,7 @@ export interface BookingItem {
   attendeeName?: string; attendeeEmail?: string; attendeePhone?: string; hasFaceId: boolean;
   ticketCode?: string; qrCodeUrl?: string; hasActiveClaimLink: boolean;
 }
-export interface BookingPayment { bankCode: string; accountNumber: string; accountName: string; memo: string; amount: number; qrUrl: string; }
+export interface BookingPayment { bankCode: string; accountNumber: string; accountName: string; memo: string; amount: number; qrUrl: string; checkoutUrl?: string; }
 export interface Booking {
   id: number; orderCode: string; eventId: number; eventTitle: string; location: string; startTime: string;
   status: string; totalAmount: number; serverTime: string; expiresAt?: string; paymentExpiresAt?: string;

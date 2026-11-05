@@ -73,7 +73,7 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
             var order = new Order
             {
                 UserId = userId, User = user, Event = ev, EventId = ev.Id,
-                OrderCode = "ORD" + Guid.NewGuid().ToString("N").ToUpperInvariant(),
+                OrderCode = "ORD" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString() + Random.Shared.Next(10, 99).ToString(),
                 RequestKey = request.RequestKey, TotalAmount = total, PaymentMethod = total == 0 ? "Free" : "VietQR",
                 PaymentStatus = PaymentStatus.Pending, ReservationStatus = "holding",
                 ExpiresAt = now.AddMinutes(total == 0 ? 5 : mixed ? 15 : 10),
@@ -246,7 +246,7 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
             if (o.TotalAmount > 0 && o.PaidAt == null)
                 throw new BookingException(409, "Cần hoàn tất thanh toán trước khi kích hoạt vé miễn phí đi kèm.");
             if (free.Any(i => !Ready(i)))
-                throw new BookingException(422, "Vui lòng nhập đủ thông tin và Face ID cho tất cả vé miễn phí.");
+                throw new BookingException(422, "Vui lòng nhập đủ thông tin người tham dự cho tất cả vé miễn phí.");
             foreach (var item in free) Issue(o, item);
             if (o.TotalAmount == 0 && o.Items.Any(i => i.Status == "issued"))
                 o.PaymentStatus = PaymentStatus.Success;
@@ -275,7 +275,7 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
             throw new BookingException(400, "Thông tin giao dịch không hợp lệ.");
         var eventId = await repository.GetOrderEventIdAsync(payment.OrderCode, ct);
         if (eventId == 0) throw new BookingException(404, "Không tìm thấy đơn cần đối soát.");
-        var owner = await repository.InEventTransactionAsync(eventId, async () =>
+        var (owner, actualOrderCode) = await repository.InEventTransactionAsync(eventId, async () =>
         {
             var o = await repository.GetOrderAsync(payment.OrderCode, ct)
                 ?? throw new BookingException(404, "Không tìm thấy đơn cần đối soát.");
@@ -283,7 +283,7 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
             {
                 if (o.PaymentReference != payment.Reference || o.TotalAmount != payment.Amount)
                     throw new BookingException(409, "Đơn đã được ghi nhận bằng giao dịch khác.");
-                return o.UserId;
+                return (o.UserId, o.OrderCode);
             }
             Expire(o, DateTime.UtcNow);
             if (o.ReservationStatus != "holding" || o.PaymentExpiresAt <= DateTime.UtcNow)
@@ -298,9 +298,9 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
             o.PaymentStatus = PaymentStatus.Success;
             foreach (var item in o.Items.Where(i => i.UnitPrice > 0 && i.Status == "reserved")) Issue(o, item);
             o.ReservationStatus = o.Items.Any(i => i.Status == "reserved") ? "awaiting_faces" : "completed";
-            return o.UserId;
+            return (o.UserId, o.OrderCode);
         }, ct);
-        await SendEmail(owner, payment.OrderCode, ct);
+        await SendEmail(owner, actualOrderCode, ct);
     }
 
     public async Task ExpireAsync(CancellationToken ct)
@@ -542,8 +542,9 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
         return item;
     }
 
+    // Bỏ qua điều kiện FaceVector khi xác nhận vé để hỗ trợ hoàn tất đặt vé trước khi tích hợp quét mặt
     private static bool Ready(OrderItem item) => !string.IsNullOrWhiteSpace(item.AttendeeName)
-        && !string.IsNullOrWhiteSpace(item.AttendeeEmail) && !string.IsNullOrWhiteSpace(item.AttendeePhone) && item.FaceVector != null;
+        && !string.IsNullOrWhiteSpace(item.AttendeeEmail) && !string.IsNullOrWhiteSpace(item.AttendeePhone);
 
     private void Issue(Order o, OrderItem item)
     {

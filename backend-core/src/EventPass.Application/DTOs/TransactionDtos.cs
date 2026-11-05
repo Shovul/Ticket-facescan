@@ -1,16 +1,5 @@
 namespace EventPass.Application.DTOs;
 
-public class SePayWebhookPayload
-{
-    public long Id { get; set; }
-    public string Gateway { get; set; } = string.Empty;
-    public string TransactionDate { get; set; } = string.Empty;
-    public string AccountNumber { get; set; } = string.Empty;
-    public decimal TransferAmount { get; set; }
-    public string Content { get; set; } = string.Empty;
-    public string ReferenceCode { get; set; } = string.Empty;
-}
-
 public class TransactionDto
 {
     public int Id { get; set; }

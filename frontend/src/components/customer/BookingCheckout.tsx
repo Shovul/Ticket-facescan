@@ -18,6 +18,7 @@ export function AttendeeForm({
   upload,
   claim,
   useProfile,
+  updateAttendee,
   profile,
 }: {
   item: BookingItem;
@@ -27,6 +28,7 @@ export function AttendeeForm({
   upload: (id: number, attendee: { name: string; email: string; phone: string }, image: File | Blob) => Promise<void>;
   claim?: (id: number) => Promise<void>;
   useProfile?: (id: number, attendee: { name: string; email: string; phone: string }) => Promise<void>;
+  updateAttendee?: (id: number, attendee: { name: string; email: string; phone: string }) => Promise<void>;
   profile?: UserProfileData | null;
 }) {
   const [name, setName] = useState(item.attendeeName || "");
@@ -67,6 +69,29 @@ export function AttendeeForm({
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(attendee.email) &&
     /^\d{10}$/.test(attendee.phone);
   const canUpload = consent && !frozen && hasValidAttendee;
+
+  // Tự động đồng bộ thông tin nếu vé người mua đã có profile
+  useEffect(() => {
+    if (isBuyerTicket && profile && !item.attendeeName && profile.fullName && profile.email && profile.phoneNumber) {
+      setName(profile.fullName);
+      setEmail(profile.email);
+      setPhone(profile.phoneNumber);
+      // Dùng setTimeout để tránh race condition khi mutate chưa rảnh lúc component vừa mount
+      const t = setTimeout(() => {
+        void updateAttendee?.(item.id, { name: profile.fullName, email: profile.email, phone: profile.phoneNumber })
+          .catch(() => {});
+      }, 300);
+      return () => clearTimeout(t);
+    }
+  }, [profile, isBuyerTicket, item.attendeeName, item.id]);
+
+  async function handleBlur() {
+    if (hasValidAttendee && (name.trim() !== item.attendeeName || email.trim() !== item.attendeeEmail || phone.trim() !== item.attendeePhone)) {
+      try {
+        await updateAttendee?.(item.id, { name: name.trim(), email: email.trim(), phone: phone.trim() });
+      } catch {}
+    }
+  }
 
   // 1. Tải ảnh từ máy tính
   async function selectImage(file?: File) {
@@ -248,6 +273,7 @@ export function AttendeeForm({
                     maxLength={100}
                     autoComplete="name"
                     onChange={(e) => setName(e.target.value)}
+                    onBlur={handleBlur}
                   />
                 </label>
                 <label className="field-label">
@@ -262,6 +288,7 @@ export function AttendeeForm({
                     maxLength={10}
                     autoComplete="tel"
                     onChange={(e) => setPhone(e.target.value)}
+                    onBlur={handleBlur}
                   />
                 </label>
                 <label className="field-label full-width">
@@ -275,6 +302,7 @@ export function AttendeeForm({
                     maxLength={255}
                     autoComplete="email"
                     onChange={(e) => setEmail(e.target.value)}
+                    onBlur={handleBlur}
                   />
                 </label>
               </div>
@@ -737,10 +765,11 @@ export default function BookingCheckout({
 
   const expired = booking.status === "expired" || booking.status === "cancelled";
   const freePending = booking.items.filter((i) => i.unitPrice === 0 && i.status === "reserved");
+  // Bỏ qua yêu cầu Face ID khi xác nhận vé theo yêu cầu nghiệp vụ
   const canConfirm =
     !expired &&
     freePending.length > 0 &&
-    freePending.every((i) => i.hasFaceId && i.attendeeName && i.attendeeEmail && i.attendeePhone) &&
+    freePending.every((i) => i.attendeeName && i.attendeeEmail && i.attendeePhone) &&
     (booking.totalAmount === 0 || !!booking.paidAt) &&
     countdown(booking.expiresAt) !== "00:00";
   const hasIssued = booking.items.some((i) => i.status === "issued");
@@ -860,6 +889,24 @@ export default function BookingCheckout({
                         </button>
                       </div>
                     </div>
+                    <div style={{ textAlign: "center", marginTop: "10px" }}>
+                      <button
+                        type="button"
+                        className="btn-confirm-booking-all"
+                        style={{ width: "100%", padding: "10px", fontSize: "13.5px" }}
+                        disabled={pending}
+                        onClick={async () => {
+                          try {
+                            await mutate(() => customerApi.confirmPayment(code), "Đang kiểm tra và cập nhật thanh toán…");
+                          } catch {
+                            const updated = await customerApi.booking(code);
+                            apply(updated);
+                          }
+                        }}
+                      >
+                        Kiểm tra thanh toán
+                      </button>
+                    </div>
                     <div className="payment-polling-spinner" role="status">
                       <span className="spinner-dot" />
                       {countdown(booking.paymentExpiresAt) === "00:00"
@@ -914,6 +961,12 @@ export default function BookingCheckout({
                       await mutate(
                         () => customerApi.face(code, id, att, file, true),
                         "Face ID đã được kiểm tra và lưu thành công."
+                      );
+                    }}
+                    updateAttendee={async (id, att) => {
+                      await mutate(
+                        () => customerApi.attendee(code, id, att),
+                        "Đã lưu thông tin người tham dự."
                       );
                     }}
                   />

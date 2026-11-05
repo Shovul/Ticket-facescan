@@ -9,7 +9,7 @@ import { PublicEventPage, PublicEvent } from "../../../types/customer";
 import Pagination from "../../../components/shared/Pagination";
 import { useNotification } from "../../../components/shared/NotificationProvider";
 
-// "Cấu hình danh mục sự kiện chuẩn hóa theo thiết kế"
+// Cấu hình danh mục sự kiện chuẩn hóa theo thiết kế
 const CATEGORIES = [
   { id: "music", label: "Âm nhạc & Biểu diễn", defaultCount: 12 },
   { id: "workshop", label: "Workshop & Công nghệ", defaultCount: 8 },
@@ -24,7 +24,7 @@ export default function EventsPage() {
   const catalog = useRef<HTMLElement>(null);
   const notify = useNotification();
 
-  // "Các giá trị bộ lọc được trích xuất từ URL search params"
+  // Các giá trị bộ lọc được trích xuất từ URL search params
   const term = (params.get("search") || "").trim();
   const sort = ["time", "remaining", "name"].includes(params.get("sort") || "") ? params.get("sort")! : "time";
   const requestedPage = Number(params.get("page") || "1");
@@ -39,7 +39,7 @@ export default function EventsPage() {
   const urlStartDate = params.get("startDate") || "";
   const urlEndDate = params.get("endDate") || "";
 
-  // "State quản lý bộ lọc tương tác trên giao diện"
+  // State quản lý bộ lọc tương tác trên giao diện
   const [data, setData] = useState<PublicEventPage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -53,7 +53,7 @@ export default function EventsPage() {
   const [endDate, setEndDate] = useState(urlEndDate);
   const [showMoreCats, setShowMoreCats] = useState(false);
 
-  // "Đồng bộ state khi URL thay đổi"
+  // Đồng bộ state khi URL thay đổi
   useEffect(() => {
     setFreeActive(urlTicketType === "free" || urlTicketType === "both");
     setPaidActive(urlTicketType === "paid" || urlTicketType === "both");
@@ -63,7 +63,7 @@ export default function EventsPage() {
     setEndDate(urlEndDate);
   }, [urlTicketType, urlMaxPrice, urlCategories, urlStartDate, urlEndDate]);
 
-  // "Tải danh sách sự kiện từ API dựa theo tham số bộ lọc ngày và loại vé"
+  // Tải danh sách sự kiện từ API dựa theo tham số bộ lọc ngày và loại vé
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
@@ -98,7 +98,7 @@ export default function EventsPage() {
     return () => controller.abort();
   }, [term, sort, page, freeActive, paidActive, maxPrice, selectedCats, startDate, endDate, retry, notify]);
 
-  // "Điều hướng và cập nhật query params lên URL"
+  // Điều hướng và cập nhật query params lên URL
   function applyFiltersToUrl(updates: Record<string, string | null>) {
     const query = new URLSearchParams(params.toString());
     Object.entries(updates).forEach(([key, val]) => {
@@ -109,7 +109,7 @@ export default function EventsPage() {
     catalog.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  // "Xử lý chọn loại vé: tất cả, miễn phí hoặc có phí"
+  // Xử lý chọn loại vé: tất cả, miễn phí hoặc có phí
   function toggleTicketType(type: "all" | "free" | "paid") {
     let nextFree = freeActive;
     let nextPaid = paidActive;
@@ -134,7 +134,7 @@ export default function EventsPage() {
     applyFiltersToUrl({ ticketType: nextType === "all" ? null : nextType, page: "1" });
   }
 
-  // "Chuyển đổi trạng thái chọn của danh mục sự kiện"
+  // Chuyển đổi trạng thái chọn của danh mục sự kiện
   function toggleCategory(catId: string) {
     const next = selectedCats.includes(catId)
       ? selectedCats.filter(id => id !== catId)
@@ -143,7 +143,7 @@ export default function EventsPage() {
     applyFiltersToUrl({ categories: next.length > 0 ? next.join(",") : null, page: "1" });
   }
 
-  // "Xóa toàn bộ các tiêu chí lọc về mặc định"
+  // Xóa toàn bộ các tiêu chí lọc về mặc định
   function resetAllFilters() {
     setFreeActive(false);
     setPaidActive(false);
@@ -161,7 +161,7 @@ export default function EventsPage() {
     });
   }
 
-  // "Hiển thị nhãn giá tiền của vé sự kiện"
+  // Hiển thị nhãn giá tiền của vé sự kiện
   function renderTicketPills(event: PublicEvent) {
     const hasFree = event.tickets.some(t => t.price === 0);
     const paidTickets = event.tickets.filter(t => t.price > 0).sort((a, b) => a.price - b.price);

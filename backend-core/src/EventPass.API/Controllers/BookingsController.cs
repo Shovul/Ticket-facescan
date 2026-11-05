@@ -1,16 +1,28 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using EventPass.API.Hubs;
 using EventPass.Application.DTOs.Bookings;
 using EventPass.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace EventPass.API.Controllers;
 
 [ApiController]
 [Authorize(AuthenticationSchemes = "BookingCustomer")]
 [Route("api/v1/bookings")]
-public class BookingsController(IBookingService service, ILogger<BookingsController> logger) : ControllerBase
+public class BookingsController(
+    IBookingService service,
+    IBookingRepository repository,
+    IBookingPaymentReceiver paymentReceiver,
+    IHubContext<TransactionHub> transactionHub,
+    IConfiguration configuration,
+    ILogger<BookingsController> logger) : ControllerBase
 {
     private int UserId => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub"), out var id) && id > 0
         ? id : throw new BookingException(401, "Phiên đăng nhập không hợp lệ.");
@@ -61,6 +73,77 @@ public class BookingsController(IBookingService service, ILogger<BookingsControl
     [HttpPost("{code}/confirm-free")]
     public Task<IActionResult> Confirm(string code, CancellationToken ct) => Handle(() => service.ConfirmFreeAsync(UserId, code, ct));
 
+    // Webhook tiếp nhận và đối soát thanh toán tự động từ cổng PayOS
+    [HttpPost("webhook/payos")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ReceivePayOsWebhook([FromBody] PayOSWebhookPayload payload, CancellationToken ct)
+    {
+        if (payload?.Data == null)
+            return BadRequest(new { code = "01", desc = "Payload không hợp lệ." });
+
+        // Kiểm tra chữ ký bảo mật nếu đã cấu hình ChecksumKey
+        var checksumKey = configuration["PayOS:ChecksumKey"];
+        if (!string.IsNullOrWhiteSpace(checksumKey) && !string.IsNullOrWhiteSpace(payload.Signature))
+        {
+            if (!VerifyPayOsSignature(payload.Data, checksumKey, payload.Signature))
+            {
+                logger.LogWarning("Webhook PayOS bị sai chữ ký bảo mật checksum.");
+                return BadRequest(new { code = "02", desc = "Chữ ký không hợp lệ." });
+            }
+        }
+
+        // Xử lý khi trạng thái thanh toán thành công (code: 00 hoặc desc: success)
+        if (payload.Code == "00" || string.Equals(payload.Desc, "success", StringComparison.OrdinalIgnoreCase))
+        {
+            var rawOrderCode = payload.Data.OrderCode.ToString();
+            var desc = payload.Data.Description?.Trim() ?? "";
+            var targetCode = !string.IsNullOrEmpty(desc) && desc.StartsWith("ORD", StringComparison.OrdinalIgnoreCase)
+                ? desc
+                : rawOrderCode;
+
+            try
+            {
+                var confirmation = new PaymentConfirmation(
+                    targetCode,
+                    payload.Data.Amount,
+                    payload.Data.Reference ?? payload.Data.PaymentLinkId ?? $"PAYOS-{payload.Data.OrderCode}",
+                    DateTime.UtcNow
+                );
+                await paymentReceiver.ConfirmPaymentAsync(confirmation, ct);
+                logger.LogInformation("Đã xác nhận thanh toán PayOS thành công cho đơn {Code}", targetCode);
+
+                // Phát tín hiệu SignalR Realtime tới TransactionHub cho Live Dashboard và Admin
+                await BroadcastTransactionAsync(targetCode, confirmation, ct);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Lỗi đối soát thanh toán PayOS webhook cho đơn {Code}", targetCode);
+            }
+        }
+
+        return Ok(new { code = "00", desc = "success" });
+    }
+
+    // Xác nhận thanh toán thủ công phục vụ kiểm thử đơn hàng khi chưa nối webhook thực tế
+    [HttpPost("{code}/confirm-payment")]
+    public Task<IActionResult> ConfirmPayment(string code, CancellationToken ct) =>
+        Handle(async () =>
+        {
+            var order = await service.GetAsync(UserId, code, ct);
+            if (order.TotalAmount > 0 && order.PaidAt == null)
+            {
+                var confirmation = new PaymentConfirmation(
+                    code,
+                    order.TotalAmount,
+                    $"MANUAL-{DateTime.UtcNow:yyyyMMddHHmmss}",
+                    DateTime.UtcNow
+                );
+                await paymentReceiver.ConfirmPaymentAsync(confirmation, ct);
+                await BroadcastTransactionAsync(code, confirmation, ct);
+            }
+            return await service.GetAsync(UserId, code, ct);
+        });
+
     [HttpPost("{code}/cancel")]
     public Task<IActionResult> Cancel(string code, CancellationToken ct) => Handle(() => service.CancelAsync(UserId, code, ct));
     [HttpGet("my-tickets")]
@@ -106,6 +189,62 @@ public class BookingsController(IBookingService service, ILogger<BookingsControl
         });
     }
 
+    // Phát tín hiệu SignalR Realtime tới TransactionHub cho Ban tổ chức / Admin
+    private async Task BroadcastTransactionAsync(string code, PaymentConfirmation confirmation, CancellationToken ct)
+    {
+        try
+        {
+            var order = await repository.GetOrderAsync(code, ct);
+            if (order != null)
+            {
+                var txPayload = new
+                {
+                    id = order.Id,
+                    orderId = order.Id,
+                    eventId = order.EventId,
+                    transactionCode = order.TransactionCode ?? confirmation.Reference,
+                    amount = confirmation.Amount,
+                    paymentMethod = order.PaymentMethod ?? "VietQR",
+                    status = "Success",
+                    createdAt = DateTime.UtcNow,
+                    buyerEmail = order.User?.Email ?? "N/A",
+                    eventTitle = order.Event?.Title ?? "N/A"
+                };
+                await transactionHub.Clients.All.SendAsync("ReceiveNewTransaction", txPayload, ct);
+                logger.LogInformation("Đã phát tín hiệu SignalR ReceiveNewTransaction cho đơn {Code}", code);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Không thể phát tín hiệu SignalR ReceiveNewTransaction cho đơn {Code}", code);
+        }
+    }
+
+    // Kiểm tra tính hợp lệ chữ ký số HMAC-SHA256 từ webhook PayOS
+    private static bool VerifyPayOsSignature(PayOSWebhookData data, string checksumKey, string signature)
+    {
+        try
+        {
+            var pairs = new SortedDictionary<string, string>();
+            if (data.Amount > 0) pairs["amount"] = data.Amount.ToString("0");
+            if (!string.IsNullOrEmpty(data.CancelUrl)) pairs["cancelUrl"] = data.CancelUrl;
+            if (!string.IsNullOrEmpty(data.Description)) pairs["description"] = data.Description;
+            if (data.OrderCode > 0) pairs["orderCode"] = data.OrderCode.ToString();
+            if (!string.IsNullOrEmpty(data.Reference)) pairs["reference"] = data.Reference;
+            if (!string.IsNullOrEmpty(data.ReturnUrl)) pairs["returnUrl"] = data.ReturnUrl;
+
+            var raw = string.Join("&", pairs.Select(kv => $"{kv.Key}={kv.Value}"));
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(checksumKey));
+            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(raw));
+            var calculated = Convert.ToHexString(hash).ToLowerInvariant();
+            return string.Equals(calculated, signature, StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     private static async Task<(byte[] Bytes, string ContentType)> ReadFace(BookingFaceForm form, CancellationToken ct)
     {
         if (!form.Consent) throw new BookingException(400, "Bạn cần đồng ý xử lý dữ liệu khuôn mặt trước khi tải ảnh.");
@@ -120,7 +259,6 @@ public class BookingsController(IBookingService service, ILogger<BookingsControl
         if (contentType == null) throw new BookingException(400, "Chỉ chấp nhận ảnh JPG, PNG hoặc WEBP.");
         return (bytes, contentType);
     }
-
 }
 
 public class BookingFaceForm : AttendeeRequest
