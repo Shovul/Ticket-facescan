@@ -1,4 +1,4 @@
-﻿using EventPass.API.Hubs;
+using EventPass.API.Hubs;
 using EventPass.API.Services;
 using EventPass.Application.Interfaces;
 using EventPass.Application.Services;
@@ -15,22 +15,81 @@ using Microsoft.AspNetCore.Identity;
 using EventPass.Infrastructure.Storage;
 using Microsoft.OpenApi.Models;
 
+// ==============================================================================
+// 0. Tự động nạp file .env từ thư mục gốc nếu có (Local Dev & Docker fallback)
+// ==============================================================================
+static void LoadDotEnv()
+{
+    var current = Directory.GetCurrentDirectory();
+    string? envPath = null;
+    var dir = new DirectoryInfo(current);
+    while (dir != null)
+    {
+        var candidate = Path.Combine(dir.FullName, ".env");
+        if (File.Exists(candidate))
+        {
+            envPath = candidate;
+            break;
+        }
+        dir = dir.Parent;
+    }
+
+    if (envPath != null && File.Exists(envPath))
+    {
+        foreach (var rawLine in File.ReadAllLines(envPath))
+        {
+            var line = rawLine.Trim();
+            if (string.IsNullOrEmpty(line) || line.StartsWith('#') || !line.Contains('='))
+                continue;
+
+            var parts = line.Split('=', 2);
+            var key = parts[0].Trim();
+            var val = parts[1].Trim();
+            if (val.Length >= 2 && ((val.StartsWith('"') && val.EndsWith('"')) || (val.StartsWith('\'') && val.EndsWith('\''))))
+            {
+                val = val[1..^1];
+            }
+
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(key)))
+            {
+                Environment.SetEnvironmentVariable(key, val);
+            }
+        }
+    }
+}
+LoadDotEnv();
+
 var seedOnly = args.Any(a => a.Equals("--seed", StringComparison.OrdinalIgnoreCase));
 var builder = WebApplication.CreateBuilder(args.Where(a => !a.Equals("--seed", StringComparison.OrdinalIgnoreCase)).ToArray());
 
-// KhÃƒÂ³a phiÃƒÂªn thÃ¡Â»Â­ chÃ¡Â»â€° tÃ¡Â»â€œn tÃ¡ÂºÂ¡i trong lÃ¡ÂºÂ§n chÃ¡ÂºÂ¡y Development, khÃƒÂ´ng dÃƒÂ¹ng cho mÃƒÂ´i trÃ†Â°Ã¡Â»Âng triÃ¡Â»Æ’n khai.
+// Cho phép nạp thêm biến môi trường hệ thống
+builder.Configuration.AddEnvironmentVariables();
 
-// 1. CÃ¡ÂºÂ¥u hÃƒÂ¬nh Database PostgreSQL 16 + pgvector HNSW
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// ==============================================================================
+// Tự động map cấu hình từ Biến Môi Trường (.env) vào Configuration
+// ==============================================================================
+// 1. Connection String Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    var dbHost = builder.Configuration["DB_HOST"] ?? "localhost";
+    var dbPort = builder.Configuration["DB_PORT"] ?? "5433";
+    var dbName = builder.Configuration["DB_NAME"] ?? "eventpass_db";
+    var dbUser = builder.Configuration["DB_USER"] ?? "postgres";
+    var dbPass = builder.Configuration["DB_PASSWORD"] ?? "your_password";
+    connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPass};";
+}
+
 if (!string.IsNullOrEmpty(connectionString) && connectionString.StartsWith("postgres"))
 {
     var uri = new Uri(connectionString);
     var userInfo = uri.UserInfo.Split(':');
-    
     var port = uri.Port > 0 ? uri.Port : 5432;
-    
     connectionString = $"Host={uri.Host};Port={port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true;";
 }
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(connectionString, npgsqlOptions =>
@@ -41,7 +100,54 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
-// 2. CÃ¡ÂºÂ¥u hÃƒÂ¬nh CORS phÃ¡Â»Â¥c vÃ¡Â»Â¥ Frontend Next.js vÃƒÂ  Kiosk Native App
+// 2. Map PayOS Gateway
+if (string.IsNullOrWhiteSpace(builder.Configuration["PayOS:ClientId"]) && !string.IsNullOrWhiteSpace(builder.Configuration["PAYOS_CLIENT_ID"]))
+{
+    builder.Configuration["PayOS:ClientId"] = builder.Configuration["PAYOS_CLIENT_ID"]!;
+    builder.Configuration["PayOS:ApiKey"] = builder.Configuration["PAYOS_API_KEY"] ?? "";
+    builder.Configuration["PayOS:ChecksumKey"] = builder.Configuration["PAYOS_CHECKSUM_KEY"] ?? "";
+    builder.Configuration["PayOS:ReturnUrl"] = builder.Configuration["PAYOS_RETURN_URL"] ?? "http://localhost:3000/my-tickets";
+    builder.Configuration["PayOS:CancelUrl"] = builder.Configuration["PAYOS_CANCEL_URL"] ?? "http://localhost:3000/checkout";
+}
+
+// 3. Map Dropbox Storage
+if (string.IsNullOrWhiteSpace(builder.Configuration["Dropbox:AppKey"]) && !string.IsNullOrWhiteSpace(builder.Configuration["DROPBOX_APP_KEY"]))
+{
+    builder.Configuration["Dropbox:AppKey"] = builder.Configuration["DROPBOX_APP_KEY"]!;
+    builder.Configuration["Dropbox:AppSecret"] = builder.Configuration["DROPBOX_APP_SECRET"] ?? "";
+    builder.Configuration["Dropbox:RefreshToken"] = builder.Configuration["DROPBOX_REFRESH_TOKEN"] ?? "";
+    builder.Configuration["Dropbox:FolderPath"] = builder.Configuration["DROPBOX_FOLDER_PATH"] ?? "/EventPass";
+}
+
+// 4. Map Booking Payment & Mail Notification
+if (string.IsNullOrWhiteSpace(builder.Configuration["BookingPayment:AccountNumber"]) && !string.IsNullOrWhiteSpace(builder.Configuration["BOOKING_ACCOUNT_NUMBER"]))
+{
+    builder.Configuration["BookingPayment:BankCode"] = builder.Configuration["BOOKING_BANK_CODE"] ?? "MBBank";
+    builder.Configuration["BookingPayment:AccountNumber"] = builder.Configuration["BOOKING_ACCOUNT_NUMBER"]!;
+    builder.Configuration["BookingPayment:AccountName"] = builder.Configuration["BOOKING_ACCOUNT_NAME"] ?? "EVENTPASS PAYMENT";
+}
+
+var mailPass = builder.Configuration["BookingMail:Password"] ?? builder.Configuration["BOOKING_MAIL_PASSWORD"] ?? builder.Configuration["EmailSettings:SenderPassword"] ?? builder.Configuration["EMAIL_PASSWORD"];
+var mailUser = builder.Configuration["BookingMail:Username"] ?? builder.Configuration["BOOKING_MAIL_USERNAME"] ?? builder.Configuration["EmailSettings:SenderEmail"] ?? builder.Configuration["EMAIL_SENDER"];
+var mailFrom = builder.Configuration["BookingMail:From"] ?? builder.Configuration["BOOKING_MAIL_FROM"] ?? mailUser;
+var mailHost = builder.Configuration["BookingMail:Host"] ?? builder.Configuration["BOOKING_MAIL_HOST"] ?? builder.Configuration["EmailSettings:Server"] ?? builder.Configuration["EMAIL_SERVER"] ?? "smtp.gmail.com";
+var mailPort = builder.Configuration["BookingMail:Port"] ?? builder.Configuration["BOOKING_MAIL_PORT"] ?? builder.Configuration["EmailSettings:Port"] ?? builder.Configuration["EMAIL_PORT"] ?? "587";
+
+if (!string.IsNullOrEmpty(mailPass))
+{
+    builder.Configuration["BookingMail:Password"] = mailPass;
+    builder.Configuration["BookingMail:Username"] = mailUser ?? "";
+    builder.Configuration["BookingMail:From"] = mailFrom ?? "";
+    builder.Configuration["BookingMail:Host"] = mailHost;
+    builder.Configuration["BookingMail:Port"] = mailPort;
+
+    builder.Configuration["EmailSettings:SenderPassword"] = mailPass;
+    builder.Configuration["EmailSettings:SenderEmail"] = mailUser ?? "";
+    builder.Configuration["EmailSettings:Server"] = mailHost;
+    builder.Configuration["EmailSettings:Port"] = mailPort;
+}
+
+// 5. Cấu hình CORS phục vụ Frontend Next.js và Kiosk Native App
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -53,10 +159,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 3. Ã„ÂÃ„Æ’ng kÃƒÂ½ HttpClient cho FastAPI AI Service
+// 6. Đăng ký HttpClient cho FastAPI AI Service
 builder.Services.AddHttpClient<IAiServiceClient, AiServiceClient>();
 
-// 4. Ã„ÂÃ„Æ’ng kÃƒÂ½ Repositories (Data Access Layer)
+// 7. Đăng ký Repositories (Data Access Layer)
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITicketDetailRepository, TicketDetailRepository>();
@@ -75,7 +181,7 @@ builder.Services.AddScoped<IBookingEmailSender, BookingEmailSender>();
 builder.Services.AddDataProtection();
 builder.Services.AddHostedService<BookingExpirationWorker>();
 
-// Scheme riÃƒÂªng cho Ã„â€˜Ã¡ÂºÂ·t vÃƒÂ©; khÃƒÂ´ng tÃ¡Â»Â± xÃƒÂ¢y dÃ¡Â»Â±ng Ã„â€˜Ã„Æ’ng nhÃ¡ÂºÂ­p hay cÃ¡ÂºÂ¥p token cÃ¡Â»Â§a phÃƒÂ¢n hÃ¡Â»â€¡ tÃƒÂ i khoÃ¡ÂºÂ£n.
+// Scheme riêng cho đặt vé
 builder.Services.AddAuthentication(options => { options.DefaultAuthenticateScheme = "BookingCustomer"; options.DefaultChallengeScheme = "BookingCustomer"; }).AddJwtBearer("BookingCustomer", options =>
 {
     var key = builder.Configuration["Jwt:Key"] ?? builder.Configuration["JWT_SECRET"] ?? "EventPassDefaultSecureJwtSecretKeyAtLeast32Bytes!";
@@ -85,12 +191,11 @@ builder.Services.AddAuthentication(options => { options.DefaultAuthenticateSchem
         ValidateIssuerSigningKey = true, RequireSignedTokens = true, RequireExpirationTime = true,
         ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
         ClockSkew = TimeSpan.FromSeconds(15),
-        // ValidAudience checked by TokenValidationParameters
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
     };
 });
 
-// 5. Ã„ÂÃ„Æ’ng kÃƒÂ½ Application Services (Business Logic Layer)
+// 8. Đăng ký Application Services (Business Logic Layer)
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IKioskService, KioskService>();
 builder.Services.AddScoped<IKioskNotificationService, KioskNotificationService>();
@@ -106,11 +211,10 @@ builder.Services.AddScoped<ITransactionService, TransactionRepository>();
 builder.Services.AddScoped<IFileStorageService, DropboxStorageService>();
 builder.Services.AddScoped<IFileStorageServices, LocalFileStorageService>();
 
-// 6. Đăng ký SignalR (Realtime Notification)
-// 6. Ã„ÂÃ„Æ’ng kÃƒÂ½ SignalR (Realtime Notification)
+// 9. Đăng ký SignalR (Realtime Notification)
 builder.Services.AddSignalR();
 
-// 7. Ã„ÂÃ„Æ’ng kÃƒÂ½ Web API Controllers & Swagger UI
+// 10. Đăng ký Web API Controllers & Swagger UI
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -147,6 +251,9 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+// ==============================================================================
+// 11. Tự động áp dụng Migration và Seed Database khi khởi chạy ứng dụng
+// ==============================================================================
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -167,25 +274,9 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// // Seed dÃ¡Â»Â¯ liÃ¡Â»â€¡u local sau khi Ã„â€˜ÃƒÂ£ cÃ¡ÂºÂ­p nhÃ¡ÂºÂ­t migration, khÃƒÂ´ng tÃ¡Â»Â± thay Ã„â€˜Ã¡Â»â€¢i schema database.
-// if (seedOnly && !app.Environment.IsDevelopment())
-//     throw new InvalidOperationException("ChÃ¡Â»â€° chÃ¡ÂºÂ¡y seed dÃ¡Â»Â¯ liÃ¡Â»â€¡u mÃ¡ÂºÂ«u trong mÃƒÂ´i trÃ†Â°Ã¡Â»Âng Development.");
-// if (app.Environment.IsDevelopment() && (seedOnly || app.Configuration.GetValue<bool>("DatabaseSeed:Enabled")))
-// {
-//     await using var scope = app.Services.CreateAsyncScope();
-    
-//     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//     await dbContext.Database.MigrateAsync();
-
-//     var hasher = new PasswordHasher<User>();
-//     var bcryptHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
-//     // var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), hasher.HashPassword);
-//     var result = await DatabaseSeeder.InitializeAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), (user, password) => bcryptHasher.HashPassword(password));
-//     app.Logger.LogInformation("Seed hoÃƒÂ n tÃ¡ÂºÂ¥t: thÃƒÂªm {UsersAdded} tÃƒÂ i khoÃ¡ÂºÂ£n, {EventsAdded} sÃ¡Â»Â± kiÃ¡Â»â€¡n.", result.UsersAdded, result.EventsAdded);
-// }
 if (seedOnly) return;
 
-// CÃ¡ÂºÂ¥u hÃƒÂ¬nh Swagger UI trÃ¡Â»Â±c quan
+// Cấu hình Swagger UI trực quan
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -205,4 +296,3 @@ app.MapHub<KioskHub>("/hubs/kiosk");
 app.MapHub<TransactionHub>("/hubs/transactions");
 
 app.Run();
-

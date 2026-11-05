@@ -1,5 +1,5 @@
 services:
-  # 1. PostgreSQL with pgvector extension
+  # 1. PostgreSQL 16 with pgvector extension
   postgres:
     image: pgvector/pgvector:pg16
     container_name: eventpass-postgres
@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: ${DB_NAME:-eventpass_db}
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-rootpassword@123}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-your_password}
     ports:
       - "${DB_PORT:-5433}:5432"
     volumes:
@@ -16,7 +16,7 @@ services:
       - eventpass-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-eventpass_db}"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
 
@@ -55,13 +55,39 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5000
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${DB_NAME:-eventpass_db};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-rootpassword@123};
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=${DB_NAME:-eventpass_db};Username=${DB_USER:-postgres};Password=${DB_PASSWORD:-your_password};
       - AiService__BaseUrl=http://ai-service:8000
       - AiService__ApiKey=${AI_INTERNAL_API_KEY:-eventpass_internal_ai_token_2026}
       - AI_SERVICE_URL=http://ai-service:8000
       - AI_INTERNAL_API_KEY=${AI_INTERNAL_API_KEY:-eventpass_internal_ai_token_2026}
       - JWT_SECRET=${JWT_SECRET:-super_secret_key_eventpass_auth_2026_very_long_string_min_32_chars}
       - DatabaseSeed__Enabled=true
+      # PayOS Online Payment Gateway
+      - PayOS__ClientId=${PAYOS_CLIENT_ID:-}
+      - PayOS__ApiKey=${PAYOS_API_KEY:-}
+      - PayOS__ChecksumKey=${PAYOS_CHECKSUM_KEY:-}
+      - PayOS__ReturnUrl=${PAYOS_RETURN_URL:-http://localhost:3000/my-tickets}
+      - PayOS__CancelUrl=${PAYOS_CANCEL_URL:-http://localhost:3000/checkout}
+      # Dropbox Cloud Storage
+      - Dropbox__AppKey=${DROPBOX_APP_KEY:-}
+      - Dropbox__AppSecret=${DROPBOX_APP_SECRET:-}
+      - Dropbox__RefreshToken=${DROPBOX_REFRESH_TOKEN:-}
+      - Dropbox__FolderPath=${DROPBOX_FOLDER_PATH:-/EventPass}
+      # Booking Payment & Mail Notification
+      - BookingPayment__BankCode=${BOOKING_BANK_CODE:-MBBank}
+      - BookingPayment__AccountNumber=${BOOKING_ACCOUNT_NUMBER:-0962633860}
+      - BookingPayment__AccountName=${BOOKING_ACCOUNT_NAME:-EVENTPASS PAYMENT}
+      - BookingMail__Host=${BOOKING_MAIL_HOST:-smtp.gmail.com}
+      - BookingMail__Port=${BOOKING_MAIL_PORT:-587}
+      - BookingMail__EnableSsl=${BOOKING_MAIL_ENABLE_SSL:-true}
+      - BookingMail__From=${BOOKING_MAIL_FROM:-ancientbookvn@gmail.com}
+      - BookingMail__Username=${BOOKING_MAIL_USERNAME:-ancientbookvn@gmail.com}
+      - BookingMail__Password=${BOOKING_MAIL_PASSWORD:-}
+      # EmailSettings (General User OTP / Notifications)
+      - EmailSettings__Server=${EMAIL_SERVER:-smtp.gmail.com}
+      - EmailSettings__Port=${EMAIL_PORT:-587}
+      - EmailSettings__SenderEmail=${EMAIL_SENDER:-ancientbookvn@gmail.com}
+      - EmailSettings__SenderPassword=${EMAIL_PASSWORD:-}
     depends_on:
       postgres:
         condition: service_healthy
@@ -78,7 +104,7 @@ services:
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5000/api/v1}
         NEXT_PUBLIC_SIGNALR_URL: ${NEXT_PUBLIC_SIGNALR_URL:-http://localhost:5000/hubs}
-        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-148794334414-pmi36s4ivlfob5em23b4kshstpckmnem.apps.googleusercontent.com}
+        NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
     container_name: eventpass-frontend
     restart: unless-stopped
     ports:
@@ -86,7 +112,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:5000/api/v1}
       - NEXT_PUBLIC_SIGNALR_URL=${NEXT_PUBLIC_SIGNALR_URL:-http://localhost:5000/hubs}
-      - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-148794334414-pmi36s4ivlfob5em23b4kshstpckmnem.apps.googleusercontent.com}
+      - NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID:-}
     depends_on:
       - backend-core
     networks:

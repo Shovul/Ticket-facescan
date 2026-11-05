@@ -77,6 +77,12 @@ public class PayOSWebhookData
     public string? Desc { get; set; }
     public string? CancelUrl { get; set; }
     public string? ReturnUrl { get; set; }
+    public string? CounterAccountBankId { get; set; }
+    public string? CounterAccountBankName { get; set; }
+    public string? CounterAccountName { get; set; }
+    public string? CounterAccountNumber { get; set; }
+    public string? VirtualAccountName { get; set; }
+    public string? VirtualAccountNumber { get; set; }
 }
 
 public class PayOSWebhookPayload
