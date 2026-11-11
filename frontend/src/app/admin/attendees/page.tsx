@@ -8,10 +8,21 @@ import AttendeeToolbar from "@/components/admin/attendees/AttendeeToolbar";
 import AttendeeTable from "@/components/admin/attendees/AttendeeTable";
 import AttendeePagination from "@/components/admin/attendees/AttendeePagination";
 
+// NEW: Define a simple interface for the Event dropdown options
+interface EventOption {
+  id: number;
+  name?: string;
+  title?: string;
+}
+
 export default function AttendeesPage() {
   const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
+
+  // States for Event fetching & selection
+  const [events, setEvents] = useState<EventOption[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<number>(1);
 
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedClass, setSelectedClass] = useState("all");
@@ -19,9 +30,7 @@ export default function AttendeesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  const [selectedPhoto, setSelectedPhoto] = useState<PhotoModalData | null>(
-    null,
-  );
+  const [selectedPhoto, setSelectedPhoto] = useState<PhotoModalData | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -29,15 +38,47 @@ export default function AttendeesPage() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
+  // Safe check for Next.js SSR
+  const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
+
+  // NEW: Fetch all available events to populate the dropdown
+  const fetchEvents = useCallback(async () => {
+    try {
+      const res = await axiosClient.get("/api/v1/events", {
+        params: {
+          pageSize: 50, // Lấy đủ danh sách sự kiện để chọn
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // Handle both paginated responses ({items: [...]}) and direct arrays
+      const eventList = res.data.items || res.data;
+      setEvents(eventList);
+
+      // Optionally auto-select the first event if the list is valid
+      if (eventList && eventList.length > 0) {
+        setSelectedEventId(eventList[0].id);
+      }
+    } catch (err) {
+      console.error("Lỗi khi tải danh sách sự kiện:", err);
+    }
+  }, [token]);
+
   const fetchAttendees = useCallback(async () => {
+    if (!selectedEventId) return; // Don't fetch if no event is selected
+    
     setLoading(true);
     try {
-      const res = await axiosClient.get("/api/admin/attendees/1", {
+      const res = await axiosClient.get(`/api/admin/attendees/${selectedEventId}`, {
         params: {
           pageNumber: currentPage,
           keyword: searchKeyword.trim() || undefined,
           ticketClass: selectedClass !== "all" ? selectedClass : undefined,
           status: selectedStatus !== "all" ? selectedStatus : undefined,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
       });
       setAttendees(res.data.items || []);
@@ -47,15 +88,25 @@ export default function AttendeesPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchKeyword, selectedClass, selectedStatus]);
+  }, [selectedEventId, currentPage, searchKeyword, selectedClass, selectedStatus, token]);
 
+  // Load events on mount
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
+
+  // Load attendees whenever the selected event or pagination/filters change
   useEffect(() => {
     fetchAttendees();
   }, [fetchAttendees]);
 
   const handleManualCheckIn = async (id: number) => {
     try {
-      await axiosClient.post(`/api/admin/attendees/${id}/manual-checkin`);
+      await axiosClient.post(`/api/admin/attendees/${id}/manual-checkin`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       showToast("Điểm danh thủ công thành công!");
       fetchAttendees();
     } catch (err) {
@@ -65,7 +116,11 @@ export default function AttendeesPage() {
 
   const handleToggleLock = async (id: number) => {
     try {
-      await axiosClient.post(`/api/admin/attendees/${id}/toggle-lock`);
+      await axiosClient.post(`/api/admin/attendees/${id}/toggle-lock`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       showToast("Đã cập nhật trạng thái khóa/mở khóa vé!");
       fetchAttendees();
     } catch (err) {
@@ -75,11 +130,14 @@ export default function AttendeesPage() {
 
   const handleExportCSV = async () => {
     try {
-      const response = await axiosClient.get("/api/admin/attendees/export/1", {
+      const response = await axiosClient.get(`/api/admin/attendees/export/${selectedEventId}`, {
         params: {
           keyword: searchKeyword.trim() || undefined,
           ticketClass: selectedClass !== "all" ? selectedClass : undefined,
           status: selectedStatus !== "all" ? selectedStatus : undefined,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
         responseType: "blob",
       });
@@ -88,7 +146,7 @@ export default function AttendeesPage() {
       link.href = url;
       link.setAttribute(
         "download",
-        `Danh_sach_tham_du_Event_1_${new Date().toISOString().slice(0, 10)}.csv`,
+        `Danh_sach_tham_du_Event_${selectedEventId}_${new Date().toISOString().slice(0, 10)}.csv`,
       );
       document.body.appendChild(link);
       link.click();
@@ -103,7 +161,7 @@ export default function AttendeesPage() {
 
   return (
     <div className="min-h-screen bg-[#f2f7f5] text-[#023852] font-sans flex flex-col antialiased">
-      {/* HEADER BAR CHUYÊN NGHIỆP (LOẠI BỎ CHỮ UC13 & SANDBOX) */}
+      {/* HEADER BAR */}
       <header className="bg-white border-b-2 border-[#cfe5dc] px-8 py-4 flex items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-extrabold text-[#023852] flex items-center gap-2.5">
@@ -134,36 +192,56 @@ export default function AttendeesPage() {
             <span>Danh Sách Người Tham Dự & Đối Soát Vé</span>
           </h1>
           <p className="text-xs text-[#537583] mt-0.5">
-            Quản lý thông tin điểm danh, kiểm tra hồ sơ Face ID và kết xuất báo
-            cáo sự kiện
+            Quản lý thông tin điểm danh, kiểm tra hồ sơ Face ID và kết xuất báo cáo sự kiện
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={handleExportCSV}
-          className="px-4 py-2 bg-[#15803d] hover:bg-[#166534] text-white rounded-lg text-xs font-bold transition inline-flex items-center gap-2 shadow-sm"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
+        <div className="flex items-center gap-4">
+          {/* UPDATED: Dynamic Event Selection Dropdown */}
+          <select
+            value={selectedEventId}
+            onChange={(e) => {
+              setSelectedEventId(Number(e.target.value));
+              setCurrentPage(1);
+            }}
+            className="px-3 py-2 border-2 border-[#cfe5dc] rounded-lg text-sm bg-white text-[#023852] font-bold focus:outline-none focus:border-[#079fa0] cursor-pointer max-w-[250px] truncate"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-          <span>Xuất Báo Cáo (CSV)</span>
-        </button>
+            {events.length > 0 ? (
+              events.map((ev) => (
+                <option key={ev.id} value={ev.id}>
+                  {ev.name || ev.title || `Sự kiện ID: ${ev.id}`}
+                </option>
+              ))
+            ) : (
+              <option value={selectedEventId}>Đang tải sự kiện...</option>
+            )}
+          </select>
+
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="px-4 py-2 bg-[#15803d] hover:bg-[#166534] text-white rounded-lg text-xs font-bold transition inline-flex items-center gap-2 shadow-sm"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            <span>Xuất Báo Cáo (CSV)</span>
+          </button>
+        </div>
       </header>
 
       {/* BODY CONTENT */}
       <main className="p-8 pb-16 max-w-[1200px] w-full mx-auto flex flex-col gap-5 flex-1">
-        {/* Toolbar Component (Tìm kiếm & Bộ lọc) */}
         <AttendeeToolbar
           searchKeyword={searchKeyword}
           selectedClass={selectedClass}
@@ -183,7 +261,6 @@ export default function AttendeesPage() {
           onExportCSV={handleExportCSV}
         />
 
-        {/* Table & Pagination Components */}
         <div className="bg-white border-2 border-[#cfe5dc] rounded-xl shadow-sm overflow-hidden">
           <AttendeeTable
             attendees={attendees}

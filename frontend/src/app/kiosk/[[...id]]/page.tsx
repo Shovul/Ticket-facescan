@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { KioskEventInfo, CheckinResult } from "../../types/kiosk";
-import { useWebcam } from "../../hooks/useWebcam";
-import { useKioskAudio } from "../../hooks/useKioskAudio";
-import { useKioskSignalR } from "../../hooks/useKioskSignalR";
-import { useQrScanner } from "../../hooks/useQrScanner";
+import React, { useState, useEffect, useRef, useCallback, use } from "react";
+import { KioskEventInfo, CheckinResult } from "../../../types/kiosk";
+import { useWebcam } from "../../../hooks/useWebcam";
+import { useKioskAudio } from "../../../hooks/useKioskAudio";
+import { useKioskSignalR } from "../../../hooks/useKioskSignalR";
+import { useQrScanner } from "../../../hooks/useQrScanner";
 import {
   saveOfflineTickets,
   getOfflineTicket,
@@ -14,7 +14,7 @@ import {
   getPendingOfflineLogs,
   clearPendingOfflineLogs,
   purgeKioskCache,
-} from "../../services/kioskOfflineStorage";
+} from "../../../services/kioskOfflineStorage";
 import {
   KioskHeader,
   KioskCameraViewport,
@@ -25,21 +25,29 @@ import {
   KioskQrModal,
   KioskExitModal,
   KioskDemoBar,
-} from "../../components/kiosk";
+} from "../../../components/kiosk";
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000")
   .replace(/\/$/, "")
   .replace(/\/api\/v1$/, "");
-import "../../styles/kiosk.css";
+import "../../../styles/kiosk.css";
 
-export default function KioskPage() {
+interface KioskPageProps {
+  params: Promise<{
+    id?: string;
+  }>;
+}
+
+export default function KioskPage( { params }: KioskPageProps) {
   const [isMounted, setIsMounted] = useState(false);
   const [isLocked, setIsLocked] = useState(true);
   const [kioskSecretKey, setKioskSecretKey] = useState("");
   const [showExitModal, setShowExitModal] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
 
-  const [eventId, setEventId] = useState<number>(1);
+  const resolvedParams = use(params);
+  const routeId = resolvedParams.id ? Number(resolvedParams.id) : null;
+  const [eventId, setEventId] = useState<number | null>(routeId);
 
   useEffect(() => {
     if (typeof window !== "undefined") {

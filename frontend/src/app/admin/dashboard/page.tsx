@@ -3,6 +3,7 @@
 import React from 'react';
 import '../../../styles/admin-dashboard.css';
 import { useDashboard } from '../../../hooks/useDashboard';
+import { useRouter } from 'next/navigation';
 
 export default function LiveDashboardPage() {
   const {
@@ -24,9 +25,12 @@ export default function LiveDashboardPage() {
     handleExportCSV
   } = useDashboard();
 
+  const router = useRouter();
+
   if (isLoading || !eventData) {
     return <div style={{ padding: '50px', textAlign: 'center' }}>Đang tải dữ liệu sự kiện...</div>;
   }
+
 
   const capacity = eventData.totalCapacity || totalAttendees || 1; 
   const fillRate = ((checkedInCount / capacity) * 100).toFixed(1);
@@ -54,6 +58,14 @@ export default function LiveDashboardPage() {
         }
     };
 
+  const handleGoToKiosk = () => {
+    if (activeEventId) {
+      router.push(`/kiosk/${activeEventId}`);
+    } else {
+      router.push('/kiosk');
+    }
+  };
+
   return (
     <>
       <header className="main-top-header">
@@ -70,6 +82,7 @@ export default function LiveDashboardPage() {
             ))}
           </select>
         </div>
+        <button className="kiosk-navigation-btn" onClick={handleGoToKiosk}>Truy cập Kiosk</button>
       </header>
 
       <div className="main-content-scroll">

@@ -54,7 +54,7 @@ export default function Sidebar() {
       <aside className="admin-sidebar">
         <div>
           <div className="sidebar-header">
-            <Link href="/admin" className="brand-link">
+            <Link href="/events" className="brand-link">
               EventPass
               <span className="brand-tag">ADMIN</span>
               <span className="brand-dot"></span>

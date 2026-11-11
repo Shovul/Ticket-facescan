@@ -17,6 +17,8 @@ export default function EventDetailPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<number>(1);
   const [isEditing, setIsEditing] = useState(false);
+  const [visibleTokens, setVisibleTokens] = useState<Record<number, boolean>>({});
+  const [copiedKioskId, setCopiedKioskId] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     organizerName: '',
@@ -83,6 +85,21 @@ export default function EventDetailPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleToggleOrCopy = async (kioskId: number, secretToken: string) => {
+    if (visibleTokens[kioskId]) {
+      try {
+        await navigator.clipboard.writeText(secretToken);
+        setCopiedKioskId(kioskId);
+        notify('Đã sao chép Secret Token vào bộ nhớ tạm!', 'success');
+        setTimeout(() => setCopiedKioskId(null), 2000);
+      } catch {
+        notify('Không thể sao chép Secret Token.', 'error');
+      }
+    } else {
+      toggleTokenVisibility(kioskId);
+    }
+  };
+
   const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -96,6 +113,13 @@ export default function EventDetailPage() {
     } catch (err: any) {
       notify(err.response?.data?.Error || 'Lỗi khi cập nhật sự kiện.', 'error');
     }
+  };
+
+  const toggleTokenVisibility = (kioskId: number) => {
+    setVisibleTokens((prev) => ({
+      ...prev,
+      [kioskId]: !prev[kioskId],
+    }));
   };
 
   if (loading) return <div style={{ padding: 40, textAlign: 'center', color: '#079FA0', fontWeight: 'bold' }}>Đang tải dữ liệu chi tiết...</div>;
@@ -324,8 +348,28 @@ export default function EventDetailPage() {
                       <td><strong>{kiosk.name}</strong><br/><span style={{ fontSize: '11.5px', color: 'var(--text-muted)' }}>{kiosk.location || 'Cổng chính'}</span></td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span className="token-masked">••••••••••••••••</span>
-                          <button type="button" onClick={() => notify(`Mã Secret Token: ${kiosk.secretToken}`, 'info')} style={{ background: 'none', border: 'none', color: 'var(--color-teal)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', padding: '2px 4px' }}>Hiển thị</button>
+                          {visibleTokens[kiosk.id] ? (
+                            <span onClick={() => handleToggleOrCopy(kiosk.id, kiosk.secretToken)} className="token-masked" style={{ fontFamily: 'monospace', fontWeight: 600, cursor: 'pointer' }}>{kiosk.secretToken}</span>
+                          ) : (
+                            <span className="token-masked">••••••••••••••••</span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => toggleTokenVisibility(kiosk.id)}
+                            style={{
+                              background: '#f1f5f9',
+                              border: '1px solid #e2e8f0',
+                              color: 'var(--color-teal)',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              padding: '4px 8px',
+                              minWidth: '50px',
+                              borderRadius: '4px'
+                            }}
+                          >
+                            {visibleTokens[kiosk.id] ? 'Ẩn' : 'Hiển thị'}
+                          </button>
                         </div>
                       </td>
                       <td style={{ textAlign: 'right' }}>

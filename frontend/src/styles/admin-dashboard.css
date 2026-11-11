@@ -64,6 +64,23 @@
   box-shadow: 0 0 0 2px rgba(7, 159, 160, 0.15);
 }
 
+.kiosk-navigation-btn {
+  background-color: var(--bg-page);
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--card-border);
+  cursor: pointer;
+  color: var(--color-teal);
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+.kiosk-navigation-btn:hover {
+  background: var(--color-teal);
+  color: #fff;
+  border-color: var(--color-teal);
+}
+
 .main-content-scroll {
   padding: 26px 36px 50px 36px;
   max-width: 1200px;

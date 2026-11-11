@@ -62,6 +62,9 @@ LoadDotEnv();
 var seedOnly = args.Any(a => a.Equals("--seed", StringComparison.OrdinalIgnoreCase));
 var builder = WebApplication.CreateBuilder(args.Where(a => !a.Equals("--seed", StringComparison.OrdinalIgnoreCase)).ToArray());
 
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
 // Cho phép nạp thêm biến môi trường hệ thống
 builder.Configuration.AddEnvironmentVariables();
 

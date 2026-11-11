@@ -74,7 +74,7 @@
 .station-list-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
 .station-list-table th { text-align: left; padding: 10px 12px; background: var(--bg-page); color: var(--color-navy); font-size: 11.5px; font-weight: 700; text-transform: uppercase; border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border); }
 .station-list-table td { padding: 12px; border-bottom: 1px solid var(--hairline); vertical-align: middle; }
-.token-masked { font-family: monospace; font-size: 12px; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; color: #475569; border: 1px solid #e2e8f0; }
+.token-masked { font-family: monospace; font-size: 12px; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; color: #475569; border: 1px solid #e2e8f0; min-width: 120px; white-space: nowrap; overflow: hidden; }
 
 .btn-action-primary { padding: 9px 18px; background: var(--color-teal); color: #fff; border: none; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
 .btn-action-primary:hover { background: var(--color-teal-hover); }
