@@ -105,8 +105,15 @@ export default function MyTicketsPage() {
     busy.current = true; setPending(true);
     try {
       const link = await customerApi.claimLink(ticket.orderCode, ticket.itemId);
-      await navigator.clipboard.writeText(`${window.location.origin}/claim#${link.token}`);
-      notify("Đã sao chép liên kết mới. Liên kết cũ không còn hiệu lực.");
+      const url = `${window.location.origin}/claim#${link.token}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        notify("Đã sao chép liên kết nhận vé mới cho bạn bè.");
+      } catch {
+        // Fallback khi trình duyệt chặn clipboard: hiển thị hộp thoại sao chép thủ công
+        window.prompt("Sao chép liên kết nhận vé gửi cho bạn bè:", url);
+        notify("Đã tạo liên kết nhận vé mới.");
+      }
     } catch (issue) { notify((issue as Error).message, "error"); }
     finally { busy.current = false; setPending(false); }
   }

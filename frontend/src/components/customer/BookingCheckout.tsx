@@ -70,18 +70,20 @@ export function AttendeeForm({
     /^\d{10}$/.test(attendee.phone);
   const canUpload = consent && !frozen && hasValidAttendee;
 
-  // Tự động đồng bộ thông tin nếu vé người mua đã có profile
+  // Tự động đồng bộ thông tin nếu vé người mua đã có profile (điền trước Họ tên và Email kể cả khi chưa có số điện thoại)
   useEffect(() => {
-    if (isBuyerTicket && profile && !item.attendeeName && profile.fullName && profile.email && profile.phoneNumber) {
-      setName(profile.fullName);
-      setEmail(profile.email);
-      setPhone(profile.phoneNumber);
-      // Dùng setTimeout để tránh race condition khi mutate chưa rảnh lúc component vừa mount
-      const t = setTimeout(() => {
-        void updateAttendee?.(item.id, { name: profile.fullName, email: profile.email, phone: profile.phoneNumber })
-          .catch(() => {});
-      }, 300);
-      return () => clearTimeout(t);
+    if (isBuyerTicket && profile && !item.attendeeName) {
+      if (profile.fullName && !name) setName(profile.fullName);
+      if (profile.email && !email) setEmail(profile.email);
+      if (profile.phoneNumber && !phone) setPhone(profile.phoneNumber);
+      if (profile.fullName && profile.email && profile.phoneNumber) {
+        // Dùng setTimeout để tránh race condition khi mutate chưa rảnh lúc component vừa mount
+        const t = setTimeout(() => {
+          void updateAttendee?.(item.id, { name: profile.fullName, email: profile.email, phone: profile.phoneNumber })
+            .catch(() => {});
+        }, 300);
+        return () => clearTimeout(t);
+      }
     }
   }, [profile, isBuyerTicket, item.attendeeName, item.id]);
 
@@ -719,14 +721,27 @@ export default function BookingCheckout({
 
   async function createClaim(itemId: number) {
     if (busy.current) return;
+    const targetItem = booking.items.find((i) => i.id === itemId);
+    // Vé có phí cần hoàn tất thanh toán trước khi tạo Claim Link gửi cho bạn bè
+    if (targetItem && targetItem.unitPrice > 0 && !booking.paidAt) {
+      notify("Vé có phí cần hoàn tất thanh toán VietQR trước khi tạo Claim Link gửi cho bạn bè. Bạn có thể gửi link tại đây hoặc trong mục 'Vé của tôi' sau khi thanh toán.", "info");
+      return;
+    }
     busy.current = true;
     onBusyChange?.(true);
     setPending(true);
     try {
       const link = await customerApi.claimLink(code, itemId);
-      await navigator.clipboard.writeText(`${window.location.origin}/claim#${link.token}`);
+      const url = `${window.location.origin}/claim#${link.token}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        notify("Đã tạo liên kết mới và sao chép. Liên kết cũ không còn hiệu lực.");
+      } catch {
+        // Fallback khi trình duyệt chặn clipboard: hiển thị hộp thoại sao chép thủ công
+        window.prompt("Sao chép liên kết nhận vé gửi cho bạn bè:", url);
+        notify("Đã tạo liên kết nhận vé mới.");
+      }
       apply(await customerApi.booking(code));
-      notify("Đã tạo liên kết mới và sao chép. Liên kết cũ không còn hiệu lực.");
     } catch (issue) {
       notify((issue as Error).message, "error");
     } finally {
