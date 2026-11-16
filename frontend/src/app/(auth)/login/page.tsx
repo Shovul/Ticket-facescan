@@ -35,7 +35,11 @@ function LoginPageContent() {
         if (role === 'admin' || role === 'organizer') {
           router.push('/admin/events');
         } else {
-          router.push('/events');
+          // Điều hướng về lại trang đang mua vé nếu có returnUrl, ngược lại về trang chủ sự kiện /events
+          const returnUrl = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('returnUrl') : null;
+          if (typeof window !== 'undefined') sessionStorage.removeItem('eventpass.returnUrl');
+          const target = (returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('//')) ? returnUrl : '/events';
+          router.push(target);
         }
       } else {
         setBannerError(res.message || 'Xác thực Google không thành công.');

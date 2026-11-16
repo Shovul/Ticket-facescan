@@ -104,8 +104,9 @@ export default function EventDetailsPage() {
       </section></aside>
     </main>
     {loginRequired && <div className="modal-backdrop show"><section className="modal-box" role="dialog" aria-modal="true" aria-labelledby="login-title"><div className="modal-header-styled"><h2 className="modal-title-bold" id="login-title">Đăng nhập để đặt vé</h2><button className="modal-close" aria-label="Đóng" onClick={() => setLoginRequired(false)}><X size={20} /></button></div><div className="modal-body-padded"><p>Bạn cần đăng nhập tài khoản khách hàng trước khi giữ chỗ.</p></div><div className="modal-footer-flex"><button className="btn-modal-back" onClick={() => setLoginRequired(false)}>Tiếp tục xem sự kiện</button><button className="btn-modal-confirm-pay" onClick={() => {
-      const url = process.env.NEXT_PUBLIC_LOGIN_URL;
-      if (url) window.location.assign(`${url}${url.includes("?") ? "&" : "?"}returnUrl=${encodeURIComponent(`/events/${id}`)}`); else notify("Chức năng đăng nhập đang được cập nhật. Vui lòng thử lại sau.", "info");
+      // Chuyển hướng tới trang đăng nhập nội bộ kèm returnUrl về sự kiện hiện tại
+      const url = process.env.NEXT_PUBLIC_LOGIN_URL || "/login";
+      window.location.assign(`${url}${url.includes("?") ? "&" : "?"}returnUrl=${encodeURIComponent(`/events/${id}`)}`);
     }}>Đăng nhập</button></div></section></div>}
     {review && <div className="modal-backdrop show"><section className="modal-box" role="dialog" aria-modal="true" aria-labelledby="review-title">
       <div className="modal-header-styled"><h2 className="modal-title-bold" id="review-title"><Ticket className="icon teal" />Xác nhận đơn hàng</h2><button className="modal-close" disabled={saving} aria-label="Đóng" onClick={() => setReview(false)}><X size={20} /></button></div>

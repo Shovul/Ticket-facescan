@@ -130,9 +130,9 @@ export default function MyTicketsPage() {
   }
 
   if (guest) return <main className="storefront-main"><div className="customer-state"><h1>Đăng nhập để xem vé của tôi</h1><p>Bạn cần đăng nhập tài khoản đã đặt vé.</p><button className="btn-guest-login" onClick={() => {
-    const url = process.env.NEXT_PUBLIC_LOGIN_URL;
-    if (url) window.location.assign(`${url}${url.includes("?") ? "&" : "?"}returnUrl=${encodeURIComponent("/my-tickets")}`);
-    else notify("Chức năng đăng nhập đang được cập nhật.", "info");
+    // Chuyển hướng tới trang đăng nhập nội bộ kèm returnUrl về trang vé
+    const url = process.env.NEXT_PUBLIC_LOGIN_URL || "/login";
+    window.location.assign(`${url}${url.includes("?") ? "&" : "?"}returnUrl=${encodeURIComponent("/my-tickets")}`);
   }}>Đăng nhập</button><Link href="/events">Khám phá sự kiện</Link></div></main>;
 
   return <div className="my-tickets-page"><main className="workspace-main">
