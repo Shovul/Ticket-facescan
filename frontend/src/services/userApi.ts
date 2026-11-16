@@ -23,13 +23,14 @@ export interface UserProfileData {
 
 export interface UpdateProfileRequest {
   fullName: string;
+  email: string;
   phoneNumber?: string;
 }
 
 export interface ChangePasswordRequest {
   currentPassword?: string;
   newPassword: string;
-  confirmPassword: string;
+  confirmNewPassword: string;
 }
 
 export const userApi = {

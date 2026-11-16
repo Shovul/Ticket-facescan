@@ -363,6 +363,7 @@ export default function ProfilePage() {
     try {
       const res = await userApi.updateProfile({
         fullName: fullName.trim(),
+        email: profile?.email || '',
         phoneNumber: phone.trim(),
       });
 
@@ -413,7 +414,7 @@ export default function ProfilePage() {
       const res = await userApi.changePassword({
         currentPassword,
         newPassword,
-        confirmPassword,
+        confirmNewPassword: confirmPassword,
       });
 
       if (res.success) {
