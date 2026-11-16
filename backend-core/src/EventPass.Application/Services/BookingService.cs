@@ -434,29 +434,25 @@ public class BookingService(IBookingRepository repository, IAiServiceClient ai,
     {
         var hash = HashToken(token);
         var order = await repository.GetClaimOrderAsync(hash, ct) ?? throw new BookingException(404, "Liên kết nhận vé không còn hiệu lực.");
-        var item = order.Items.Single(i => i.ClaimTokenHash == hash);
+        var item = order.Items.SingleOrDefault(i => i.ClaimTokenHash == hash) ?? throw new BookingException(404, "Liên kết nhận vé không còn hiệu lực.");
         var result = await SaveFaceAsync(order.UserId, order.OrderCode, item.Id, image, contentType, ct, hash, attendee);
         await SendEmail(order.UserId, order.OrderCode, ct);
 
-        var ticket = item.TicketDetail;
-        var faceUrl = ticket?.AttendeeFaceData?.StartsWith("http") == true ? ticket.AttendeeFaceData
+        // Lấy thông tin vé điện tử chính thức từ kết quả cấp vé vừa lưu
+        var savedItem = result.Items.FirstOrDefault(i => i.Id == item.Id);
+        var ticketCode = savedItem?.TicketCode ?? item.TicketDetail?.TicketCode;
+        var qrCodeUrl = savedItem?.QrCodeUrl ?? item.TicketDetail?.QrCodeUrl;
+        var faceUrl = item.TicketDetail?.AttendeeFaceData?.StartsWith("http") == true ? item.TicketDetail.AttendeeFaceData
             : item.FaceImageContentType?.Contains('|') == true ? item.FaceImageContentType.Split('|')[1]
             : null;
-
-        if (ticket != null)
-        {
-            ticket.AttendeeName = attendee.Name.Trim();
-            ticket.AttendeeEmail = attendee.Email.Trim();
-            ticket.AttendeePhone = attendee.Phone.Trim();
-        }
 
         return new(
             order.Event.Title,
             item.Ticket.Name,
             ClaimDeadline(order, item),
             DateTime.UtcNow,
-            ticket?.TicketCode,
-            ticket?.QrCodeUrl,
+            ticketCode,
+            qrCodeUrl,
             attendee.Name.Trim(),
             order.Event.Location,
             order.Event.StartTime,

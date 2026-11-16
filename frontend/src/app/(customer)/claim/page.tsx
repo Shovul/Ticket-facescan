@@ -32,7 +32,10 @@ export default function ClaimPage() {
   const notify = useNotification();
 
   useEffect(() => {
-    token.current = window.location.hash.slice(1);
+    // Đọc token từ URL hash (#) hoặc query parameter (?token=) phòng trường hợp ứng dụng chat làm mất hash
+    const hash = window.location.hash.slice(1);
+    const query = new URLSearchParams(window.location.search).get("token");
+    token.current = hash || query || "";
     if (!token.current) { setError("Liên kết nhận vé không hợp lệ."); return; }
     const controller = new AbortController(); let timer: ReturnType<typeof setInterval> | undefined;
     customerApi.claim(token.current, controller.signal).then(result => {
@@ -189,8 +192,13 @@ export default function ClaimPage() {
       notify("Nhận vé và kích hoạt Face ID thành công! Thẻ vé điện tử đã được khởi tạo.");
       window.history.replaceState(null, "", window.location.pathname);
     } catch (issue) {
-      setError((issue as Error).message);
-      notify((issue as Error).message, "error");
+      // Xử lý thông báo thân thiện khi dịch vụ AI nhận diện khuôn mặt gián đoạn hoặc bận
+      const msg = (issue as Error).message || "";
+      const friendlyMsg = msg.includes("AI_SERVICE_UNAVAILABLE") || msg.includes("503")
+        ? "Dịch vụ AI nhận diện khuôn mặt đang bận hoặc đang khởi động. Vui lòng thử lại sau giây lát."
+        : msg;
+      setError(friendlyMsg);
+      notify(friendlyMsg, "error");
     } finally {
       busy.current = false;
       setPending(false);

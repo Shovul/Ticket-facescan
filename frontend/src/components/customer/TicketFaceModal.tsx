@@ -181,7 +181,11 @@ export default function TicketFaceModal({ ticket, onClose, onSuccess }: TicketFa
       onClose();
     } catch (err: any) {
       console.error("Face update failed:", err);
-      const msg = err.message || "Không thể cập nhật Face ID. Vui lòng kiểm tra lại chất lượng ảnh.";
+      // Thông báo thân thiện khi dịch vụ AI nhận diện khuôn mặt tạm thời gián đoạn
+      const raw = err.message || "";
+      const msg = raw.includes("AI_SERVICE_UNAVAILABLE") || raw.includes("503")
+        ? "Dịch vụ AI nhận diện khuôn mặt đang bận hoặc đang khởi động. Vui lòng thử lại sau giây lát."
+        : raw || "Không thể cập nhật Face ID. Vui lòng kiểm tra lại chất lượng ảnh.";
       setErrorMessage(msg);
       notify(msg, "error");
     } finally {

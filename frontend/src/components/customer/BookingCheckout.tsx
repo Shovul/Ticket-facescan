@@ -678,7 +678,8 @@ export default function BookingCheckout({
       }
     };
     void refresh();
-    const poll = setInterval(refresh, 5000);
+    // Chu kỳ 2.5s cập nhật trạng thái đơn giúp bắt tức thì webhook từ PayOS
+    const poll = setInterval(refresh, 2500);
     const timer = setInterval(() => setTick((v) => v + 1), 1000);
     return () => {
       mounted.current = false;
@@ -897,10 +898,16 @@ export default function BookingCheckout({
                         disabled={pending}
                         onClick={async () => {
                           try {
-                            await mutate(() => customerApi.confirmPayment(code), "Đang kiểm tra và cập nhật thanh toán…");
-                          } catch {
+                            // Cập nhật tức thì trạng thái đơn hàng từ máy chủ khi người dùng chủ động kiểm tra
                             const updated = await customerApi.booking(code);
                             apply(updated);
+                            if (updated.paidAt) {
+                              notify("Thanh toán đã được xác nhận thành công!");
+                            } else {
+                              notify("Hệ thống đang chờ xác nhận từ ngân hàng, vui lòng thử lại sau vài giây.", "info");
+                            }
+                          } catch (e) {
+                            setError((e as Error).message);
                           }
                         }}
                       >
